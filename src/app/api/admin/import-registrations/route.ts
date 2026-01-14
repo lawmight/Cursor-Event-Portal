@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify admin role
-    const supabase = createServiceClient();
+    const supabase = await createServiceClient();
     const { data: user } = await supabase
       .from("users")
       .select("role")
