@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import type { Event, Announcement } from "@/types";
 import { ArrowLeft, Megaphone, Trash2, Send } from "lucide-react";
 import Link from "next/link";
-import { createServiceClient } from "@/lib/supabase/server";
 
 interface AnnouncementsClientProps {
   event: Event;
