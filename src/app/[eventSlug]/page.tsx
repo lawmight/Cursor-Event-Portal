@@ -1,21 +1,18 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getEventStats } from "@/lib/supabase/queries";
+import { getEventBySlug, getEventStats, getEventAttendees } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
-import { RegistrationForm } from "@/components/forms/RegistrationForm";
+import { AttendeeCheckinForm } from "@/components/forms/AttendeeCheckinForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatTime } from "@/lib/utils";
-import Link from "next/link";
 import { MapPin, Calendar, Users } from "lucide-react";
 
 interface EventPageProps {
   params: Promise<{ eventSlug: string }>;
-  searchParams: Promise<{ code?: string }>;
 }
 
-export default async function EventPage({ params, searchParams }: EventPageProps) {
+export default async function EventPage({ params }: EventPageProps) {
   const { eventSlug } = await params;
-  const { code } = await searchParams;
 
   const event = await getEventBySlug(eventSlug);
 
@@ -29,9 +26,10 @@ export default async function EventPage({ params, searchParams }: EventPageProps
     redirect(`/${eventSlug}/agenda`);
   }
 
-  const stats = await getEventStats(event.id);
-  const spotsLeft = event.capacity - stats.registered;
-  const isFull = spotsLeft <= 0;
+  const [stats, attendees] = await Promise.all([
+    getEventStats(event.id),
+    getEventAttendees(event.id),
+  ]);
   const capacityPercent = Math.min((stats.registered / event.capacity) * 100, 100);
 
   return (
@@ -86,21 +84,15 @@ export default async function EventPage({ params, searchParams }: EventPageProps
                     Attendees
                   </p>
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
-                    {stats.registered}
+                    {stats.checkedIn}
                     <span className="text-gray-400 font-normal text-base">
                       {" "}
-                      / {event.capacity}
+                      / {stats.registered} checked in
                     </span>
                   </p>
                 </div>
               </div>
-              {isFull ? (
-                <Badge variant="destructive">Event Full</Badge>
-              ) : spotsLeft <= 50 ? (
-                <Badge variant="warning">{spotsLeft} spots left</Badge>
-              ) : (
-                <Badge variant="success">Open</Badge>
-              )}
+              <Badge variant="success">{stats.registered} registered</Badge>
             </div>
 
             {/* Progress Bar */}
@@ -113,33 +105,37 @@ export default async function EventPage({ params, searchParams }: EventPageProps
           </CardContent>
         </Card>
 
-        {/* Registration Card */}
+        {/* Check-in Card */}
         <Card className="shadow-xl animate-slide-up" style={{ animationDelay: "100ms" }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl">
-              {isFull ? "Join Waitlist" : "Register Now"}
-            </CardTitle>
+            <CardTitle className="text-xl">Check In</CardTitle>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {isFull
-                ? "Get notified when spots open up"
-                : "Secure your spot at the event"}
+              Find your name to access the event portal
             </p>
           </CardHeader>
           <CardContent className="pt-4">
-            <RegistrationForm eventId={event.id} eventSlug={eventSlug} />
+            {attendees.length > 0 ? (
+              <AttendeeCheckinForm
+                eventId={event.id}
+                eventSlug={eventSlug}
+                attendees={attendees}
+              />
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p className="font-medium">No attendees registered yet</p>
+                <p className="text-sm mt-1">
+                  Registrations will appear here once imported from Luma.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Already Registered Link */}
+        {/* Info text */}
         <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: "200ms" }}>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Already registered?{" "}
-            <Link
-              href={`/${eventSlug}/login`}
-              className="text-cursor-purple hover:text-cursor-purple-dark font-semibold transition-colors"
-            >
-              Sign in here →
-            </Link>
+            Not on the list? Make sure you registered on{" "}
+            <span className="font-semibold text-cursor-purple">Luma</span>
           </p>
         </div>
       </div>

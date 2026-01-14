@@ -116,6 +116,29 @@ export async function searchRegistrations(
   return data;
 }
 
+// Get registered attendees for check-in
+export async function getEventAttendees(
+  eventId: string
+): Promise<{ id: string; name: string; email: string | null }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("registrations")
+    .select("user:users(id, name, email)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) return [];
+  
+  // Flatten the nested user object
+  return data
+    .filter((r) => r.user)
+    .map((r) => ({
+      id: (r.user as { id: string; name: string; email: string | null }).id,
+      name: (r.user as { id: string; name: string; email: string | null }).name,
+      email: (r.user as { id: string; name: string; email: string | null }).email,
+    }));
+}
+
 // Agenda queries
 export async function getAgendaItems(eventId: string): Promise<AgendaItem[]> {
   const supabase = await createClient();
