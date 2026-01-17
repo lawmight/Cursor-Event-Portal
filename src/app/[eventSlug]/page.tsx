@@ -71,39 +71,41 @@ export default async function EventPage({ params }: EventPageProps) {
 
       {/* Content Section */}
       <div className="max-w-lg mx-auto px-4 -mt-8 pb-12">
-        {/* Capacity Card */}
-        <Card className="mb-6 overflow-hidden shadow-xl animate-slide-up">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cursor-purple/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-cursor-purple" />
+        {/* Capacity Card - only show if there are registrations */}
+        {stats.registered > 0 && (
+          <Card className="mb-6 overflow-hidden shadow-xl animate-slide-up">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-cursor-purple/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-cursor-purple" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Attendees
+                    </p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">
+                      {stats.checkedIn}
+                      <span className="text-gray-400 font-normal text-base">
+                        {" "}
+                        / {stats.registered} checked in
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Attendees
-                  </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">
-                    {stats.checkedIn}
-                    <span className="text-gray-400 font-normal text-base">
-                      {" "}
-                      / {stats.registered} checked in
-                    </span>
-                  </p>
-                </div>
+                <Badge variant="success">{stats.registered} registered</Badge>
               </div>
-              <Badge variant="success">{stats.registered} registered</Badge>
-            </div>
 
-            {/* Progress Bar */}
-            <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-cursor-purple to-cursor-purple-dark rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${capacityPercent}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+              {/* Progress Bar */}
+              <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-cursor-purple to-cursor-purple-dark rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${capacityPercent}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Check-in Card */}
         <Card className="shadow-xl animate-slide-up" style={{ animationDelay: "100ms" }}>
@@ -128,6 +130,69 @@ export default async function EventPage({ params }: EventPageProps) {
                 </p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Entry for Testing */}
+        <Card className="mt-4 border-dashed border-2 border-gray-300 dark:border-gray-700 shadow-none animate-slide-up" style={{ animationDelay: "150ms" }}>
+          <CardContent className="p-4">
+            <form action={`/${eventSlug}/intake`}>
+              <input type="hidden" name="bypass" value="true" />
+              <button
+                formAction={async () => {
+                  "use server";
+                  const { createServiceClient } = await import("@/lib/supabase/server");
+                  const { cookies } = await import("next/headers");
+                  const { redirect } = await import("next/navigation");
+
+                  const supabase = await createServiceClient();
+
+                  // Create test user
+                  const { data: user } = await supabase
+                    .from("users")
+                    .insert({ name: "Test User", role: "attendee" })
+                    .select("id")
+                    .single();
+
+                  if (user) {
+                    // Create registration
+                    const eventData = await supabase
+                      .from("events")
+                      .select("id")
+                      .eq("slug", eventSlug)
+                      .single();
+
+                    if (eventData.data) {
+                      await supabase.from("registrations").insert({
+                        event_id: eventData.data.id,
+                        user_id: user.id,
+                        consent_at: new Date().toISOString(),
+                        source: "walk-in",
+                        checked_in_at: new Date().toISOString(),
+                      });
+
+                      // Set session
+                      const cookieStore = await cookies();
+                      cookieStore.set("portal_session", JSON.stringify({
+                        userId: user.id,
+                        eventId: eventData.data.id,
+                        exp: Date.now() + 24 * 60 * 60 * 1000,
+                      }), {
+                        httpOnly: true,
+                        secure: process.env.NODE_ENV === "production",
+                        sameSite: "lax",
+                        maxAge: 24 * 60 * 60,
+                      });
+                    }
+                  }
+
+                  redirect(`/${eventSlug}/intake`);
+                }}
+                className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors text-sm"
+              >
+                Quick Entry (Testing)
+              </button>
+            </form>
           </CardContent>
         </Card>
 
