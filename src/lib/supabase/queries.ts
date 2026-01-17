@@ -9,6 +9,9 @@ import type {
   Answer,
   Survey,
   SurveyResponse,
+  AttendeeIntake,
+  SuggestedGroup,
+  DisplayPageData,
 } from "@/types";
 
 // Event queries
@@ -235,4 +238,108 @@ export async function getSurveyResponses(surveyId: string): Promise<SurveyRespon
 
   if (error) return [];
   return data;
+}
+
+// Intake queries
+export async function getAttendeeIntake(
+  eventId: string,
+  userId: string
+): Promise<AttendeeIntake | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("attendee_intakes")
+    .select("*, user:users(*)")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("attendee_intakes")
+    .select("*, user:users(*)")
+    .eq("event_id", eventId)
+    .eq("skipped", false)
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return data;
+}
+
+// Group queries
+export async function getSuggestedGroups(eventId: string): Promise<SuggestedGroup[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("suggested_groups")
+    .select(`
+      *,
+      members:suggested_group_members(
+        *,
+        user:users(*),
+        intake:attendee_intakes(*)
+      )
+    `)
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return data;
+}
+
+// Display page data
+export async function getDisplayPageData(eventId: string): Promise<DisplayPageData | null> {
+  const supabase = await createClient();
+
+  const [eventResult, agendaResult, questionsResult, announcementsResult] = await Promise.all([
+    supabase.from("events").select("*").eq("id", eventId).single(),
+    supabase.from("agenda_items").select("*").eq("event_id", eventId).order("sort_order"),
+    supabase
+      .from("questions")
+      .select("*, user:users(name)")
+      .eq("event_id", eventId)
+      .in("status", ["open", "pinned"])
+      .order("upvotes", { ascending: false })
+      .limit(10),
+    supabase
+      .from("announcements")
+      .select("*")
+      .eq("event_id", eventId)
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  if (eventResult.error || !eventResult.data) return null;
+
+  const now = new Date();
+  const agendaItems = agendaResult.data || [];
+
+  // Find current and next sessions
+  let currentSession: AgendaItem | null = null;
+  let nextSession: AgendaItem | null = null;
+
+  for (const item of agendaItems) {
+    if (item.start_time && item.end_time) {
+      const start = new Date(item.start_time);
+      const end = new Date(item.end_time);
+
+      if (now >= start && now <= end) {
+        currentSession = item;
+      } else if (now < start && !nextSession) {
+        nextSession = item;
+      }
+    }
+  }
+
+  return {
+    event: eventResult.data,
+    currentSession,
+    nextSession,
+    recentQuestions: questionsResult.data || [],
+    announcements: announcementsResult.data || [],
+  };
 }

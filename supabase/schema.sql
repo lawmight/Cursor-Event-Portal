@@ -209,6 +209,68 @@ CREATE POLICY "Surveys can be updated by service role" ON surveys FOR UPDATE USI
 CREATE POLICY "Survey responses are viewable by everyone" ON survey_responses FOR SELECT USING (true);
 CREATE POLICY "Survey responses can be inserted by service role" ON survey_responses FOR INSERT WITH CHECK (true);
 
+-- Attendee intake responses (goals and offers for networking)
+CREATE TABLE IF NOT EXISTS attendee_intakes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  goals TEXT[] DEFAULT '{}',
+  goals_other TEXT,
+  offers TEXT[] DEFAULT '{}',
+  offers_other TEXT,
+  skipped BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(event_id, user_id)
+);
+
+-- Suggested groups from LLM matching
+CREATE TABLE IF NOT EXISTS suggested_groups (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'modified', 'rejected')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Group members (junction table)
+CREATE TABLE IF NOT EXISTS suggested_group_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  group_id UUID NOT NULL REFERENCES suggested_groups(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  match_reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(group_id, user_id)
+);
+
+-- Add intake completion tracking to registrations
+ALTER TABLE registrations ADD COLUMN IF NOT EXISTS intake_completed_at TIMESTAMPTZ;
+
+-- Indexes for new tables
+CREATE INDEX IF NOT EXISTS idx_attendee_intakes_event_id ON attendee_intakes(event_id);
+CREATE INDEX IF NOT EXISTS idx_attendee_intakes_user_id ON attendee_intakes(user_id);
+CREATE INDEX IF NOT EXISTS idx_suggested_groups_event_id ON suggested_groups(event_id);
+CREATE INDEX IF NOT EXISTS idx_suggested_group_members_group_id ON suggested_group_members(group_id);
+
+-- RLS for new tables
+ALTER TABLE attendee_intakes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE suggested_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE suggested_group_members ENABLE ROW LEVEL SECURITY;
+
+-- Attendee intakes policies
+CREATE POLICY "Intakes are viewable by everyone" ON attendee_intakes FOR SELECT USING (true);
+CREATE POLICY "Intakes can be inserted by service role" ON attendee_intakes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Intakes can be updated by service role" ON attendee_intakes FOR UPDATE USING (true);
+
+-- Suggested groups policies
+CREATE POLICY "Groups are viewable by everyone" ON suggested_groups FOR SELECT USING (true);
+CREATE POLICY "Groups can be inserted by service role" ON suggested_groups FOR INSERT WITH CHECK (true);
+CREATE POLICY "Groups can be updated by service role" ON suggested_groups FOR UPDATE USING (true);
+
+-- Group members policies
+CREATE POLICY "Group members are viewable by everyone" ON suggested_group_members FOR SELECT USING (true);
+CREATE POLICY "Group members can be inserted by service role" ON suggested_group_members FOR INSERT WITH CHECK (true);
+
 -- Insert sample event
 INSERT INTO events (slug, code, name, venue, address, capacity, start_time, end_time, status)
 VALUES (

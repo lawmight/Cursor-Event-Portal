@@ -48,7 +48,8 @@ export function RegistrationForm({ eventId, eventSlug }: RegistrationFormProps) 
       if (result.error) {
         setError(result.error);
       } else {
-        router.push(`/${eventSlug}/agenda`);
+        // Redirect to intake (then to agenda after completion)
+        router.push(`/${eventSlug}/intake`);
         router.refresh();
       }
     } catch (err) {

@@ -95,8 +95,8 @@ export function AttendeeCheckinForm({
         return;
       }
 
-      // Redirect to agenda
-      router.push(`/${eventSlug}/agenda`);
+      // Redirect to intake (then to agenda after completion)
+      router.push(`/${eventSlug}/intake`);
       router.refresh();
     } catch (err) {
       setError("Network error. Please try again.");

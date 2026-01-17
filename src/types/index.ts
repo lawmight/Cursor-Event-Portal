@@ -150,3 +150,95 @@ export interface QuestionFormData {
 export interface AnswerFormData {
   content: string;
 }
+
+// Intake form types
+export type IntakeGoalTag =
+  | "learn-ai"
+  | "learn-coding"
+  | "networking"
+  | "find-cofounders"
+  | "hire-talent"
+  | "find-job"
+  | "explore-tools"
+  | "other";
+
+export type IntakeOfferTag =
+  | "ai-expertise"
+  | "software-dev"
+  | "design"
+  | "business-strategy"
+  | "funding-investment"
+  | "mentorship"
+  | "collaboration"
+  | "other";
+
+export interface AttendeeIntake {
+  id: string;
+  event_id: string;
+  user_id: string;
+  goals: IntakeGoalTag[];
+  goals_other: string | null;
+  offers: IntakeOfferTag[];
+  offers_other: string | null;
+  skipped: boolean;
+  created_at: string;
+  // Joined fields
+  user?: User;
+}
+
+export interface IntakeFormData {
+  goals: IntakeGoalTag[];
+  goalsOther?: string;
+  offers: IntakeOfferTag[];
+  offersOther?: string;
+}
+
+// Group formation types
+export type GroupStatus = "pending" | "approved" | "modified" | "rejected";
+
+export interface SuggestedGroup {
+  id: string;
+  event_id: string;
+  name: string;
+  description: string | null;
+  status: GroupStatus;
+  created_at: string;
+  // Joined fields
+  members?: SuggestedGroupMember[];
+}
+
+export interface SuggestedGroupMember {
+  id: string;
+  group_id: string;
+  user_id: string;
+  match_reason: string | null;
+  created_at: string;
+  // Joined fields
+  user?: User;
+  intake?: AttendeeIntake;
+}
+
+// Display page types
+export interface DisplayPageData {
+  event: Event;
+  currentSession: AgendaItem | null;
+  nextSession: AgendaItem | null;
+  recentQuestions: Question[];
+  announcements: Announcement[];
+}
+
+// LLM matching types
+export interface GroupMatchingRequest {
+  eventId: string;
+  intakes: AttendeeIntake[];
+  groupSize?: number;
+}
+
+export interface GroupMatchingResponse {
+  groups: {
+    name: string;
+    description: string;
+    memberIds: string[];
+    matchReasons: Record<string, string>;
+  }[];
+}
