@@ -15,25 +15,39 @@ export async function createQuestion(
     return { error: "Not authenticated" };
   }
 
-  const supabase = await createServiceClient();
+  try {
+    const supabase = await createServiceClient();
 
-  const { error } = await supabase.from("questions").insert({
-    event_id: eventId,
-    user_id: session.userId,
-    content: formData.content,
-    tags: formData.tags,
-    status: "open",
-    upvotes: 0,
-  });
+    const { error } = await supabase.from("questions").insert({
+      event_id: eventId,
+      user_id: session.userId,
+      content: formData.content,
+      tags: formData.tags,
+      status: "open",
+      upvotes: 0,
+    });
 
-  if (error) {
-    console.error("Failed to create question:", error);
-    return { error: `Failed to create question: ${error.message}` };
+    if (error) {
+      console.error("Failed to create question:", error);
+      // Check if it's an API key error
+      if (error.message?.includes("Invalid API key") || error.message?.includes("JWT")) {
+        return { error: "Server configuration error. Please contact support." };
+      }
+      return { error: `Failed to create question: ${error.message}` };
+    }
+
+    revalidatePath(`/${eventSlug}/qa`);
+    revalidatePath(`/admin/${eventSlug}/qa`);
+    return { success: true };
+  } catch (error) {
+    console.error("Exception creating question:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    // Check if it's an environment variable error
+    if (errorMessage.includes("Missing") || errorMessage.includes("environment")) {
+      return { error: "Server configuration error. Please contact support." };
+    }
+    return { error: `Failed to create question: ${errorMessage}` };
   }
-
-  revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
-  return { success: true };
 }
 
 export async function upvoteQuestion(questionId: string, eventSlug: string) {

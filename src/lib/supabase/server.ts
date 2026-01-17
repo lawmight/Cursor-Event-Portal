@@ -34,18 +34,31 @@ export async function createServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error("Missing Supabase environment variables:", {
-      hasUrl: !!supabaseUrl,
-      hasServiceKey: !!serviceRoleKey,
-    });
-    throw new Error("Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.");
+  if (!supabaseUrl) {
+    console.error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL. Please check your environment variables.");
   }
 
-  return createSupabaseClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
+  if (!serviceRoleKey) {
+    console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY. Please check your environment variables. This key is required for server actions.");
+  }
+
+  // Validate the key format (service role keys typically start with 'eyJ')
+  if (!serviceRoleKey.startsWith('eyJ')) {
+    console.error("Invalid SUPABASE_SERVICE_ROLE_KEY format");
+    throw new Error("Invalid SUPABASE_SERVICE_ROLE_KEY format. Please verify the key is correct.");
+  }
+
+  try {
+    return createSupabaseClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to create Supabase service client:", error);
+    throw new Error("Failed to initialize Supabase client. Please check your environment variables.");
+  }
 }
