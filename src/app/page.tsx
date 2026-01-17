@@ -23,18 +23,6 @@ export default function HomePage() {
           >
             Calgary Meetup - Jan 28, 2026
           </Link>
-
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-            <p className="text-sm text-gray-500 dark:text-gray-500 mb-3">
-              For organizers:
-            </p>
-            <Link
-              href="/admin/calgary-jan-2026"
-              className="text-sm text-cursor-purple hover:text-cursor-purple-dark font-medium"
-            >
-              Admin Dashboard →
-            </Link>
-          </div>
         </div>
       </div>
     </main>
