@@ -3,7 +3,6 @@ import Image from "next/image";
 import { getEventBySlug, getEventStats } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { AttendeeCheckinForm } from "@/components/forms/AttendeeCheckinForm";
-import { PreEventIntakeAccess } from "@/components/forms/PreEventIntakeAccess";
 import { formatDate, formatTime } from "@/lib/utils";
 
 interface EventPageProps {
@@ -22,7 +21,7 @@ export default async function EventPage({ params }: EventPageProps) {
   // Check if already registered and checked in
   const session = await getSession();
   if (session && session.eventId === event.id) {
-    // Check if checked in - if yes, go to agenda; if no, show intake option
+    // Check if checked in - if yes, go to agenda
     const { createServiceClient } = await import("@/lib/supabase/server");
     const supabase = await createServiceClient();
     const { data: registration } = await supabase
@@ -35,7 +34,6 @@ export default async function EventPage({ params }: EventPageProps) {
     if (registration?.checked_in_at) {
       redirect(`/${eventSlug}/agenda`);
     }
-    // If not checked in but has session, they can complete intake pre-event
   }
 
   const stats = await getEventStats(event.id);
@@ -77,23 +75,12 @@ export default async function EventPage({ params }: EventPageProps) {
           </div>
         </div>
 
-        {/* Pre-Event Intake Access */}
-        <div className="animate-slide-up" style={{ animationDelay: "50ms" }}>
-          <PreEventIntakeAccess eventId={event.id} eventSlug={eventSlug} />
-        </div>
-
-        {/* Main Content Area */}
-        <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl animate-slide-up relative">
-          {/* Subtle line at top */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-          {/* Check-in Section */}
-          <div className="space-y-4">
-            <AttendeeCheckinForm
-              eventId={event.id}
-              eventSlug={eventSlug}
-            />
-          </div>
+        {/* Main Content Area - Check-in Flow */}
+        <div className="animate-slide-up">
+          <AttendeeCheckinForm
+            eventId={event.id}
+            eventSlug={eventSlug}
+          />
         </div>
 
         {/* Minimal Stats - Floating indicator */}
