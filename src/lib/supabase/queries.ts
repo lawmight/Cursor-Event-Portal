@@ -230,7 +230,7 @@ export async function getPublishedSurvey(eventId: string): Promise<Survey | null
     .not("published_at", "is", null)
     .order("published_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error) return null;
   return data;

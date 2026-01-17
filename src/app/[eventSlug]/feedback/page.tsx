@@ -5,8 +5,7 @@ import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { SurveyForm } from "@/components/survey/SurveyForm";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 
 interface FeedbackPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -57,12 +56,13 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
           {survey ? (
             <SurveyForm survey={survey} eventSlug={eventSlug} />
           ) : (
-            <div className="glass rounded-[40px] p-20 text-center space-y-6 border-dashed border-white/5">
+            <div className="glass rounded-[40px] p-20 text-center space-y-6 border-dashed border-white/5 opacity-60">
+              <ClipboardCheck className="w-12 h-12 mx-auto text-gray-700 mb-4" />
               <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-                Survey is currently inactive
+                No survey published yet
               </p>
-              <p className="text-[9px] text-gray-800 pt-2 max-w-xs mx-auto">
-                A feedback survey will appear here once it's been created and published by an administrator.
+              <p className="text-[9px] text-gray-800 pt-2 max-w-xs mx-auto leading-relaxed">
+                A feedback survey will appear here once it's been created and published by an administrator from the admin dashboard.
               </p>
             </div>
           )}
