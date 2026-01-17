@@ -315,5 +315,3 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
     </div>
   );
 }
-  );
-}
