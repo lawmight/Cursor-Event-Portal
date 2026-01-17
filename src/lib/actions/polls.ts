@@ -86,42 +86,66 @@ export async function createPoll(
 ) {
   const session = await getSession();
   if (!session) {
+    console.error("createPoll: No session found");
     return { error: "Not authenticated" };
   }
 
-  const supabase = await createServiceClient();
+  try {
+    const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
+    // Verify user is admin
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.userId)
+      .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+    if (userError) {
+      console.error("createPoll: Error fetching user:", userError);
+      // Check if it's an API key error
+      if (userError.message?.includes("Invalid API key") || userError.message?.includes("JWT")) {
+        return { error: "Server configuration error. Please contact support." };
+      }
+      return { error: "Failed to verify user permissions" };
+    }
+
+    if (!user || user.role !== "admin") {
+      console.error("createPoll: Authorization failed:", { 
+        userId: session.userId, 
+        userFound: !!user, 
+        role: user?.role 
+      });
+      return { error: "Not authorized. Admin access required." };
+    }
+
+    const { data: poll, error } = await supabase
+      .from("polls")
+      .insert({
+        event_id: eventId,
+        question: data.question,
+        options: data.options,
+        ends_at: data.ends_at || null,
+        is_active: data.is_active ?? false,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("createPoll: Failed to create poll:", error);
+      return { error: `Failed to create poll: ${error.message}` };
+    }
+
+    revalidatePath(`/admin/${eventSlug}/polls`);
+    revalidatePath(`/${eventSlug}/polls`);
+    return { success: true, pollId: poll.id };
+  } catch (error) {
+    console.error("createPoll: Exception:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    if (errorMessage.includes("Missing") || errorMessage.includes("environment")) {
+      return { error: "Server configuration error. Please contact support." };
+    }
+    return { error: `Failed to create poll: ${errorMessage}` };
   }
-
-  const { data: poll, error } = await supabase
-    .from("polls")
-    .insert({
-      event_id: eventId,
-      question: data.question,
-      options: data.options,
-      ends_at: data.ends_at || null,
-      is_active: data.is_active ?? false,
-    })
-    .select("id")
-    .single();
-
-  if (error) {
-    console.error("Failed to create poll:", error);
-    return { error: "Failed to create poll" };
-  }
-
-  revalidatePath(`/admin/${eventSlug}/polls`);
-  revalidatePath(`/${eventSlug}/polls`);
-  return { success: true, pollId: poll.id };
 }
 
 export async function updatePoll(
