@@ -15,6 +15,7 @@ import type {
   Poll,
   PollVote,
   PollWithVotes,
+  Slide,
 } from "@/types";
 
 // Event queries
