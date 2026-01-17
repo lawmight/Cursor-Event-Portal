@@ -132,11 +132,18 @@ export async function getEventAttendees(
   // Flatten the nested user object
   return data
     .filter((r) => r.user)
-    .map((r) => ({
-      id: (r.user as { id: string; name: string; email: string | null }).id,
-      name: (r.user as { id: string; name: string; email: string | null }).name,
-      email: (r.user as { id: string; name: string; email: string | null }).email,
-    }));
+    .map((r) => {
+      // Handle both array and object cases from Supabase
+      const user = Array.isArray(r.user) ? r.user[0] : r.user;
+      if (!user || typeof user !== 'object') return null;
+      
+      return {
+        id: String(user.id),
+        name: String(user.name),
+        email: user.email ? String(user.email) : null,
+      };
+    })
+    .filter((user): user is { id: string; name: string; email: string | null } => user !== null);
 }
 
 // Agenda queries
