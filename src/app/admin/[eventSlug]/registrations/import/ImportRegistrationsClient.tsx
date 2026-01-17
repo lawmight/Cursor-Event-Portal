@@ -43,7 +43,7 @@ export function ImportRegistrationsClient({
 
   const existingSet = new Set(existingEmails.map((e) => e.toLowerCase()));
 
-  // Parse Luma CSV format
+  // Parse Luma CSV/TSV format (handles both comma and tab delimiters)
   const parseCSV = useCallback(
     (text: string) => {
       const lines = text.trim().split("\n");
@@ -52,13 +52,19 @@ export function ImportRegistrationsClient({
         return;
       }
 
+      // Detect delimiter (tab or comma)
+      const firstLine = lines[0];
+      const delimiter = firstLine.includes("\t") ? "\t" : ",";
+
       // Find header row - Luma exports have headers like "name", "email", etc.
       const headerLine = lines[0].toLowerCase();
-      const headers = headerLine.split(",").map((h) => h.trim().replace(/"/g, ""));
+      const headers = headerLine.split(delimiter).map((h) => h.trim().replace(/"/g, ""));
 
       const nameIdx = headers.findIndex(
         (h) => h === "name" || h === "full name" || h === "attendee name"
       );
+      const firstNameIdx = headers.findIndex((h) => h === "first_name" || h === "first name");
+      const lastNameIdx = headers.findIndex((h) => h === "last_name" || h === "last name");
       const emailIdx = headers.findIndex(
         (h) => h === "email" || h === "attendee email" || h === "email address"
       );
@@ -75,28 +81,45 @@ export function ImportRegistrationsClient({
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple CSV parsing (handles quoted fields with commas)
+        // Parse line based on detected delimiter
         const values: string[] = [];
-        let current = "";
-        let inQuotes = false;
 
-        for (const char of line) {
-          if (char === '"') {
-            inQuotes = !inQuotes;
-          } else if (char === "," && !inQuotes) {
-            values.push(current.trim());
-            current = "";
-          } else {
-            current += char;
+        if (delimiter === "\t") {
+          // Tab-separated: simple split
+          values.push(...line.split("\t").map((v) => v.trim().replace(/"/g, "")));
+        } else {
+          // Comma-separated: handle quoted fields
+          let current = "";
+          let inQuotes = false;
+
+          for (const char of line) {
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === "," && !inQuotes) {
+              values.push(current.trim());
+              current = "";
+            } else {
+              current += char;
+            }
           }
+          values.push(current.trim());
         }
-        values.push(current.trim());
 
         const email = values[emailIdx]?.replace(/"/g, "").toLowerCase().trim();
-        const name =
-          nameIdx >= 0
-            ? values[nameIdx]?.replace(/"/g, "").trim()
-            : email?.split("@")[0] || "Unknown";
+
+        // Build name: prefer "name" column, fall back to first_name + last_name
+        let name = "";
+        if (nameIdx >= 0 && values[nameIdx]) {
+          name = values[nameIdx].replace(/"/g, "").trim();
+        } else if (firstNameIdx >= 0 || lastNameIdx >= 0) {
+          const firstName = firstNameIdx >= 0 ? values[firstNameIdx]?.replace(/"/g, "").trim() || "" : "";
+          const lastName = lastNameIdx >= 0 ? values[lastNameIdx]?.replace(/"/g, "").trim() || "" : "";
+          name = `${firstName} ${lastName}`.trim();
+        }
+
+        if (!name) {
+          name = email?.split("@")[0] || "Unknown";
+        }
 
         if (!email || !email.includes("@")) {
           continue; // Skip invalid emails

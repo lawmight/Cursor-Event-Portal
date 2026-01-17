@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -9,12 +10,19 @@ export default function HomePage() {
 
       <div className="w-full max-w-md z-10 text-center space-y-12 floating">
         <div className="space-y-6">
-          <div className="inline-flex w-20 h-20 rounded-3xl bg-white/5 backdrop-blur-3xl items-center justify-center border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.1)] mb-4">
-            <span className="text-4xl font-bold text-white tracking-tighter">C</span>
+          <div className="relative w-full max-w-[280px] mx-auto">
+            <Image
+              src="/cursor-calgary.avif"
+              alt="Cursor Calgary"
+              width={280}
+              height={140}
+              className="w-full h-auto rounded-2xl shadow-[0_0_60px_rgba(255,255,255,0.1)]"
+              priority
+            />
           </div>
-          
+
           <div className="space-y-2">
-            <h1 className="text-4xl font-light text-white tracking-tight text-shadow-glow">
+            <h1 className="text-3xl font-light text-white tracking-tight text-shadow-glow">
               Cursor Portal
             </h1>
             <p className="text-gray-500 text-sm font-light tracking-widest uppercase opacity-50">

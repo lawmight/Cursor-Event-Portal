@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Check if they have a registration for this event
     const { data: registration, error: regError } = await supabase
       .from("registrations")
-      .select("id, checked_in")
+      .select("id, checked_in_at")
       .eq("event_id", eventId)
       .eq("user_id", attendeeId)
       .single();
@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
     await supabase
       .from("registrations")
       .update({
-        checked_in: true,
         checked_in_at: new Date().toISOString(),
       })
       .eq("id", registration.id);
@@ -117,9 +116,7 @@ export async function POST(request: NextRequest) {
           await supabase.from("registrations").insert({
             event_id: eventId,
             user_id: guestUserId,
-            source: "guest_of_attendee",
-            status: "registered",
-            checked_in: true,
+            source: "walk-in", // Guests are essentially walk-ins
             checked_in_at: new Date().toISOString(),
           });
         }

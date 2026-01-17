@@ -113,9 +113,7 @@ export async function POST(request: NextRequest) {
       const { error: regError } = await supabase.from("registrations").insert({
         event_id: eventId,
         user_id: userId,
-        source: "luma_import",
-        status: "registered",
-        checked_in: false,
+        source: "link", // Using 'link' as source type (valid: qr, link, walk-in)
       });
 
       if (regError) {

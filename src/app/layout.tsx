@@ -22,6 +22,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-gray-50 dark:bg-gray-950 antialiased">
         {children}
+        <footer className="fixed bottom-4 left-0 right-0 text-center pointer-events-none z-50">
+          <span className="text-[9px] text-gray-600/50 uppercase tracking-[0.3em] font-light">
+            Coded by Cursor
+          </span>
+        </footer>
       </body>
     </html>
   );

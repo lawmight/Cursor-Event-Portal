@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import {
-  Search,
-  User,
+  Mail,
   UserPlus,
   Check,
   Loader2,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 
 interface Attendee {
@@ -23,47 +20,71 @@ interface Attendee {
 interface AttendeeCheckinFormProps {
   eventId: string;
   eventSlug: string;
-  attendees: Attendee[];
 }
 
-type Step = "search" | "guest" | "submitting";
+type Step = "email" | "confirm" | "guest" | "submitting";
 
 export function AttendeeCheckinForm({
   eventId,
   eventSlug,
-  attendees,
 }: AttendeeCheckinFormProps) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("search");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAttendee, setSelectedAttendee] = useState<Attendee | null>(null);
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
+  const [foundAttendee, setFoundAttendee] = useState<Attendee | null>(null);
+  const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
   const [bringingGuest, setBringingGuest] = useState<boolean | null>(null);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [error, setError] = useState("");
+  const [isLooking, setIsLooking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter attendees based on search query
-  const filteredAttendees = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase();
-    return attendees
-      .filter(
-        (a) =>
-          a.name.toLowerCase().includes(query) ||
-          a.email?.toLowerCase().includes(query)
-      )
-      .slice(0, 8);
-  }, [searchQuery, attendees]);
+  const handleEmailLookup = async () => {
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
-  const handleSelectAttendee = (attendee: Attendee) => {
-    setSelectedAttendee(attendee);
-    setSearchQuery(attendee.name);
+    setIsLooking(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/lookup-registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId, email: email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!data.found) {
+        setError("No registration found for this email. This event is registration-only.");
+        setIsLooking(false);
+        return;
+      }
+
+      setFoundAttendee(data.attendee);
+      setAlreadyCheckedIn(data.alreadyCheckedIn || false);
+      setStep("confirm");
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLooking(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (alreadyCheckedIn) {
+      // Already checked in, just redirect
+      router.push(`/${eventSlug}/agenda`);
+      return;
+    }
     setStep("guest");
   };
 
   const handleSubmit = async () => {
-    if (!selectedAttendee) return;
+    if (!foundAttendee) return;
 
     // Validate guest info if bringing someone
     if (bringingGuest && !guestName.trim()) {
@@ -80,7 +101,7 @@ export function AttendeeCheckinForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventId,
-          attendeeId: selectedAttendee.id,
+          attendeeId: foundAttendee.id,
           guest: bringingGuest
             ? { name: guestName.trim(), email: guestEmail.trim() || null }
             : null,
@@ -104,79 +125,132 @@ export function AttendeeCheckinForm({
     }
   };
 
-  // Step 1: Search and select attendee
-  if (step === "search" || !selectedAttendee) {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && step === "email" && !isLooking) {
+      handleEmailLookup();
+    }
+  };
+
+  // Step 1: Email input
+  if (step === "email") {
     return (
       <div className="space-y-8">
+        <div className="text-center space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
+            Registration Only Event
+          </p>
+          <p className="text-gray-500 text-sm font-light">
+            Enter your registered email to check in
+          </p>
+        </div>
+
         <div className="relative group">
-          <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-white transition-colors" />
+          <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-700 group-focus-within:text-white transition-colors" />
           <input
-            type="text"
-            placeholder="Search your name"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
             className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-14 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-xl font-light"
             autoFocus
+            autoComplete="email"
           />
         </div>
 
-        {searchQuery.trim() && (
-          <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar animate-fade-in">
-            {filteredAttendees.length > 0 ? (
-              filteredAttendees.map((attendee) => (
-                <button
-                  key={attendee.id}
-                  onClick={() => handleSelectAttendee(attendee)}
-                  className="w-full flex items-center gap-4 p-5 rounded-3xl bg-white/[0.02] border border-transparent hover:bg-white/[0.05] hover:border-white/10 hover:translate-x-1 transition-all text-left group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-lg font-medium text-white/90 group-hover:text-white transition-colors">
-                      {attendee.name}
-                    </p>
-                    {attendee.email && (
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 mt-1">
-                        {attendee.email.split('@')[0]}
-                      </p>
-                    )}
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-800 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                </button>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-sm font-light uppercase tracking-widest italic">No match found</p>
-              </div>
-            )}
+        {/* Error message */}
+        {error && (
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 animate-fade-in">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p className="text-sm font-light">{error}</p>
           </div>
         )}
 
-        {!searchQuery.trim() && (
-          <div className="text-center py-10 opacity-40">
-            <div className="w-1 h-1 bg-white/20 rounded-full mx-auto mb-4" />
-            <p className="text-[9px] uppercase tracking-[0.4em] text-gray-600 font-medium">
-              Start typing to check in
-            </p>
-          </div>
-        )}
+        <button
+          onClick={handleEmailLookup}
+          disabled={isLooking || !email.trim()}
+          className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
+        >
+          {isLooking ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <span className="text-sm font-bold uppercase tracking-[0.2em]">
+              Find My Registration
+            </span>
+          )}
+        </button>
       </div>
     );
   }
 
-  // Step 2: Guest question
+  // Step 2: Confirm identity
+  if (step === "confirm" && foundAttendee) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+            <Check className="w-8 h-8 text-green-400" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
+              Registration Found
+            </p>
+            <p className="text-2xl font-light text-white leading-tight">
+              {foundAttendee.name}
+            </p>
+            {alreadyCheckedIn && (
+              <p className="text-green-400/80 text-sm font-light">
+                Already checked in
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <button
+            onClick={handleConfirm}
+            className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
+          >
+            <span className="text-sm font-bold uppercase tracking-[0.2em]">
+              {alreadyCheckedIn ? "Continue to Event" : "Yes, That's Me"}
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setStep("email");
+              setFoundAttendee(null);
+              setError("");
+            }}
+            className="w-full h-12 rounded-[24px] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-2"
+          >
+            <ChevronRight className="w-4 h-4 rotate-180" />
+            <span className="text-xs font-medium uppercase tracking-[0.15em]">
+              Try Different Email
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 3: Guest question
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Selected attendee - Ultra minimal */}
       <div className="flex items-center justify-between group">
         <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">Checking in as</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
+            Checking in as
+          </p>
           <p className="text-2xl font-light text-white leading-tight">
-            {selectedAttendee.name}
+            {foundAttendee?.name}
           </p>
         </div>
         <button
           onClick={() => {
-            setSelectedAttendee(null);
-            setStep("search");
+            setFoundAttendee(null);
+            setStep("email");
             setBringingGuest(null);
           }}
           className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-gray-600 hover:text-white hover:border-white/20 transition-all"
@@ -197,8 +271,12 @@ export function AttendeeCheckinForm({
               onClick={() => setBringingGuest(false)}
             >
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 group-hover:scale-110 transition-transform">
-                <span className="text-xl font-light text-white/40 group-hover:text-white transition-colors">No</span>
-                <span className="text-[8px] uppercase tracking-[0.3em] text-gray-700 group-hover:text-gray-500">Just Me</span>
+                <span className="text-xl font-light text-white/40 group-hover:text-white transition-colors">
+                  No
+                </span>
+                <span className="text-[8px] uppercase tracking-[0.3em] text-gray-700 group-hover:text-gray-500">
+                  Just Me
+                </span>
               </div>
             </button>
             <button
@@ -207,7 +285,9 @@ export function AttendeeCheckinForm({
             >
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 group-hover:scale-110 transition-transform">
                 <UserPlus className="w-6 h-6 text-white/40 group-hover:text-white transition-colors" />
-                <span className="text-[8px] uppercase tracking-[0.3em] text-gray-700 group-hover:text-gray-500">Plus One</span>
+                <span className="text-[8px] uppercase tracking-[0.3em] text-gray-700 group-hover:text-gray-500">
+                  Plus One
+                </span>
               </div>
             </button>
           </div>
@@ -219,7 +299,7 @@ export function AttendeeCheckinForm({
         <div className="space-y-6 animate-slide-up">
           <div className="space-y-6">
             <div className="relative">
-               <input
+              <input
                 type="text"
                 placeholder="Guest Name"
                 value={guestName}
@@ -229,7 +309,7 @@ export function AttendeeCheckinForm({
               />
             </div>
             <div className="relative">
-               <input
+              <input
                 type="email"
                 placeholder="Guest Email (Optional)"
                 value={guestEmail}
@@ -259,7 +339,9 @@ export function AttendeeCheckinForm({
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <span className="text-sm font-bold uppercase tracking-[0.2em]">Confirm</span>
+              <span className="text-sm font-bold uppercase tracking-[0.2em]">
+                Confirm
+              </span>
             )}
           </button>
         </div>
