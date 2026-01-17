@@ -12,6 +12,9 @@ import type {
   AttendeeIntake,
   SuggestedGroup,
   DisplayPageData,
+  Poll,
+  PollVote,
+  PollWithVotes,
 } from "@/types";
 
 // Event queries
@@ -180,14 +183,18 @@ export async function getAnnouncements(eventId: string): Promise<Announcement[]>
 // Question queries
 export async function getQuestions(
   eventId: string,
-  sort: "trending" | "new" = "trending"
+  sort: "trending" | "new" = "trending",
+  includeHidden: boolean = false
 ): Promise<Question[]> {
   const supabase = await createClient();
   const query = supabase
     .from("questions")
-    .select("*, user:users(*), answers(*)")
-    .eq("event_id", eventId)
-    .neq("status", "hidden");
+    .select("*, user:users(*), answers(*, user:users(*))")
+    .eq("event_id", eventId);
+
+  if (!includeHidden) {
+    query.neq("status", "hidden");
+  }
 
   if (sort === "trending") {
     query.order("upvotes", { ascending: false });
@@ -225,6 +232,18 @@ export async function getPublishedSurvey(eventId: string): Promise<Survey | null
     .single();
 
   if (error) return null;
+  return data;
+}
+
+export async function getAllSurveys(eventId: string): Promise<Survey[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("surveys")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
   return data;
 }
 
@@ -342,4 +361,114 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
     recentQuestions: questionsResult.data || [],
     announcements: announcementsResult.data || [],
   };
+}
+
+// Poll queries
+export async function getActivePolls(eventId: string): Promise<Poll[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("event_id", eventId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return data;
+}
+
+export async function getAllPolls(eventId: string): Promise<Poll[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return data;
+}
+
+export async function getPollWithVotes(
+  pollId: string,
+  userId?: string
+): Promise<PollWithVotes | null> {
+  const supabase = await createClient();
+
+  const { data: poll, error: pollError } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("id", pollId)
+    .single();
+
+  if (pollError || !poll) return null;
+
+  const { data: votes } = await supabase
+    .from("poll_votes")
+    .select("*")
+    .eq("poll_id", pollId);
+
+  const allVotes = votes || [];
+  const userVote = userId
+    ? allVotes.find((v) => v.user_id === userId) || null
+    : null;
+
+  // Calculate vote counts for each option
+  const optionsArray = poll.options as string[];
+  const voteCounts = optionsArray.map(
+    (_, index) => allVotes.filter((v) => v.option_index === index).length
+  );
+
+  return {
+    ...poll,
+    votes: allVotes,
+    user_vote: userVote,
+    vote_counts: voteCounts,
+    total_votes: allVotes.length,
+  };
+}
+
+export async function getActivePollsWithVotes(
+  eventId: string,
+  userId?: string
+): Promise<PollWithVotes[]> {
+  const supabase = await createClient();
+
+  const { data: polls, error } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("event_id", eventId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error || !polls) return [];
+
+  const pollsWithVotes = await Promise.all(
+    polls.map(async (poll) => {
+      const { data: votes } = await supabase
+        .from("poll_votes")
+        .select("*")
+        .eq("poll_id", poll.id);
+
+      const allVotes = votes || [];
+      const userVote = userId
+        ? allVotes.find((v) => v.user_id === userId) || null
+        : null;
+
+      const optionsArray = poll.options as string[];
+      const voteCounts = optionsArray.map(
+        (_, index) => allVotes.filter((v) => v.option_index === index).length
+      );
+
+      return {
+        ...poll,
+        votes: allVotes,
+        user_vote: userVote,
+        vote_counts: voteCounts,
+        total_votes: allVotes.length,
+      };
+    })
+  );
+
+  return pollsWithVotes;
 }

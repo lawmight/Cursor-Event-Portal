@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Users,
   UserCheck,
@@ -17,6 +18,7 @@ import {
   Megaphone,
   Upload,
   Sparkles,
+  Vote,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -71,8 +73,14 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
       <header className="z-10 py-12">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center gap-6 mb-12">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl font-black shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-              C
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+              <Image
+                src="/cursor-icon.png"
+                alt="Cursor"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
@@ -107,7 +115,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
       </header>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8 w-full space-y-8 z-10 flex-1">
+      <main className="max-w-4xl mx-auto px-6 py-8 pb-16 w-full space-y-8 z-10 flex-1">
         {/* Capacity Progress */}
         <div className="glass rounded-[40px] p-10 border-white/20">
           <div className="flex items-center justify-between mb-8">
@@ -178,7 +186,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/${eventSlug}/qa`}>
+          <Link href={`/admin/${eventSlug}/qa`}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -220,6 +228,48 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
+          <Link href={`/admin/${eventSlug}/polls`}>
+            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                    <Vote className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Live Polls
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                      Audience Engagement
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
+
+          <Link href={`/admin/${eventSlug}/surveys`}>
+            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                    <ClipboardCheck className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Surveys
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                      Feedback Collection
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
+
           <Link href={`/admin/${eventSlug}/export`}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
               <div className="flex items-center justify-between">
@@ -229,10 +279,10 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Analytics
+                      Data Export
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Extraction Data
+                      Export CSV Files
                     </p>
                   </div>
                 </div>
@@ -286,11 +336,11 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
 
         {/* View Event */}
         <Link href={`/${eventSlug}/agenda`}>
-          <div className="glass rounded-[40px] p-10 border-white/20 hover:bg-white/10 transition-all group cursor-pointer">
+          <div className="glass rounded-[40px] p-10 border-white/20 hover:bg-white/10 transition-all group cursor-pointer mb-8">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <h3 className="text-2xl font-light tracking-tight text-white/90">
-                  Exit to Portal
+                  Enter Portal
                 </h3>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   View Attendee Perspective

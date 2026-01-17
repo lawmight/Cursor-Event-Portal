@@ -29,6 +29,7 @@ export async function submitSurveyResponse(
 
 export async function createSurvey(
   eventId: string,
+  eventSlug: string,
   title: string,
   schema: { fields: Array<{ id: string; type: string; label: string; required: boolean; options?: string[] }> }
 ) {
@@ -64,16 +65,43 @@ export async function createSurvey(
     return { error: "Failed to create survey" };
   }
 
+  revalidatePath(`/admin/${eventSlug}/surveys`);
   return { success: true, surveyId: data.id };
 }
 
-export async function publishSurvey(surveyId: string) {
+export async function publishSurvey(surveyId: string, eventSlug: string) {
   const session = await getSession();
   if (!session) {
     return { error: "Not authenticated" };
   }
 
   const supabase = await createServiceClient();
+
+  // Verify user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Unpublish any other published surveys for this event
+  const { data: survey } = await supabase
+    .from("surveys")
+    .select("event_id")
+    .eq("id", surveyId)
+    .single();
+
+  if (survey) {
+    await supabase
+      .from("surveys")
+      .update({ published_at: null })
+      .eq("event_id", survey.event_id)
+      .neq("id", surveyId);
+  }
 
   const { error } = await supabase
     .from("surveys")
@@ -84,6 +112,74 @@ export async function publishSurvey(surveyId: string) {
     return { error: "Failed to publish survey" };
   }
 
+  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(`/${eventSlug}/feedback`);
+  return { success: true };
+}
+
+export async function unpublishSurvey(surveyId: string, eventSlug: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Verify user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("surveys")
+    .update({ published_at: null })
+    .eq("id", surveyId);
+
+  if (error) {
+    return { error: "Failed to unpublish survey" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(`/${eventSlug}/feedback`);
+  return { success: true };
+}
+
+export async function deleteSurvey(surveyId: string, eventSlug: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Verify user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("surveys")
+    .delete()
+    .eq("id", surveyId);
+
+  if (error) {
+    return { error: "Failed to delete survey" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(`/${eventSlug}/feedback`);
   return { success: true };
 }
 

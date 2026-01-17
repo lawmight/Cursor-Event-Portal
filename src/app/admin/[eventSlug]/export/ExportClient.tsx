@@ -114,6 +114,9 @@ export function ExportClient({
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
                 {registrations.length} Verified Registrations
               </p>
+              <p className="text-[9px] text-gray-700 mt-2 tracking-tight">
+                Export attendee registration data including check-in status
+              </p>
             </div>
           </div>
           <button
@@ -146,6 +149,9 @@ export function ExportClient({
               <h3 className="text-2xl font-light tracking-tight text-white/90">Query Streams</h3>
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
                 {questions.length} Active Submissions
+              </p>
+              <p className="text-[9px] text-gray-700 mt-2 tracking-tight">
+                Export Q&A questions with upvotes, status, and answer counts
               </p>
             </div>
           </div>
@@ -202,9 +208,12 @@ export function ExportClient({
           </div>
         </div>
       ) : (
-        <div className="glass rounded-[40px] p-12 text-center border-dashed border-white/5 opacity-40">
-          <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-            No survey matrix detected
+        <div className="glass rounded-[40px] p-12 text-center border-dashed border-white/5">
+          <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-700 mb-3">
+            No Survey Published
+          </p>
+          <p className="text-[9px] text-gray-800 tracking-tight max-w-md mx-auto">
+            Create and publish a survey from the admin dashboard to collect feedback responses. Once published, survey responses will appear here for export.
           </p>
         </div>
       )}

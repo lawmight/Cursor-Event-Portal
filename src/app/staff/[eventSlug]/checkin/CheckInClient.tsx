@@ -26,6 +26,7 @@ export function CheckInClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const filteredRegistrations = registrations.filter((reg) => {
     const query = searchQuery.toLowerCase();
@@ -39,33 +40,59 @@ export function CheckInClient({
 
   const handleCheckIn = async (registrationId: string) => {
     setActiveId(registrationId);
+    setError(null);
     startTransition(async () => {
-      const result = await checkIn(registrationId);
-      if (result.success) {
-        setRegistrations((prev) =>
-          prev.map((r) =>
-            r.id === registrationId
-              ? { ...r, checked_in_at: new Date().toISOString() }
-              : r
-          )
-        );
+      try {
+        const result = await checkIn(registrationId);
+        if (result.success) {
+          setRegistrations((prev) =>
+            prev.map((r) =>
+              r.id === registrationId
+                ? { ...r, checked_in_at: new Date().toISOString() }
+                : r
+            )
+          );
+        } else {
+          setError(result.error || "Failed to check in");
+          console.error("Check-in failed:", result.error);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Check-in exception:", err);
+      } finally {
+        setActiveId(null);
       }
-      setActiveId(null);
     });
   };
 
   const handleUndoCheckIn = async (registrationId: string) => {
+    console.log("handleUndoCheckIn called for registration:", registrationId);
     setActiveId(registrationId);
+    setError(null);
     startTransition(async () => {
-      const result = await undoCheckIn(registrationId);
-      if (result.success) {
-        setRegistrations((prev) =>
-          prev.map((r) =>
-            r.id === registrationId ? { ...r, checked_in_at: null } : r
-          )
-        );
+      try {
+        console.log("Calling undoCheckIn function...");
+        const result = await undoCheckIn(registrationId);
+        console.log("undoCheckIn result:", result);
+        if (result.success) {
+          setRegistrations((prev) =>
+            prev.map((r) =>
+              r.id === registrationId ? { ...r, checked_in_at: null } : r
+            )
+          );
+          console.log("Successfully updated local state");
+        } else {
+          setError(result.error || "Failed to undo check-in");
+          console.error("Undo check-in failed:", result.error);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Undo check-in exception:", err);
+      } finally {
+        setActiveId(null);
       }
-      setActiveId(null);
     });
   };
 
@@ -123,6 +150,13 @@ export function CheckInClient({
             />
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
 
         {/* Search - Focusable Border */}
         <div className="relative group">
@@ -182,9 +216,12 @@ export function CheckInClient({
                   <div className="flex items-center gap-4">
                     {isCheckedIn ? (
                       <button
-                        onClick={() => handleUndoCheckIn(registration.id)}
-                        disabled={isPending}
-                        className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn"
+                        onClick={() => {
+                          console.log("Undo button clicked for:", registration.id);
+                          handleUndoCheckIn(registration.id);
+                        }}
+                        disabled={isPending && activeId === registration.id}
+                        className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <UserX className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                       </button>

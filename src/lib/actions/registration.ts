@@ -149,14 +149,17 @@ export async function checkIn(registrationId: string) {
 export async function undoCheckIn(registrationId: string) {
   const supabase = await createServiceClient();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("registrations")
     .update({ checked_in_at: null })
-    .eq("id", registrationId);
+    .eq("id", registrationId)
+    .select();
 
   if (error) {
-    return { error: "Failed to undo check-in" };
+    console.error("Undo check-in error:", error);
+    return { error: error.message || "Failed to undo check-in" };
   }
 
+  console.log("Successfully undid check-in for registration:", registrationId);
   return { success: true };
 }

@@ -23,38 +23,61 @@ export function AnnouncementsClient({
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
   const [newContent, setNewContent] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const handlePublish = async () => {
     if (!newContent.trim()) return;
 
+    setError(null);
     startTransition(async () => {
-      const response = await fetch(`/api/announcements`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId: event.id,
-          content: newContent.trim(),
-        }),
-      });
+      try {
+        const response = await fetch(`/api/announcements`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId: event.id,
+            content: newContent.trim(),
+          }),
+        });
 
-      if (response.ok) {
-        const newAnnouncement = await response.json();
-        setAnnouncements((prev) => [newAnnouncement, ...prev]);
-        setNewContent("");
-        router.refresh();
+        if (response.ok) {
+          const newAnnouncement = await response.json();
+          setAnnouncements((prev) => [newAnnouncement, ...prev]);
+          setNewContent("");
+          router.refresh();
+        } else {
+          const errorData = await response.json().catch(() => ({ error: "Failed to publish announcement" }));
+          setError(errorData.error || "Failed to publish announcement");
+          console.error("Publish announcement error:", errorData);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Publish announcement exception:", err);
       }
     });
   };
 
   const handleDelete = async (id: string) => {
+    setError(null);
     startTransition(async () => {
-      const response = await fetch(`/api/announcements/${id}`, {
-        method: "DELETE",
-      });
+      try {
+        const response = await fetch(`/api/announcements/${id}`, {
+          method: "DELETE",
+        });
 
-      if (response.ok) {
-        setAnnouncements((prev) => prev.filter((a) => a.id !== id));
-        router.refresh();
+        if (response.ok) {
+          setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+          router.refresh();
+        } else {
+          const errorData = await response.json().catch(() => ({ error: "Failed to delete announcement" }));
+          setError(errorData.error || "Failed to delete announcement");
+          console.error("Delete announcement error:", errorData);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Delete announcement exception:", err);
       }
     });
   };
@@ -86,6 +109,13 @@ export function AnnouncementsClient({
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
+        {/* Error Message */}
+        {error && (
+          <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
         {/* New Announcement - Floating Box */}
         <div className="glass rounded-[40px] p-10 space-y-8 relative overflow-hidden">
           <div className="flex items-center justify-between">

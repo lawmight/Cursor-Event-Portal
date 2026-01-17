@@ -27,10 +27,12 @@ export async function createQuestion(
   });
 
   if (error) {
-    return { error: "Failed to create question" };
+    console.error("Failed to create question:", error);
+    return { error: `Failed to create question: ${error.message}` };
   }
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
 }
 
@@ -72,6 +74,7 @@ export async function upvoteQuestion(questionId: string, eventSlug: string) {
   }
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
 }
 
@@ -98,6 +101,7 @@ export async function createAnswer(
   }
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
 }
 
@@ -134,6 +138,7 @@ export async function updateQuestionStatus(
   }
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
 }
 
@@ -172,5 +177,6 @@ export async function acceptAnswer(
     .eq("id", questionId);
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
 }

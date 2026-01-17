@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GroupFormation } from "@/components/admin/GroupFormation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface AdminGroupsPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -57,8 +58,14 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
             </Link>
           </div>
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl font-black shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-              G
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+              <Image
+                src="/cursor-icon.png"
+                alt="Cursor"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>

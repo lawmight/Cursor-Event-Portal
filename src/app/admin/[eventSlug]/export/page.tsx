@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { ExportClient } from "./ExportClient";
 
@@ -66,8 +67,14 @@ export default async function ExportPage({ params }: ExportPageProps) {
             </Link>
           </div>
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl font-black shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-              E
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+              <Image
+                src="/cursor-icon.png"
+                alt="Cursor"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>

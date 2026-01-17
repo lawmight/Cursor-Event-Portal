@@ -74,10 +74,10 @@ export function AttendeeCheckinForm({
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (alreadyCheckedIn) {
-      // Already checked in, just redirect
-      router.push(`/${eventSlug}/agenda`);
+      // Already checked in - redirect to intake first (it will redirect to agenda if completed)
+      router.push(`/${eventSlug}/intake`);
       return;
     }
     setStep("guest");

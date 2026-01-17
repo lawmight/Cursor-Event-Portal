@@ -242,3 +242,30 @@ export interface GroupMatchingResponse {
     matchReasons: Record<string, string>;
   }[];
 }
+
+// Poll types
+export interface Poll {
+  id: string;
+  event_id: string;
+  question: string;
+  options: string[];
+  ends_at: string | null;
+  is_active: boolean;
+  show_results: boolean;
+  created_at: string;
+}
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  user_id: string;
+  option_index: number;
+  created_at: string;
+}
+
+export interface PollWithVotes extends Poll {
+  votes: PollVote[];
+  user_vote?: PollVote | null;
+  vote_counts: number[];
+  total_votes: number;
+}

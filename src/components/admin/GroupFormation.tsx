@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateGroups, updateGroupStatus } from "@/lib/actions/groups";
+import { Users, Sparkles, Zap } from "lucide-react";
+import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
 
 interface GroupFormationProps {
@@ -73,8 +75,8 @@ export function GroupFormation({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-xl group-hover:scale-105 transition-all">
-              👥
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+              <Users className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
@@ -85,8 +87,8 @@ export function GroupFormation({
 
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-xl group-hover:scale-105 transition-all">
-              ✨
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+              <Sparkles className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
             </div>
             <div>
               <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
@@ -112,7 +114,7 @@ export function GroupFormation({
               </>
             ) : (
               <>
-                <span className="text-lg">⚡</span>
+                <Zap className="w-4 h-4" />
                 Synthesize Groups
               </>
             )}
@@ -128,15 +130,20 @@ export function GroupFormation({
 
       {/* Intake Summary */}
       <div className="glass rounded-[40px] p-10 border-white/[0.03]">
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-4 mb-6">
           <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Input Matrix</h3>
           <div className="h-[1px] flex-1 bg-white/[0.03]" />
         </div>
         
         {intakes.length === 0 ? (
-          <p className="text-gray-800 text-center py-12 text-sm uppercase tracking-[0.2em] font-medium">
-            Awaiting attendee data transmissions
-          </p>
+          <div className="space-y-4">
+            <p className="text-gray-800 text-center py-8 text-sm uppercase tracking-[0.2em] font-medium">
+              Awaiting attendee data transmissions
+            </p>
+            <p className="text-gray-700 text-center text-xs tracking-tight leading-relaxed max-w-2xl mx-auto">
+              Attendees submit their networking goals and offers through the intake form. Once they complete it, their data will appear here for group formation analysis.
+            </p>
+          </div>
         ) : (
           <div className="space-y-8">
             {intakes.map((intake) => (
@@ -148,22 +155,22 @@ export function GroupFormation({
                 <div className="flex flex-wrap gap-3">
                   {intake.goals.map((goal) => (
                     <span key={goal} className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                      🎯 {GOAL_LABELS[goal] || goal}
+                      {GOAL_LABELS[goal] || goal}
                     </span>
                   ))}
                   {intake.goals_other && (
                     <span className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                      🎯 {intake.goals_other}
+                      {intake.goals_other}
                     </span>
                   )}
                   {intake.offers.map((offer) => (
                     <span key={offer} className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                      🤝 {OFFER_LABELS[offer] || offer}
+                      {OFFER_LABELS[offer] || offer}
                     </span>
                   ))}
                   {intake.offers_other && (
                     <span className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                      🤝 {intake.offers_other}
+                      {intake.offers_other}
                     </span>
                   )}
                 </div>
