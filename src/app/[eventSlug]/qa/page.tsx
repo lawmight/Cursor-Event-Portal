@@ -6,7 +6,6 @@ import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { QuestionCard } from "@/components/qa/QuestionCard";
 import { QuestionForm } from "@/components/qa/QuestionForm";
-import { IntakeOptInBanner } from "@/components/banners/IntakeOptInBanner";
 import { createClient } from "@/lib/supabase/server";
 
 interface QAPageProps {
@@ -29,12 +28,17 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
     redirect(`/${eventSlug}`);
   }
 
+  // Redirect to intake if not completed or skipped
+  const intakeStatus = await getIntakeStatus(event.id, session.userId);
+  if (!intakeStatus.completed && !intakeStatus.skipped) {
+    redirect(`/${eventSlug}/intake`);
+  }
+
   const sortBy = sort === "new" ? "new" : "trending";
 
-  const [questions, announcements, intakeStatus] = await Promise.all([
+  const [questions, announcements] = await Promise.all([
     getQuestions(event.id, sortBy),
     getAnnouncements(event.id),
-    getIntakeStatus(event.id, session.userId),
   ]);
 
   // Get user role
@@ -90,13 +94,6 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
             </a>
           </div>
         </div>
-
-        {/* Show opt-in banner if intake not completed */}
-        {!intakeStatus.completed && (
-          <div className="animate-slide-up" style={{ animationDelay: "50ms" }}>
-            <IntakeOptInBanner eventSlug={eventSlug} />
-          </div>
-        )}
 
         {/* Question Form */}
         <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>

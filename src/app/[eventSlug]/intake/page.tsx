@@ -49,13 +49,13 @@ export default async function IntakePage({ params }: IntakePageProps) {
           </div>
           <div className="space-y-2">
             <p className="text-[10px] uppercase tracking-[0.4em] text-gray-700 font-medium">
-              Optional Data Collection
+              Welcome to the Portal
             </p>
             <h1 className="text-4xl font-light text-white tracking-tight text-shadow-glow">
               Share Your Signals
             </h1>
             <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed pt-2">
-              Help us match you with the right people by sharing what you're looking for and what you can offer. This is completely optional and only used to enhance your networking experience.
+              Help us enhance your networking experience by sharing what you're looking for and what you can offer. This is completely optional—you can skip and still access all features.
             </p>
           </div>
         </div>

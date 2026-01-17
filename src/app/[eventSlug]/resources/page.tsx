@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getEventBySlug, getAnnouncements } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
+import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,12 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
   const session = await getSession();
   if (!session || session.eventId !== event.id) {
     redirect(`/${eventSlug}`);
+  }
+
+  // Redirect to intake if not completed or skipped (introductory screen)
+  const intakeStatus = await getIntakeStatus(event.id, session.userId);
+  if (!intakeStatus.completed && !intakeStatus.skipped) {
+    redirect(`/${eventSlug}/intake`);
   }
 
   const announcements = await getAnnouncements(event.id);

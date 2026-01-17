@@ -5,7 +5,6 @@ import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { AgendaList } from "@/components/agenda/AgendaList";
-import { IntakeOptInBanner } from "@/components/banners/IntakeOptInBanner";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -25,10 +24,15 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
     redirect(`/${eventSlug}`);
   }
 
-  const [items, announcements, intakeStatus] = await Promise.all([
+  // Redirect to intake if not completed or skipped (introductory screen)
+  const intakeStatus = await getIntakeStatus(event.id, session.userId);
+  if (!intakeStatus.completed && !intakeStatus.skipped) {
+    redirect(`/${eventSlug}/intake`);
+  }
+
+  const [items, announcements] = await Promise.all([
     getAgendaItems(event.id),
     getAnnouncements(event.id),
-    getIntakeStatus(event.id, session.userId),
   ]);
 
   const latestAnnouncement = announcements[0] || null;
@@ -46,13 +50,6 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
             Agenda
           </h1>
         </div>
-
-        {/* Show opt-in banner if intake not completed and not skipped */}
-        {!intakeStatus.completed && (
-          <div className="animate-slide-up" style={{ animationDelay: "50ms" }}>
-            <IntakeOptInBanner eventSlug={eventSlug} />
-          </div>
-        )}
 
         <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
           <AgendaList items={items} />

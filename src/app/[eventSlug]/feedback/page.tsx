@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getEventBySlug, getPublishedSurvey, getAnnouncements } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
+import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { SurveyForm } from "@/components/survey/SurveyForm";
@@ -23,6 +24,12 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
   const session = await getSession();
   if (!session || session.eventId !== event.id) {
     redirect(`/${eventSlug}`);
+  }
+
+  // Redirect to intake if not completed or skipped (introductory screen)
+  const intakeStatus = await getIntakeStatus(event.id, session.userId);
+  if (!intakeStatus.completed && !intakeStatus.skipped) {
+    redirect(`/${eventSlug}/intake`);
   }
 
   const [survey, announcements] = await Promise.all([
