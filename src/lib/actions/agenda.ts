@@ -76,15 +76,7 @@ export async function createAgendaItem(
 export async function updateAgendaItem(
   itemId: string,
   eventSlug: string,
-  data: Partial<{
-    title: string;
-    description: string | null;
-    location: string | null;
-    speaker: string | null;
-    start_time: string | null;
-    end_time: string | null;
-    sort_order: number;
-  }>
+  data: Partial<Omit<AgendaItem, "id" | "event_id" | "created_at">>
 ) {
   const session = await getSession();
   if (!session) {
