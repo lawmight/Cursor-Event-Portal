@@ -73,7 +73,7 @@ export function CheckInClient({
     startTransition(async () => {
       try {
         console.log("Calling undoCheckIn function...");
-        const result = await undoCheckIn(registrationId);
+        const result = await undoCheckIn(registrationId, event.slug);
         console.log("undoCheckIn result:", result);
         if (result.success) {
           setRegistrations((prev) =>

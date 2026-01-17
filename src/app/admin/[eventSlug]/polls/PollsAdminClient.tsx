@@ -31,6 +31,7 @@ export function PollsAdminClient({
   const [polls, setPolls] = useState(initialPolls);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleToggleActive = async (pollId: string) => {
     setLoading(pollId);
@@ -62,6 +63,7 @@ export function PollsAdminClient({
     ends_at?: string;
     is_active: boolean;
   }) => {
+    setError(null);
     const result = await createPoll(event.id, eventSlug, data);
     if (result.success && result.pollId) {
       setPolls((prev) => [
@@ -78,6 +80,12 @@ export function PollsAdminClient({
         ...prev,
       ]);
       setShowCreateModal(false);
+      return { success: true };
+    } else {
+      const errorMsg = result.error || "Failed to create poll";
+      setError(errorMsg);
+      console.error("Failed to create poll:", result.error);
+      return { success: false, error: errorMsg };
     }
   };
 
@@ -117,6 +125,13 @@ export function PollsAdminClient({
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+        {/* Error Message */}
+        {error && (
+          <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
         {polls.length === 0 ? (
           <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/10">
             <BarChart3 className="w-12 h-12 text-gray-700 mx-auto" />
@@ -212,8 +227,12 @@ export function PollsAdminClient({
       {/* Create Modal */}
       {showCreateModal && (
         <CreatePollModal
-          onClose={() => setShowCreateModal(false)}
+          onClose={() => {
+            setShowCreateModal(false);
+            setError(null);
+          }}
           onCreate={handleCreatePoll}
+          error={error}
         />
       )}
     </div>
@@ -223,6 +242,7 @@ export function PollsAdminClient({
 function CreatePollModal({
   onClose,
   onCreate,
+  error: externalError,
 }: {
   onClose: () => void;
   onCreate: (data: {
@@ -230,7 +250,8 @@ function CreatePollModal({
     options: string[];
     ends_at?: string;
     is_active: boolean;
-  }) => Promise<void>;
+  }) => Promise<{ success?: boolean; error?: string } | void>;
+  error?: string | null;
 }) {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -263,14 +284,26 @@ function CreatePollModal({
       ends_at = end.toISOString();
     }
 
-    await onCreate({
-      question: question.trim(),
-      options: options.filter((o) => o.trim()),
-      ends_at,
-      is_active: startImmediately,
-    });
-
-    setLoading(false);
+    try {
+      const result = await onCreate({
+        question: question.trim(),
+        options: options.filter((o) => o.trim()),
+        ends_at,
+        is_active: startImmediately,
+      });
+      
+      // If result indicates success, reset form (modal will close)
+      if (result?.success !== false) {
+        setQuestion("");
+        setOptions(["", ""]);
+        setDuration(null);
+        setStartImmediately(true);
+      }
+    } catch (err) {
+      console.error("Error creating poll:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -292,6 +325,12 @@ function CreatePollModal({
         </button>
 
         <h2 className="text-2xl font-light text-white mb-8">Create Poll</h2>
+
+        {externalError && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+            <p className="text-sm text-red-400">{externalError}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">

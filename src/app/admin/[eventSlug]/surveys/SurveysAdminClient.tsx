@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createSurvey, publishSurvey, unpublishSurvey, deleteSurvey } from "@/lib/actions/survey";
+import { createSurvey, publishSurvey, unpublishSurvey, deleteSurvey, createDefaultSurvey } from "@/lib/actions/survey";
 import type { Event, Survey, SurveyField } from "@/types";
 import { ArrowLeft, Plus, Eye, EyeOff, Trash2, CheckCircle, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -86,6 +86,18 @@ export function SurveysAdminClient({
         setShowCreateModal(false);
       } else {
         setError(result.error || "Failed to create survey");
+      }
+    });
+  };
+
+  const handleCreateDefault = async () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await createDefaultSurvey(event.id, eventSlug);
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to create default survey");
       }
     });
   };
@@ -179,22 +191,46 @@ export function SurveysAdminClient({
           </div>
         )}
 
-        {/* Draft Surveys */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4 px-2">
-            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
-              {draftSurveys.length > 0 ? "Draft Surveys" : "No Drafts"}
-            </p>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
-          </div>
-
-          {draftSurveys.length === 0 ? (
-            <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
-              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-                No draft surveys
+        {/* No Surveys - Show Quick Start */}
+        {surveys.length === 0 && (
+          <div className="glass rounded-[40px] p-12 border-dashed border-white/10 text-center space-y-6">
+            <ClipboardCheck className="w-12 h-12 mx-auto text-gray-700" />
+            <div className="space-y-2">
+              <h3 className="text-xl font-light text-white/90">No surveys yet</h3>
+              <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
+                Get started by creating a default feedback survey
               </p>
             </div>
-          ) : (
+            <button
+              onClick={handleCreateDefault}
+              disabled={isPending}
+              className="px-8 py-4 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPending ? "Creating..." : "Create Default Survey"}
+            </button>
+            <p className="text-[9px] text-gray-800 pt-2">
+              Or create a custom survey using the + button above
+            </p>
+          </div>
+        )}
+
+        {/* Draft Surveys */}
+        {surveys.length > 0 && (
+          <div className="space-y-8">
+            <div className="flex items-center gap-4 px-2">
+              <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+                {draftSurveys.length > 0 ? "Draft Surveys" : "No Drafts"}
+              </p>
+              <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            </div>
+
+            {draftSurveys.length === 0 ? (
+              <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
+                <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                  No draft surveys
+                </p>
+              </div>
+            ) : (
             <div className="space-y-6">
               {draftSurveys.map((survey) => (
                 <div
@@ -247,6 +283,7 @@ export function SurveysAdminClient({
             </div>
           )}
         </div>
+        )}
       </main>
 
       {/* Create Survey Modal */}

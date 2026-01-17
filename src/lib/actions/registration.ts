@@ -146,7 +146,7 @@ export async function checkIn(registrationId: string) {
   return { success: true };
 }
 
-export async function undoCheckIn(registrationId: string) {
+export async function undoCheckIn(registrationId: string, eventSlug?: string) {
   const supabase = await createServiceClient();
 
   const { data, error } = await supabase
@@ -158,6 +158,12 @@ export async function undoCheckIn(registrationId: string) {
   if (error) {
     console.error("Undo check-in error:", error);
     return { error: error.message || "Failed to undo check-in" };
+  }
+
+  // Revalidate the check-in page if eventSlug is provided
+  if (eventSlug) {
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath(`/staff/${eventSlug}/checkin`);
   }
 
   console.log("Successfully undid check-in for registration:", registrationId);

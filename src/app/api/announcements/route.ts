@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/actions/registration";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,18 +14,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get session from cookie
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("portal_session");
-    if (!sessionCookie) {
+    // Get session
+    const session = await getSession();
+    if (!session) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    let session;
-    try {
-      session = JSON.parse(sessionCookie.value);
-    } catch {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
     // Verify admin role
@@ -36,7 +28,16 @@ export async function POST(request: NextRequest) {
       .eq("id", session.userId)
       .single();
 
+    if (userError) {
+      console.error("User lookup error:", userError);
+      return NextResponse.json(
+        { error: "Failed to verify user" },
+        { status: 500 }
+      );
+    }
+
     if (!user || user.role !== "admin") {
+      console.error("Admin check failed:", { userId: session.userId, userFound: !!user, role: user?.role });
       return NextResponse.json(
         { error: "Admin access required" },
         { status: 403 }

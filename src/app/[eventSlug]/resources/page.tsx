@@ -48,18 +48,6 @@ const resources = [
       },
     ],
   },
-  {
-    id: "3",
-    category: "Workshop Materials",
-    items: [
-      {
-        title: "Starter Repository",
-        description: "Clone this to follow along",
-        url: "https://github.com/cursor/workshop-starter",
-        icon: Code,
-      },
-    ],
-  },
 ];
 
 export default async function ResourcesPage({ params }: ResourcesPageProps) {

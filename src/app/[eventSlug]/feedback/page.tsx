@@ -50,9 +50,12 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
           {survey ? (
             <SurveyForm survey={survey} eventSlug={eventSlug} />
           ) : (
-            <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/5 opacity-40">
+            <div className="glass rounded-[40px] p-20 text-center space-y-6 border-dashed border-white/5">
               <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
                 Survey is currently inactive
+              </p>
+              <p className="text-[9px] text-gray-800 pt-2 max-w-xs mx-auto">
+                A feedback survey will appear here once it's been created and published by an administrator.
               </p>
             </div>
           )}
