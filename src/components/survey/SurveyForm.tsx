@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { submitSurveyResponse } from "@/lib/actions/survey";
 import type { Survey, SurveyField } from "@/types";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SurveyFormProps {
@@ -244,11 +244,6 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
           </div>
         </div>
       );
-
-    default:
-      return null;
-  }
-}
 
     default:
       return null;

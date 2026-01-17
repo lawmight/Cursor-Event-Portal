@@ -209,5 +209,4 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
       </div>
     </div>
   );
-  );
 }
