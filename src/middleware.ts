@@ -16,12 +16,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protected routes for admin
-  if (request.nextUrl.pathname.includes("/admin/")) {
+  // Protected routes for admin (except login page)
+  if (request.nextUrl.pathname.includes("/admin/") && !request.nextUrl.pathname.includes("/admin/login")) {
     const sessionCookie = request.cookies.get("portal_session");
     if (!sessionCookie) {
       const url = request.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = "/admin/login";
       return NextResponse.redirect(url);
     }
   }
