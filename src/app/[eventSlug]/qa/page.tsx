@@ -49,38 +49,38 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
   const otherQuestions = questions.filter((q) => q.status !== "pinned");
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
       <EventHeader event={event} announcement={latestAnnouncement} />
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+      <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
+        <div className="flex items-end justify-between animate-fade-in">
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">
+              Interact
+            </p>
+            <h1 className="text-4xl font-light text-white tracking-tight">
               Q&A
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Ask questions and get answers
-            </p>
           </div>
 
-          {/* Sort Toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          {/* Sort Toggle - Sleek */}
+          <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 rounded-full p-1 backdrop-blur-md">
             <a
               href={`/${eventSlug}/qa?sort=trending`}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all ${
                 sortBy === "trending"
-                  ? "bg-white dark:bg-gray-700 shadow-sm"
-                  : "text-gray-600 dark:text-gray-400"
+                  ? "bg-white text-black shadow-lg"
+                  : "text-gray-600 hover:text-gray-400"
               }`}
             >
-              Trending
+              Hot
             </a>
             <a
               href={`/${eventSlug}/qa?sort=new`}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all ${
                 sortBy === "new"
-                  ? "bg-white dark:bg-gray-700 shadow-sm"
-                  : "text-gray-600 dark:text-gray-400"
+                  ? "bg-white text-black shadow-lg"
+                  : "text-gray-600 hover:text-gray-400"
               }`}
             >
               New
@@ -89,51 +89,66 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
         </div>
 
         {/* Question Form */}
-        <QuestionForm eventId={event.id} eventSlug={eventSlug} />
+        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+          <QuestionForm eventId={event.id} eventSlug={eventSlug} />
+        </div>
 
-        {/* Pinned Questions */}
-        {pinnedQuestions.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              Pinned
-            </h2>
-            {pinnedQuestions.map((question) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                eventSlug={eventSlug}
-                userRole={user?.role}
-                userId={session.userId}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* All Questions */}
-        <div className="space-y-3">
+        {/* Questions List */}
+        <div className="space-y-12">
+          {/* Pinned Questions */}
           {pinnedQuestions.length > 0 && (
-            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              All Questions
-            </h2>
+            <div className="space-y-6 animate-slide-up" style={{ animationDelay: "200ms" }}>
+              <div className="flex items-center gap-4 px-2">
+                <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+                  Featured
+                </p>
+                <div className="h-[1px] flex-1 bg-white/[0.03]" />
+              </div>
+              <div className="space-y-6">
+                {pinnedQuestions.map((question) => (
+                  <QuestionCard
+                    key={question.id}
+                    question={question}
+                    eventSlug={eventSlug}
+                    userRole={user?.role}
+                    userId={session.userId}
+                  />
+                ))}
+              </div>
+            </div>
           )}
 
-          {otherQuestions.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                No questions yet. Be the first to ask!
-              </p>
-            </div>
-          ) : (
-            otherQuestions.map((question) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                eventSlug={eventSlug}
-                userRole={user?.role}
-                userId={session.userId}
-              />
-            ))
-          )}
+          {/* All Questions */}
+          <div className="space-y-6 animate-slide-up" style={{ animationDelay: "300ms" }}>
+            {pinnedQuestions.length > 0 && (
+              <div className="flex items-center gap-4 px-2">
+                <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+                  Recent
+                </p>
+                <div className="h-[1px] flex-1 bg-white/[0.03]" />
+              </div>
+            )}
+
+            {otherQuestions.length === 0 ? (
+              <div className="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[40px] border-dashed opacity-40">
+                <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-medium">
+                  Awaiting first inquiry
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {otherQuestions.map((question) => (
+                  <QuestionCard
+                    key={question.id}
+                    question={question}
+                    eventSlug={eventSlug}
+                    userRole={user?.role}
+                    userId={session.userId}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

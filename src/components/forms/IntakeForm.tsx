@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronRight } from "lucide-react";
 import { submitIntake, skipIntake } from "@/lib/actions/intake";
 import type { IntakeGoalTag, IntakeOfferTag } from "@/types";
 
@@ -93,42 +94,27 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
   };
 
   return (
-    <Card className="max-w-lg mx-auto">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            {step === "goals" ? (
-              <>
-                <span className="text-xl">🎯</span>
-                What are you looking for?
-              </>
-            ) : (
-              <>
-                <span className="text-xl">🤝</span>
-                What can you offer?
-              </>
-            )}
-          </CardTitle>
-          <Button variant="ghost" size="sm" onClick={handleSkip} disabled={loading}>
-            Skip
-          </Button>
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {step === "goals"
-            ? "Select your goals for today (we'll help connect you with others)"
-            : "What skills or resources can you share?"}
+    <div className="glass rounded-[40px] p-10 space-y-10 max-w-lg mx-auto relative overflow-hidden animate-slide-up">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+          {step === "goals" ? "Step 01" : "Step 02"}
         </p>
-      </CardHeader>
+        <button 
+          onClick={handleSkip} 
+          disabled={loading}
+          className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.3em] hover:text-white transition-colors"
+        >
+          Skip
+        </button>
+      </div>
 
-      <CardContent className="space-y-4">
-        {/* Privacy notice */}
-        <div className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
-          Your responses help us suggest networking connections.
-          This is optional and you can skip at any time.
-        </div>
+      <div className="space-y-10">
+        <h3 className="text-3xl font-light text-white tracking-tight leading-tight">
+          {step === "goals" ? "What are you looking for?" : "What can you share?"}
+        </h3>
 
-        {/* Tag selection */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Tag selection - Ultra Minimal Grid */}
+        <div className="grid grid-cols-2 gap-4">
           {(step === "goals" ? GOAL_OPTIONS : OFFER_OPTIONS).map((option) => {
             const isSelected =
               step === "goals"
@@ -145,10 +131,10 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
                     : toggleOffer(option.value as IntakeOfferTag)
                 }
                 disabled={loading}
-                className={`p-3 rounded-xl border text-sm text-left transition-all ${
+                className={`p-5 rounded-3xl border text-[10px] font-medium uppercase tracking-[0.1em] text-center transition-all duration-500 flex items-center justify-center leading-relaxed ${
                   isSelected
-                    ? "border-cursor-purple bg-cursor-purple/10 text-cursor-purple font-medium"
-                    : "border-gray-200 dark:border-gray-700 hover:border-cursor-purple/50"
+                    ? "border-white/20 bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-105"
+                    : "border-white/[0.03] bg-white/[0.01] text-gray-600 hover:border-white/10 hover:text-gray-400"
                 }`}
               >
                 {option.label}
@@ -157,46 +143,49 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
           })}
         </div>
 
-        {/* Other text input */}
+        {/* Other text input - Underline style */}
         {(step === "goals" ? goals : offers).includes("other") && (
-          <Textarea
-            placeholder="Tell us more..."
-            value={step === "goals" ? goalsOther : offersOther}
-            onChange={(e) =>
-              step === "goals"
-                ? setGoalsOther(e.target.value)
-                : setOffersOther(e.target.value)
-            }
-            rows={2}
-            disabled={loading}
-          />
+          <div className="animate-fade-in">
+            <textarea
+              placeholder="Tell us more"
+              value={step === "goals" ? goalsOther : offersOther}
+              onChange={(e) =>
+                step === "goals"
+                  ? setGoalsOther(e.target.value)
+                  : setOffersOther(e.target.value)
+              }
+              rows={2}
+              disabled={loading}
+              className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
+            />
+          </div>
         )}
 
         {error && (
-          <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl">
+          <div className="text-center p-4 rounded-2xl bg-red-500/5 text-red-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
             {error}
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-4 pt-6">
           {step === "offers" && (
-            <Button
-              variant="outline"
+            <button
               onClick={() => setStep("goals")}
               disabled={loading}
+              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
             >
-              Back
-            </Button>
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
           )}
-          <Button
-            className="flex-1"
+          <button
+            className="flex-1 h-16 rounded-full bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-[0.98]"
             onClick={handleSubmit}
-            loading={loading}
+            disabled={loading}
           >
-            {step === "goals" ? "Next →" : "Complete"}
-          </Button>
+            {loading ? "..." : step === "goals" ? "Continue" : "Complete"}
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

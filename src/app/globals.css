@@ -3,17 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f0f0f;
-  --cursor-purple: #7c3aed;
-  --cursor-purple-light: #a78bfa;
-  --cursor-purple-dark: #5b21b6;
+  --background: #000000;
+  --foreground: #ffffff;
+  --cursor-purple: #ffffff;
+  --cursor-purple-light: #f3f4f6;
+  --cursor-purple-dark: #9ca3af;
+  --card-bg: rgba(10, 10, 10, 0.4);
+  --card-border: rgba(255, 255, 255, 0.05);
+  --accent-grey: #1f1f1f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
+    --background: #000000;
+    --foreground: #ffffff;
+    --card-bg: rgba(10, 10, 10, 0.4);
+    --card-border: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -28,15 +33,53 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Glass effect */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.floating {
+  animation: floating 8s ease-in-out infinite;
+}
+
+.floating-delayed {
+  animation: floating 8s ease-in-out infinite -4s;
+}
+
+@keyframes floating {
+  0% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-15px) rotate(1deg); }
+  66% { transform: translateY(-5px) rotate(-1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@layer utilities {
+  .bg-black-gradient {
+    background: radial-gradient(circle at top center, #111111 0%, #000000 100%);
+  }
+  
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+
+  .border-glow {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+  }
+}
+
 /* Focus ring styling */
 *:focus-visible {
-  outline: 2px solid var(--cursor-purple);
-  outline-offset: 2px;
+  outline: 1px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 4px;
 }
 
 /* Selection styling */

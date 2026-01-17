@@ -67,93 +67,95 @@ export function AnnouncementsClient({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-gray-200/50 dark:border-gray-800/50">
-        <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
+        <div className="max-w-2xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link
             href={`/admin/${event.slug}`}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back</span>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
           </Link>
-          <h1 className="font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-sm font-bold uppercase tracking-[0.4em]">
             Announcements
           </h1>
-          <div className="w-20" />
+          <div className="w-12" />
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* New Announcement */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Megaphone className="w-5 h-5 text-cursor-purple" />
-              New Announcement
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
+      <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
+        {/* New Announcement - Floating Box */}
+        <div className="glass rounded-[40px] p-10 space-y-8 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+              Draft Message
+            </p>
+            <Megaphone className="w-4 h-4 text-white/10" />
+          </div>
+
+          <div className="space-y-10">
+            <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
-              placeholder="Type your announcement..."
-              rows={3}
+              placeholder="What needs to be heard?"
+              rows={2}
+              className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
             />
-            <Button
+            
+            <button
               onClick={handlePublish}
               disabled={isPending || !newContent.trim()}
-              loading={isPending}
-              className="w-full"
+              className="w-full h-16 rounded-full bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3"
             >
-              <Send className="w-4 h-4 mr-2" />
-              Publish Announcement
-            </Button>
-          </CardContent>
-        </Card>
+              <Send className="w-3.5 h-3.5" />
+              {isPending ? "..." : "Broadcast Now"}
+            </button>
+          </div>
+        </div>
 
         {/* Previous Announcements */}
-        <div>
-          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            Published Announcements
-          </h2>
+        <div className="space-y-8">
+          <div className="flex items-center gap-4 px-2">
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+              History
+            </p>
+            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          </div>
 
           {announcements.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Megaphone className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  No announcements yet
-                </p>
-              </CardContent>
-            </Card>
+            <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                Silence is golden
+              </p>
+            </div>
           ) : (
-            <div className="space-y-3">
-              {announcements.map((announcement) => (
-                <Card key={announcement.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <p className="text-gray-900 dark:text-white mb-2">
-                          {announcement.content}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Published at {formatTime(announcement.published_at!)}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(announcement.id)}
-                        disabled={isPending}
-                        className="text-gray-400 hover:text-red-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+            <div className="space-y-4">
+              {announcements.map((announcement, index) => (
+                <div 
+                  key={announcement.id}
+                  className="glass rounded-[32px] p-8 border-white/[0.03] bg-white/[0.01] transition-all duration-500 animate-slide-up group"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1 space-y-4">
+                      <p className="text-lg font-light text-white leading-relaxed tracking-tight">
+                        {announcement.content}
+                      </p>
+                      <p className="text-[9px] text-gray-700 uppercase tracking-[0.3em] font-medium">
+                        Published {formatTime(announcement.published_at!)}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <button
+                      onClick={() => handleDelete(announcement.id)}
+                      disabled={isPending}
+                      className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn"
+                    >
+                      <Trash2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

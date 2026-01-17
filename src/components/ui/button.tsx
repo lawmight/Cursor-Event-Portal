@@ -3,27 +3,27 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cursor-purple focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cursor-purple disabled:pointer-events-none disabled:opacity-30 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-cursor-purple to-cursor-purple-dark text-white shadow-lg shadow-cursor-purple/25 hover:shadow-xl hover:shadow-cursor-purple/30 hover:-translate-y-0.5",
+          "bg-white text-black shadow-2xl hover:bg-gray-200",
         destructive:
-          "bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30",
+          "bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20",
         outline:
-          "border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600",
+          "border border-white/10 bg-transparent text-gray-400 hover:text-white hover:border-white/20 hover:bg-white/5",
         secondary:
-          "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700",
+          "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10",
         ghost:
-          "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300",
+          "text-gray-500 hover:text-white hover:bg-white/5",
         link: "text-cursor-purple underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-11 px-6 py-2",
-        sm: "h-9 rounded-lg px-4 text-xs",
-        lg: "h-13 rounded-2xl px-8 text-base",
-        icon: "h-11 w-11 rounded-xl",
+        default: "h-14 px-8",
+        sm: "h-10 rounded-xl px-4",
+        lg: "h-16 rounded-[24px] px-10 text-sm",
+        icon: "h-12 w-12 rounded-xl",
       },
     },
     defaultVariants: {

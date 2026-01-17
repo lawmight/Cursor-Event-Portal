@@ -52,94 +52,92 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
   };
 
   return (
-    <Card className={`p-4 ${question.status === "pinned" ? "ring-2 ring-cursor-purple" : ""}`}>
-      <div className="flex gap-3">
-        {/* Upvote Button */}
-        <div className="flex flex-col items-center">
+    <div className={`glass rounded-[40px] p-8 transition-all duration-500 animate-slide-up relative overflow-hidden group ${
+      question.status === "pinned" ? "border-white/20 bg-white/[0.04]" : "border-white/[0.03] bg-white/[0.01]"
+    }`}>
+      {question.status === "pinned" && (
+        <div className="absolute top-0 right-0 p-4">
+          <Pin className="w-3 h-3 text-white/40" />
+        </div>
+      )}
+
+      <div className="flex gap-8">
+        {/* Upvote Button - Ultra Sleek */}
+        <div className="flex flex-col items-center gap-2">
           <button
             onClick={handleUpvote}
             disabled={loading}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`w-12 h-12 rounded-full border transition-all flex items-center justify-center ${
               question.user_has_upvoted
-                ? "bg-cursor-purple text-white"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                : "bg-white/[0.02] border-white/10 text-gray-600 hover:text-white hover:border-white/30"
             }`}
           >
-            <ChevronUp className="w-5 h-5" />
+            <ChevronUp className={`w-5 h-5 stroke-[2.5px] transition-transform ${question.user_has_upvoted ? "scale-110" : "group-hover:-translate-y-0.5"}`} />
           </button>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-1">
+          <span className={`text-sm font-light tabular-nums ${question.user_has_upvoted ? "text-white" : "text-gray-700"}`}>
             {question.upvotes}
           </span>
         </div>
 
         {/* Question Content */}
-        <div className="flex-1 min-w-0">
-          {/* Status Badges */}
-          <div className="flex flex-wrap gap-2 mb-2">
-            {question.status === "pinned" && (
-              <Badge variant="default">
-                <Pin className="w-3 h-3 mr-1" />
-                Pinned
-              </Badge>
-            )}
-            {question.status === "answered" && (
-              <Badge variant="success">
-                <Check className="w-3 h-3 mr-1" />
-                Answered
-              </Badge>
-            )}
-            {question.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
-              </Badge>
-            ))}
-          </div>
+        <div className="flex-1 min-w-0 space-y-4">
+          {/* Tags */}
+          {question.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {question.tags.map((tag) => (
+                <div key={tag} className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/5 text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                  {tag}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Question Text */}
-          <p className="text-gray-900 dark:text-white mb-2">
+          <p className="text-white text-xl font-light leading-relaxed tracking-tight">
             {question.content}
           </p>
 
           {/* Meta */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <span>{question.user?.name || "Anonymous"}</span>
-            <span>·</span>
+          <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">
+            <span className="text-gray-500">{question.user?.name || "Anonymous"}</span>
+            <span className="opacity-20">/</span>
             <span>{timeAgo(question.created_at)}</span>
           </div>
 
-          {/* Answers */}
+          {/* Answers - Sleek Deep Depth */}
           {question.answers && question.answers.length > 0 && (
-            <div className="mt-4 space-y-3">
+            <div className="mt-8 space-y-4">
               {question.answers.map((answer) => (
                 <div
                   key={answer.id}
-                  className={`p-3 rounded-lg ${
+                  className={`p-6 rounded-[32px] relative ${
                     answer.is_accepted
-                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                      : "bg-gray-50 dark:bg-gray-800/50"
+                      ? "bg-white/[0.03] border border-white/10"
+                      : "bg-black/20 border border-white/[0.02]"
                   }`}
                 >
-                  <p className="text-sm text-gray-800 dark:text-gray-200 mb-2">
+                  <p className="text-[15px] text-gray-400 font-light leading-relaxed mb-4">
                     {answer.content}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {answer.user?.name || "Anonymous"} · {timeAgo(answer.created_at)}
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">
+                      {answer.user?.name || "Expert"} · {timeAgo(answer.created_at)}
                     </span>
                     {isModerator && !answer.is_accepted && (
                       <button
                         onClick={() => handleAcceptAnswer(answer.id)}
                         disabled={loading}
-                        className="text-xs text-green-600 hover:text-green-700 font-medium"
+                        className="text-[9px] uppercase tracking-[0.2em] text-white/40 font-bold hover:text-white transition-colors"
                       >
-                        Accept
+                        Verify
                       </button>
                     )}
                     {answer.is_accepted && (
-                      <Badge variant="success" className="text-xs">
-                        <Check className="w-3 h-3 mr-1" />
-                        Accepted
-                      </Badge>
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Check className="w-3 h-3" />
+                        <span className="text-[8px] uppercase tracking-[0.3em] font-bold">Verified</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -147,72 +145,69 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
             </div>
           )}
 
-          {/* Actions */}
-          <div className="mt-4 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
+          {/* Actions - Subtle */}
+          <div className="mt-6 flex items-center gap-8 border-t border-white/[0.03] pt-6">
+            <button
               onClick={() => setShowAnswerForm(!showAnswerForm)}
+              className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-white transition-colors"
             >
-              <MessageCircle className="w-4 h-4 mr-1" />
-              Answer
-            </Button>
+              <MessageCircle className="w-3.5 h-3.5 opacity-40" />
+              Reply
+            </button>
 
             {isModerator && (
-              <>
+              <div className="flex items-center gap-8">
                 {question.status !== "pinned" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={() => handleStatusChange("pinned")}
                     disabled={loading}
+                    className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-white transition-colors"
                   >
-                    <Pin className="w-4 h-4 mr-1" />
-                    Pin
-                  </Button>
+                    <Pin className="w-3.5 h-3.5 opacity-40" />
+                    Feature
+                  </button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => handleStatusChange("hidden")}
                   disabled={loading}
+                  className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-red-900 transition-colors"
                 >
-                  <EyeOff className="w-4 h-4 mr-1" />
-                  Hide
-                </Button>
-              </>
+                  <EyeOff className="w-3.5 h-3.5 opacity-40" />
+                  Discard
+                </button>
+              </div>
             )}
           </div>
 
-          {/* Answer Form */}
+          {/* Answer Form - Sleek Input */}
           {showAnswerForm && (
-            <div className="mt-3 space-y-2">
-              <Textarea
+            <div className="mt-8 space-y-6 animate-slide-up">
+              <textarea
                 value={answerContent}
                 onChange={(e) => setAnswerContent(e.target.value)}
-                placeholder="Write your answer..."
-                rows={3}
+                placeholder="Compose response..."
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all min-h-[100px] text-lg font-light resize-none"
               />
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
+              <div className="flex gap-4">
+                <button
                   onClick={handleSubmitAnswer}
                   disabled={loading || !answerContent.trim()}
+                  className="px-8 h-12 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 disabled:opacity-30 transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)]"
                 >
-                  Submit Answer
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  Publish
+                </button>
+                <button
                   onClick={() => setShowAnswerForm(false)}
+                  className="px-8 h-12 rounded-full bg-white/[0.03] border border-white/5 text-gray-600 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white/20 transition-all"
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           )}
         </div>
       </div>
-    </Card>
+    </div>
+  );
   );
 }

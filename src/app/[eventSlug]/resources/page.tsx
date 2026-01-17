@@ -80,25 +80,29 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
       <EventHeader event={event} announcement={latestAnnouncement} />
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+      <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
+        <div className="animate-fade-in space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">
+            Knowledge
+          </p>
+          <h1 className="text-4xl font-light text-white tracking-tight">
             Resources
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Helpful links and materials
-          </p>
         </div>
 
-        {resources.map((category) => (
-          <div key={category.id}>
-            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-              {category.category}
-            </h2>
-            <div className="space-y-3">
+        {resources.map((category, catIndex) => (
+          <div key={category.id} className="space-y-6 animate-slide-up" style={{ animationDelay: `${catIndex * 100}ms` }}>
+            <div className="flex items-center gap-4 px-2">
+              <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+                {category.category}
+              </p>
+              <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            </div>
+            
+            <div className="space-y-4">
               {category.items.map((item, index) => {
                 const Icon = item.icon;
                 return (
@@ -107,26 +111,25 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block"
+                    className="block group"
                   >
-                    <Card className="hover:border-cursor-purple transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-cursor-purple/10 text-cursor-purple flex items-center justify-center">
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {item.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {item.description}
-                            </p>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-gray-400" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <div className="glass rounded-[32px] p-6 flex items-center gap-6 transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:translate-x-1 border-white/[0.03] relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ExternalLink className="w-3 h-3 text-white/40" />
+                      </div>
+                      
+                      <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/5 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.02)]">
+                        <Icon className="w-6 h-6 stroke-[1.5px] opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-light text-white tracking-tight">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-gray-600 font-light mt-1 tracking-wide">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
                   </a>
                 );
               })}

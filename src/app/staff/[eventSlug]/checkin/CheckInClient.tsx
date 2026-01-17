@@ -70,172 +70,135 @@ export function CheckInClient({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-gray-200/50 dark:border-gray-800/50">
-        <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
+        <div className="max-w-2xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link
             href={`/admin/${event.slug}`}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back</span>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
           </Link>
-          <h1 className="font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-sm font-bold uppercase tracking-[0.4em]">
             Check-In
           </h1>
-          <div className="w-20" />
+          <div className="w-12" />
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cursor-purple/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-cursor-purple" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {registrations.length}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Registered
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
+        {/* Stats - Floating Grid */}
+        <div className="grid grid-cols-2 gap-6">
+          <div className="glass rounded-[32px] p-8 space-y-4 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Users className="w-8 h-8" />
+            </div>
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">Registered</p>
+            <p className="text-4xl font-light tracking-tighter">{registrations.length}</p>
+          </div>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {checkedInCount}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Checked In
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="glass rounded-[32px] p-8 space-y-4 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <UserCheck className="w-8 h-8" />
+            </div>
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">Checked In</p>
+            <p className="text-4xl font-light tracking-tighter text-white">{checkedInCount}</p>
+          </div>
         </div>
 
-        {/* Capacity Progress */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Venue Capacity
-              </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {checkedInCount} / {event.capacity}
-              </span>
-            </div>
-            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min((checkedInCount / event.capacity) * 100, 100)}%`,
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Capacity - Ultra Minimal */}
+        <div className="glass rounded-[32px] p-8 space-y-6">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.4em] text-gray-700 px-1">
+            <span>Venue Capacity</span>
+            <span>{checkedInCount} / {event.capacity}</span>
+          </div>
+          <div className="h-[2px] bg-white/[0.05] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-white transition-all duration-1000 ease-out"
+              style={{
+                width: `${Math.min((checkedInCount / event.capacity) * 100, 100)}%`,
+              }}
+            />
+          </div>
+        </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Search by name or email..."
+        {/* Search - Focusable Border */}
+        <div className="relative group">
+          <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800 group-focus-within:text-white transition-colors" />
+          <input
+            type="text"
+            placeholder="Search attendees"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-14 text-lg"
+            className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-16 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
           />
         </div>
 
         {/* Attendee List */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           {filteredRegistrations.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                {searchQuery
-                  ? "No attendees match your search"
-                  : "No registrations yet"}
+            <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                {searchQuery ? "No results found" : "Waiting for entries"}
               </p>
             </div>
           ) : (
-            filteredRegistrations.map((registration) => {
+            filteredRegistrations.map((registration, index) => {
               const isCheckedIn = !!registration.checked_in_at;
               const isActive = activeId === registration.id;
 
               return (
-                <Card
+                <div
                   key={registration.id}
                   className={cn(
-                    "transition-all duration-200",
-                    isCheckedIn && "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800"
+                    "glass rounded-[32px] p-6 transition-all duration-500 animate-slide-up flex items-center justify-between gap-6 group",
+                    isCheckedIn ? "bg-white/[0.04] border-white/20" : "bg-white/[0.01] border-white/5"
                   )}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={cn(
-                            "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0",
-                            isCheckedIn
-                              ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                          )}
-                        >
-                          {registration.user?.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 dark:text-white truncate">
-                            {registration.user?.name}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {registration.user?.email || "No email"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        {isCheckedIn ? (
-                          <>
-                            <Badge variant="success">Checked In</Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleUndoCheckIn(registration.id)}
-                              disabled={isPending}
-                            >
-                              <UserX className="w-4 h-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            onClick={() => handleCheckIn(registration.id)}
-                            disabled={isPending}
-                            loading={isActive && isPending}
-                            size="sm"
-                          >
-                            <UserCheck className="w-4 h-4 mr-1" />
-                            Check In
-                          </Button>
-                        )}
-                      </div>
+                  <div className="flex items-center gap-5 min-w-0">
+                    <div
+                      className={cn(
+                        "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-light shrink-0 transition-all border",
+                        isCheckedIn
+                          ? "bg-white border-white text-black"
+                          : "bg-white/[0.02] border-white/5 text-gray-600"
+                      )}
+                    >
+                      {registration.user?.name.charAt(0).toUpperCase()}
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="min-w-0">
+                      <p className="text-lg font-light text-white truncate tracking-tight">
+                        {registration.user?.name}
+                      </p>
+                      <p className="text-[10px] text-gray-700 uppercase tracking-widest truncate font-medium mt-0.5">
+                        {registration.user?.email || "No email"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {isCheckedIn ? (
+                      <button
+                        onClick={() => handleUndoCheckIn(registration.id)}
+                        disabled={isPending}
+                        className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn"
+                      >
+                        <UserX className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleCheckIn(registration.id)}
+                        disabled={isPending}
+                        className="h-12 px-6 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all shadow-xl"
+                      >
+                        {isActive ? "..." : "Check In"}
+                      </button>
+                    )}
+                  </div>
+                </div>
               );
             })
           )}

@@ -3,24 +3,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest transition-all",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-r from-cursor-purple to-cursor-purple-dark text-white",
+          "bg-cursor-purple text-white shadow-lg shadow-cursor-purple/20",
         secondary:
-          "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+          "bg-white/5 border border-white/10 text-gray-400",
         success:
-          "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+          "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500",
         warning:
-          "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+          "bg-amber-500/10 border border-amber-500/20 text-amber-500",
         destructive:
-          "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+          "bg-red-500/10 border border-red-500/20 text-red-500",
         outline:
-          "border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-transparent",
-        now: "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 animate-pulse-soft",
-        next: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25",
+          "border border-white/10 text-gray-500 bg-transparent hover:text-white hover:border-white/20",
+        now: "bg-cursor-purple/20 border border-cursor-purple/30 text-cursor-purple animate-pulse-soft",
+        next: "bg-blue-500/10 border border-blue-500/20 text-blue-500",
       },
     },
     defaultVariants: {

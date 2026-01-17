@@ -31,20 +31,22 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
       <EventHeader event={event} announcement={latestAnnouncement} />
 
-      <main className="max-w-lg mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+      <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
+        <div className="animate-fade-in space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">
+            Schedule
+          </p>
+          <h1 className="text-4xl font-light text-white tracking-tight">
             Agenda
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Today&apos;s schedule
-          </p>
         </div>
 
-        <AgendaList items={items} />
+        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+          <AgendaList items={items} />
+        </div>
       </main>
 
       <EventNav eventSlug={eventSlug} />

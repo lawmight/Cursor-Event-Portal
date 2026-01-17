@@ -33,36 +33,30 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
       <EventHeader event={event} announcement={latestAnnouncement} />
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+      <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
+        <div className="animate-fade-in space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">
+            Improvement
+          </p>
+          <h1 className="text-4xl font-light text-white tracking-tight">
             Feedback
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Help us improve future events
-          </p>
         </div>
 
-        {survey ? (
-          <SurveyForm survey={survey} eventSlug={eventSlug} />
-        ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-6 h-6 text-gray-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Survey Coming Soon
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400">
-                The feedback survey will be available after the event. Check back later!
+        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+          {survey ? (
+            <SurveyForm survey={survey} eventSlug={eventSlug} />
+          ) : (
+            <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/5 opacity-40">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                Survey is currently inactive
               </p>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
+        </div>
       </main>
 
       <EventNav eventSlug={eventSlug} />

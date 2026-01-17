@@ -63,60 +63,67 @@ export function QuestionForm({ eventId, eventSlug }: QuestionFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Ask a Question</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Textarea
+    <div className="glass rounded-[40px] p-10 space-y-8 animate-slide-up relative overflow-hidden">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+          New Inquiry
+        </p>
+        <div className="w-1.5 h-1.5 rounded-full bg-white/20 animate-pulse" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-10">
+        <div className="relative">
+          <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What would you like to ask?"
+            placeholder="What would you like to know?"
             rows={3}
             disabled={loading}
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
           />
+        </div>
 
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Tags (optional)
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={cn(
-                    "px-3 py-1 rounded-full text-sm transition-colors",
-                    selectedTags.includes(tag)
-                      ? "bg-cursor-purple text-white"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  )}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+        <div className="space-y-4">
+          <p className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium px-1">Tags</p>
+          <div className="flex flex-wrap gap-3">
+            {TAGS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={cn(
+                  "px-5 py-2 rounded-full text-[9px] font-bold uppercase tracking-[0.1em] transition-all border",
+                  selectedTags.includes(tag)
+                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    : "bg-white/[0.01] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                )}
+              >
+                {tag}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="text-center p-4 rounded-2xl bg-red-500/5 text-red-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
+            {error}
+          </div>
+        )}
 
-          {success && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              Question submitted successfully!
-            </div>
-          )}
+        {success && (
+          <div className="text-center p-4 rounded-2xl bg-green-500/5 text-green-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
+            Sent successfully
+          </div>
+        )}
 
-          <Button type="submit" className="w-full" loading={loading}>
-            Submit Question
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <button 
+          type="submit" 
+          disabled={loading || !content.trim()}
+          className="w-full h-16 rounded-full bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-[0.98]"
+        >
+          {loading ? "..." : "Send Question"}
+        </button>
+      </form>
+    </div>
   );
 }

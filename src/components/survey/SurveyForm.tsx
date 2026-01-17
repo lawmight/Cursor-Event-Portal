@@ -52,29 +52,31 @@ export function SurveyForm({ survey, eventSlug }: SurveyFormProps) {
 
   if (submitted) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Thank You!
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Your feedback has been submitted. We appreciate your input!
-          </p>
-        </CardContent>
-      </Card>
+      <div className="glass rounded-[40px] p-20 text-center space-y-6 animate-slide-up">
+        <div className="w-20 h-20 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+          <CheckCircle className="w-10 h-10 text-white/40" />
+        </div>
+        <h2 className="text-3xl font-light text-white tracking-tight">
+          Feedback Received
+        </h2>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold">
+          Contribution acknowledged
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{survey.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="glass rounded-[40px] p-10 space-y-12 animate-slide-up relative overflow-hidden">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+          Evaluation
+        </p>
+        <div className="w-1.5 h-1.5 rounded-full bg-white/20 animate-pulse" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-12">
+        <div className="space-y-12">
           {survey.schema.fields.map((field) => (
             <FieldRenderer
               key={field.id}
@@ -86,19 +88,23 @@ export function SurveyForm({ survey, eventSlug }: SurveyFormProps) {
               disabled={loading}
             />
           ))}
+        </div>
 
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="text-center p-4 rounded-2xl bg-red-500/5 text-red-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
+            {error}
+          </div>
+        )}
 
-          <Button type="submit" className="w-full" loading={loading}>
-            Submit Feedback
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full h-16 rounded-full bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+        >
+          {loading ? "..." : "Submit Response"}
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -113,41 +119,50 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
   switch (field.type) {
     case "text":
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+        <div className="space-y-4">
+          <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em] px-1">
+            {field.label} {field.required && <span className="opacity-30">*</span>}
           </label>
-          <Input
+          <input
             type="text"
             value={(value as string) || ""}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
+            placeholder="Input response"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
           />
         </div>
       );
 
     case "textarea":
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+        <div className="space-y-4">
+          <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em] px-1">
+            {field.label} {field.required && <span className="opacity-30">*</span>}
           </label>
-          <Textarea
+          <textarea
             value={(value as string) || ""}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
-            rows={4}
+            rows={1}
+            placeholder="Detailed thoughts"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-xl font-light resize-none overflow-hidden min-h-[60px]"
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = 'auto';
+              target.style.height = target.scrollHeight + 'px';
+            }}
           />
         </div>
       );
 
     case "rating":
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+        <div className="space-y-6">
+          <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em] px-1">
+            {field.label} {field.required && <span className="opacity-30">*</span>}
           </label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-5 gap-3">
             {[1, 2, 3, 4, 5].map((rating) => (
               <button
                 key={rating}
@@ -155,30 +170,30 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
                 onClick={() => onChange(rating)}
                 disabled={disabled}
                 className={cn(
-                  "w-10 h-10 rounded-lg font-medium transition-colors",
+                  "h-14 rounded-2xl font-light transition-all border text-lg",
                   value === rating
-                    ? "bg-cursor-purple text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-[1.02]"
+                    : "bg-white/[0.01] border-white/5 text-gray-700 hover:text-white hover:border-white/20"
                 )}
               >
                 {rating}
               </button>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Poor</span>
-            <span>Excellent</span>
+          <div className="flex justify-between px-2 text-[8px] uppercase tracking-[0.4em] font-bold text-gray-800">
+            <span>Minimum</span>
+            <span>Maximum</span>
           </div>
         </div>
       );
 
     case "nps":
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+        <div className="space-y-6">
+          <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em] px-1">
+            {field.label} {field.required && <span className="opacity-30">*</span>}
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-6 gap-2 sm:grid-cols-11">
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
               <button
                 key={score}
@@ -186,44 +201,54 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
                 onClick={() => onChange(score)}
                 disabled={disabled}
                 className={cn(
-                  "w-9 h-9 rounded-lg text-sm font-medium transition-colors",
+                  "h-10 rounded-xl text-[10px] font-medium transition-all border",
                   value === score
-                    ? "bg-cursor-purple text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    : "bg-white/[0.01] border-white/5 text-gray-700 hover:text-white"
                 )}
               >
                 {score}
               </button>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Not likely</span>
-            <span>Very likely</span>
+          <div className="flex justify-between px-2 text-[8px] uppercase tracking-[0.4em] font-bold text-gray-800">
+            <span>Unlikely</span>
+            <span>Highly Likely</span>
           </div>
         </div>
       );
 
     case "select":
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {field.label} {field.required && <span className="text-red-500">*</span>}
+        <div className="space-y-4">
+          <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em] px-1">
+            {field.label} {field.required && <span className="opacity-30">*</span>}
           </label>
-          <select
-            value={(value as string) || ""}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={disabled}
-            className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cursor-purple"
-          >
-            <option value="">Select an option</option>
-            {field.options?.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={(value as string) || ""}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white appearance-none focus:outline-none focus:border-white/30 transition-all text-xl font-light"
+            >
+              <option value="" className="bg-black">Select an option</option>
+              {field.options?.map((option) => (
+                <option key={option} value={option} className="bg-[#0a0a0a]">
+                  {option}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-700">
+              <ChevronRight className="w-4 h-4 rotate-90 stroke-[1px]" />
+            </div>
+          </div>
         </div>
       );
+
+    default:
+      return null;
+  }
+}
 
     default:
       return null;

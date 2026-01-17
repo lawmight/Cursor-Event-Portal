@@ -87,119 +87,163 @@ export function EventDisplay({
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div className="min-h-screen bg-black-gradient text-white p-12 flex flex-col relative overflow-hidden">
+      {/* Subtle Depth Elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
+
       {/* Header */}
-      <header className="text-center mb-12">
-        <h1 className="text-5xl font-bold mb-2">{data.event.name}</h1>
-        <p className="text-xl text-gray-400">{data.event.venue}</p>
+      <header className="mb-20 z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-4xl font-black shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+              C
+            </div>
+            <div className="text-left space-y-1">
+              <h1 className="text-6xl font-light tracking-tight">{data.event.name}</h1>
+              <p className="text-[14px] uppercase tracking-[0.6em] text-gray-700 font-medium">{data.event.venue}</p>
+            </div>
+          </div>
+          <div className="text-right space-y-1">
+            <time className="text-6xl font-light tracking-tight tabular-nums">
+              {currentTime.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+              })}
+            </time>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-800 font-medium">System Active</p>
+          </div>
+        </div>
       </header>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-3 gap-8">
-        {/* Current Session - Takes 2 columns */}
-        <div className="col-span-2 space-y-8">
+      <div className="grid grid-cols-12 gap-16 flex-1 z-10">
+        {/* Left Side: Sessions */}
+        <div className="col-span-8 space-y-16">
           {/* Now Playing */}
-          {data.currentSession ? (
-            <Card className="bg-gradient-to-br from-green-900/50 to-green-950/50 border-green-700 p-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge className="bg-green-500 text-white text-lg px-4 py-1 animate-pulse">
-                  NOW
-                </Badge>
-              </div>
-              <h2 className="text-4xl font-bold mb-4">{data.currentSession.title}</h2>
-              {data.currentSession.speaker && (
-                <p className="text-2xl text-gray-300 mb-6">
-                  {data.currentSession.speaker}
-                </p>
-              )}
-              {data.currentSession.description && (
-                <p className="text-xl text-gray-400 mb-6">
-                  {data.currentSession.description}
-                </p>
-              )}
-              {/* Progress bar */}
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-green-500 transition-all duration-1000"
-                  style={{ width: `${getSessionProgress()}%` }}
-                />
-              </div>
-            </Card>
-          ) : (
-            <Card className="bg-gray-900/50 border-gray-800 p-8 text-center">
-              <p className="text-2xl text-gray-400">No session in progress</p>
-            </Card>
-          )}
+          <div className="glass rounded-[56px] p-16 relative overflow-hidden group border-white/[0.03]">
+            {data.currentSession ? (
+              <div className="space-y-12">
+                <div className="flex items-center gap-6">
+                  <div className="px-5 py-2 rounded-full border border-white/20 text-white text-[11px] font-medium uppercase tracking-[0.4em]">
+                    Now
+                  </div>
+                  <div className="h-[1px] flex-1 bg-white/[0.03]" />
+                </div>
+                
+                <div className="space-y-6">
+                  <h2 className="text-8xl font-light tracking-tight leading-[1.1] text-shadow-glow">{data.currentSession.title}</h2>
+                  {data.currentSession.speaker && (
+                    <p className="text-4xl text-gray-600 font-light tracking-tight">
+                      {data.currentSession.speaker}
+                    </p>
+                  )}
+                </div>
 
-          {/* Up Next */}
-          {data.nextSession && (
-            <Card className="bg-gradient-to-br from-blue-900/50 to-blue-950/50 border-blue-700 p-8">
-              <div className="flex items-center justify-between mb-4">
-                <Badge className="bg-blue-500 text-white text-lg px-4 py-1">
-                  UP NEXT
-                </Badge>
-                <div className="flex items-center gap-2 text-3xl font-mono">
-                  <span className="text-2xl">⏱️</span>
-                  {countdown}
+                {/* Progress bar - Ultra Minimal */}
+                <div className="pt-12">
+                  <div className="h-[2px] bg-white/[0.03] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                      style={{ width: `${getSessionProgress()}%` }}
+                    />
+                  </div>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold mb-2">{data.nextSession.title}</h2>
-              {data.nextSession.speaker && (
-                <p className="text-xl text-gray-300">{data.nextSession.speaker}</p>
-              )}
-            </Card>
-          )}
-
-          {/* Announcements */}
-          {data.announcements.length > 0 && (
-            <Card className="bg-amber-900/30 border-amber-700 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">📢</span>
-                <span className="text-lg font-semibold text-amber-400">Announcements</span>
+            ) : (
+              <div className="h-full flex items-center justify-center py-32 opacity-20">
+                <p className="text-4xl font-light tracking-[0.2em] uppercase">Intermission</p>
               </div>
-              <div className="space-y-3">
-                {data.announcements.map((announcement) => (
-                  <p key={announcement.id} className="text-xl">
-                    {announcement.content}
-                  </p>
-                ))}
-              </div>
-            </Card>
-          )}
-        </div>
-
-        {/* Q&A Feed - Takes 1 column */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-2xl">💬</span>
-            <h3 className="text-2xl font-bold">Live Q&A</h3>
+            )}
           </div>
 
-          {data.recentQuestions.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">
-              <p className="text-xl">No questions yet</p>
-              <p className="text-sm mt-2">Scan the QR code to ask a question</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {data.recentQuestions.map((question) => (
-                <QuestionDisplayCard key={question.id} question={question} />
-              ))}
-            </div>
-          )}
+          {/* Up Next & Announcements */}
+          <div className="grid grid-cols-2 gap-16">
+            {data.nextSession && (
+              <div className="glass rounded-[48px] p-12 space-y-8 border-white/[0.02]">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-700">
+                    Up Next
+                  </div>
+                  <div className="text-2xl font-light tracking-tight text-white/40 tabular-nums">
+                    {countdown}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-4xl font-light tracking-tight leading-tight">{data.nextSession.title}</h3>
+                  {data.nextSession.speaker && (
+                    <p className="text-gray-600 font-medium uppercase tracking-[0.3em] text-[10px]">{data.nextSession.speaker}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {data.announcements.length > 0 && (
+              <div className="glass rounded-[48px] p-12 bg-white/[0.01] border-white/10">
+                <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-700 mb-8">
+                  Bulletin
+                </div>
+                <div className="space-y-6">
+                  {data.announcements.slice(0, 2).map((announcement) => (
+                    <p key={announcement.id} className="text-2xl font-light leading-relaxed tracking-tight text-white/90">
+                      {announcement.content}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: Q&A */}
+        <div className="col-span-4 flex flex-col space-y-12">
+          <div className="flex items-center gap-6 px-6">
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.5em] text-gray-700">Live Stream</h3>
+            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          </div>
+
+          <div className="flex-1 space-y-8 overflow-hidden">
+            {data.recentQuestions.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center opacity-10 text-center space-y-6">
+                <div className="w-20 h-20 rounded-full border border-white flex items-center justify-center font-light text-4xl">
+                  ?
+                </div>
+                <p className="text-[10px] font-medium uppercase tracking-[0.5em]">Waiting for input</p>
+              </div>
+            ) : (
+              <div className="space-y-8 animate-slide-up">
+                {data.recentQuestions.slice(0, 4).map((question) => (
+                  <div key={question.id} className="glass rounded-[40px] p-10 space-y-6 border-white/[0.02] hover:bg-white/[0.02] transition-colors">
+                    <div className="flex gap-8">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-[1px] h-6 bg-gradient-to-t from-white/40 to-transparent" />
+                        <span className="text-2xl font-light tabular-nums">{question.upvotes}</span>
+                      </div>
+                      <div className="flex-1 space-y-4">
+                        <p className="text-2xl font-light tracking-tight leading-relaxed">{question.content}</p>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-medium">
+                          {question.user?.name || "Anonymous"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Footer with time */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur py-4 text-center">
-        <time className="text-2xl font-mono text-gray-400">
-          {currentTime.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </time>
+      <footer className="mt-20 py-10 border-t border-white/[0.03] flex justify-between items-center z-10">
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-800 font-medium">Pop-Up Calgary / MMXXVI</p>
+        <div className="flex items-center gap-6">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-800 font-medium">Event Portal</p>
+          <span className="text-[10px] font-medium text-white/40 px-5 py-2 bg-white/[0.02] rounded-full border border-white/[0.05]">luma.com/cursor</span>
+        </div>
       </footer>
     </div>
   );
+}
 }
 
 function QuestionDisplayCard({ question }: { question: Question }) {

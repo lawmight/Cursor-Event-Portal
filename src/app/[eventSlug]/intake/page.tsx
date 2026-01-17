@@ -29,18 +29,29 @@ export default async function IntakePage({ params }: IntakePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cursor-purple/5 via-white to-blue-50/50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-12 px-4">
-      <div className="max-w-lg mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Quick Networking Setup
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Help us connect you with the right people today
-          </p>
+    <div className="min-h-screen bg-black-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Subtle Depth Elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.03] rounded-full blur-[120px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+      
+      <div className="w-full max-w-md z-10 space-y-12">
+        <div className="text-center space-y-4 floating">
+          <div className="inline-flex w-20 h-20 rounded-3xl bg-white/5 backdrop-blur-3xl items-center justify-center border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.1)] mb-4">
+            <span className="text-4xl font-bold text-white tracking-tighter">C</span>
+          </div>
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-700 font-medium">
+              Profile Setup
+            </p>
+            <h1 className="text-4xl font-light text-white tracking-tight text-shadow-glow">
+              Networking
+            </h1>
+          </div>
         </div>
 
-        <IntakeForm eventId={event.id} eventSlug={eventSlug} />
+        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+          <IntakeForm eventId={event.id} eventSlug={eventSlug} />
+        </div>
       </div>
     </div>
   );
