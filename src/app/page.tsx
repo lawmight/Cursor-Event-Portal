@@ -36,7 +36,7 @@ export default function HomePage() {
             href="/calgary-jan-2026"
             className="block w-full h-16 rounded-[24px] bg-white text-black flex items-center justify-center font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-[0.98]"
           >
-            Popup Event Dashboard
+            Event Dashboard
           </Link>
           <p className="text-[10px] text-gray-700 uppercase tracking-[0.3em] font-light pt-4">
             Authorized Access Only
