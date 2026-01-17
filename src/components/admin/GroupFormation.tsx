@@ -68,112 +68,127 @@ export function GroupFormation({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* Stats Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-cursor-purple/10 flex items-center justify-center text-2xl">
-                👥
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{intakes.length}</p>
-                <p className="text-sm text-gray-500">Intake Responses</p>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-xl group-hover:scale-105 transition-all">
+              👥
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-2xl">
-                ✨
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{groups.length}</p>
-                <p className="text-sm text-gray-500">Suggested Groups</p>
-              </div>
+            <div>
+              <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Intake Pulses</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-6 flex items-center justify-center">
-            <Button
-              onClick={handleGenerate}
-              disabled={generating || intakes.length < 2}
-              size="lg"
-              loading={generating}
-            >
-              {generating ? "Generating..." : "Generate Groups with AI"}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-xl group-hover:scale-105 transition-all">
+              ✨
+            </div>
+            <div>
+              <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Proposals</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] flex items-center justify-center">
+          <button
+            onClick={handleGenerate}
+            disabled={generating || intakes.length < 2}
+            className={`w-full py-4 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
+              generating || intakes.length < 2
+                ? "bg-white/5 text-white/20 cursor-not-allowed"
+                : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            }`}
+          >
+            {generating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <span className="text-lg">⚡</span>
+                Synthesize Groups
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 p-4 rounded-xl">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-6 rounded-[24px] text-sm tracking-tight">
           {error}
         </div>
       )}
 
       {/* Intake Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Attendee Goals & Offers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {intakes.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              No intake responses yet. Attendees will submit their goals and offers after checking in.
-            </p>
-          ) : (
-            <div className="divide-y dark:divide-gray-800">
-              {intakes.map((intake) => (
-                <div key={intake.id} className="py-4 first:pt-0 last:pb-0">
-                  <p className="font-medium mb-2">{intake.user?.name || "Anonymous"}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {intake.goals.map((goal) => (
-                      <Badge key={goal} variant="secondary" className="gap-1">
-                        🎯 {GOAL_LABELS[goal] || goal}
-                      </Badge>
-                    ))}
-                    {intake.goals_other && (
-                      <Badge variant="secondary" className="gap-1">
-                        🎯 {intake.goals_other}
-                      </Badge>
-                    )}
-                    {intake.offers.map((offer) => (
-                      <Badge key={offer} variant="outline" className="gap-1">
-                        🤝 {OFFER_LABELS[offer] || offer}
-                      </Badge>
-                    ))}
-                    {intake.offers_other && (
-                      <Badge variant="outline" className="gap-1">
-                        🤝 {intake.offers_other}
-                      </Badge>
-                    )}
-                  </div>
+      <div className="glass rounded-[40px] p-10 border-white/[0.03]">
+        <div className="flex items-center gap-4 mb-10">
+          <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Input Matrix</h3>
+          <div className="h-[1px] flex-1 bg-white/[0.03]" />
+        </div>
+        
+        {intakes.length === 0 ? (
+          <p className="text-gray-800 text-center py-12 text-sm uppercase tracking-[0.2em] font-medium">
+            Awaiting attendee data transmissions
+          </p>
+        ) : (
+          <div className="space-y-8">
+            {intakes.map((intake) => (
+              <div key={intake.id} className="p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-xl font-light tracking-tight text-white/90">{intake.user?.name || "Unknown Identity"}</p>
+                  <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white/40 transition-colors shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <div className="flex flex-wrap gap-3">
+                  {intake.goals.map((goal) => (
+                    <span key={goal} className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
+                      🎯 {GOAL_LABELS[goal] || goal}
+                    </span>
+                  ))}
+                  {intake.goals_other && (
+                    <span className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
+                      🎯 {intake.goals_other}
+                    </span>
+                  )}
+                  {intake.offers.map((offer) => (
+                    <span key={offer} className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                      🤝 {OFFER_LABELS[offer] || offer}
+                    </span>
+                  ))}
+                  {intake.offers_other && (
+                    <span className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                      🤝 {intake.offers_other}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Suggested Groups */}
       {groups.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Suggested Groups</h2>
-          {groups.map((group) => (
-            <GroupCard
-              key={group.id}
-              group={group}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Proposed Formations</h2>
+            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          </div>
+          <div className="space-y-6">
+            {groups.map((group) => (
+              <GroupCard
+                key={group.id}
+                group={group}
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -187,62 +202,60 @@ interface GroupCardProps {
 
 function GroupCard({ group, onStatusChange }: GroupCardProps) {
   const statusColors: Record<GroupStatus, string> = {
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    approved: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    modified: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    pending: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    approved: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+    modified: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    rejected: "text-red-500 bg-red-500/10 border-red-500/20",
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-semibold">{group.name}</h3>
-            <p className="text-sm text-gray-500 mt-1">{group.description}</p>
-          </div>
-          <Badge className={statusColors[group.status]}>{group.status}</Badge>
+    <div className="glass rounded-[48px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all group">
+      <div className="flex items-start justify-between mb-10">
+        <div className="space-y-3">
+          <h3 className="text-3xl font-light tracking-tight text-white/90">{group.name}</h3>
+          <p className="text-gray-700 text-sm tracking-tight leading-relaxed max-w-xl">{group.description}</p>
         </div>
+        <span className={`px-5 py-2 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold border ${statusColors[group.status]}`}>
+          {group.status}
+        </span>
+      </div>
 
-        {/* Members */}
-        <div className="space-y-2 mb-4">
-          {group.members?.map((member) => (
-            <div
-              key={member.id}
-              className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
-            >
-              <span className="font-medium">{member.user?.name || "Unknown"}</span>
-              <span className="text-sm text-gray-500">{member.match_reason}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Actions */}
-        {group.status === "pending" && (
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => onStatusChange(group.id, "approved")}
-            >
-              ✓ Approve
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onStatusChange(group.id, "modified")}
-            >
-              ✎ Modify
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onStatusChange(group.id, "rejected")}
-            >
-              ✕ Reject
-            </Button>
+      {/* Members */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        {group.members?.map((member) => (
+          <div
+            key={member.id}
+            className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all"
+          >
+            <span className="text-lg font-light tracking-tight text-white/90">{member.user?.name || "Unknown"}</span>
+            <span className="text-[10px] uppercase tracking-[0.1em] text-gray-800 font-medium">{member.match_reason}</span>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        ))}
+      </div>
+
+      {/* Actions */}
+      {group.status === "pending" && (
+        <div className="flex flex-wrap gap-4 pt-4">
+          <button
+            onClick={() => onStatusChange(group.id, "approved")}
+            className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+          >
+            Approve Formation
+          </button>
+          <button
+            onClick={() => onStatusChange(group.id, "modified")}
+            className="px-8 py-3 bg-white/5 border border-white/10 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+          >
+            Modify
+          </button>
+          <button
+            onClick={() => onStatusChange(group.id, "rejected")}
+            className="px-8 py-3 text-gray-800 hover:text-red-500 transition-colors font-bold text-xs uppercase tracking-widest"
+          >
+            Discard
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

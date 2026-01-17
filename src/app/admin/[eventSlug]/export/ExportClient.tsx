@@ -101,114 +101,115 @@ export function ExportClient({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Registrations */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle>Registrations</CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {registrations.length} total registrations
-                </p>
-              </div>
+      <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+        <div className="flex items-center justify-between gap-8">
+          <div className="flex items-center gap-6 flex-1">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+              <Users className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
             </div>
-            <Button
-              onClick={exportRegistrations}
-              disabled={exporting !== null || registrations.length === 0}
-              loading={exporting === "registrations"}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-light tracking-tight text-white/90">Identity Matrix</h3>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
+                {registrations.length} Verified Registrations
+              </p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Includes: name, email, check-in status, registration date, and source
-          </p>
-        </CardContent>
-      </Card>
+          <button
+            onClick={exportRegistrations}
+            disabled={exporting !== null || registrations.length === 0}
+            className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
+              exporting !== null || registrations.length === 0
+                ? "bg-white/5 text-white/20 cursor-not-allowed"
+                : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            }`}
+          >
+            {exporting === "registrations" ? (
+              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            Download CSV
+          </button>
+        </div>
+      </div>
 
       {/* Questions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+      <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+        <div className="flex items-center justify-between gap-8">
+          <div className="flex items-center gap-6 flex-1">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+              <MessageCircle className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-light tracking-tight text-white/90">Query Streams</h3>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
+                {questions.length} Active Submissions
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={exportQuestions}
+            disabled={exporting !== null || questions.length === 0}
+            className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
+              exporting !== null || questions.length === 0
+                ? "bg-white/5 text-white/20 cursor-not-allowed"
+                : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            }`}
+          >
+            {exporting === "questions" ? (
+              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            Download CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Survey Responses */}
+      {survey ? (
+        <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+          <div className="flex items-center justify-between gap-8">
+            <div className="flex items-center gap-6 flex-1">
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                <ClipboardCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
               </div>
-              <div>
-                <CardTitle>Q&A</CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {questions.length} total questions
+              <div className="space-y-1">
+                <h3 className="text-2xl font-light tracking-tight text-white/90">Feedback Pulses</h3>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
+                  {surveyResponses.length} Received Inputs
                 </p>
               </div>
             </div>
-            <Button
-              onClick={exportQuestions}
-              disabled={exporting !== null || questions.length === 0}
-              loading={exporting === "questions"}
+            <button
+              onClick={exportSurveyResponses}
+              disabled={exporting !== null || surveyResponses.length === 0}
+              className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
+                exporting !== null || surveyResponses.length === 0
+                  ? "bg-white/5 text-white/20 cursor-not-allowed"
+                  : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              }`}
             >
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
+              {exporting === "survey" ? (
+                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Download CSV
+            </button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Includes: question content, author, upvotes, status, tags, and answer count
+        </div>
+      ) : (
+        <div className="glass rounded-[40px] p-12 text-center border-dashed border-white/5 opacity-40">
+          <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+            No survey matrix detected
           </p>
-        </CardContent>
-      </Card>
-
-      {/* Survey Responses */}
-      {survey && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <ClipboardCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <CardTitle>Survey Responses</CardTitle>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {surveyResponses.length} total responses
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={exportSurveyResponses}
-                disabled={exporting !== null || surveyResponses.length === 0}
-                loading={exporting === "survey"}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Survey: {survey.title}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!survey && (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              No survey published for this event
-            </p>
-          </CardContent>
-        </Card>
+        </div>
       )}
     </div>
+  );
+}
   );
 }
