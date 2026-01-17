@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     };
 
     const cookieStore = await cookies();
-    cookieStore.set("popup_session", JSON.stringify(session), {
+    cookieStore.set("portal_session", JSON.stringify(session), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

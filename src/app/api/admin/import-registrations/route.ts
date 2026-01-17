@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     // Get session from cookie
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("popup_session");
+    const sessionCookie = cookieStore.get("portal_session");
     if (!sessionCookie) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
