@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatTime, isNow, isNext } from "@/lib/utils";
 import type { AgendaItem } from "@/types";
 import { MapPin, User, X, ChevronRight, Clock } from "lucide-react";
+import { AgendaItemTimer } from "@/components/timer/AgendaItemTimer";
 
 interface AgendaListProps {
   items: AgendaItem[];
@@ -86,7 +87,7 @@ export function AgendaList({ items }: AgendaListProps) {
 
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <div className={`text-[11px] font-medium uppercase tracking-[0.2em] ${
                       isCurrentlyNow
                         ? "text-white"
@@ -100,6 +101,9 @@ export function AgendaList({ items }: AgendaListProps) {
                       <div className="text-[10px] text-gray-700 font-medium">
                         {formatDuration(item.start_time, item.end_time)}
                       </div>
+                    )}
+                    {item.start_time && item.end_time && (
+                      <AgendaItemTimer startTime={item.start_time} endTime={item.end_time} />
                     )}
                   </div>
 

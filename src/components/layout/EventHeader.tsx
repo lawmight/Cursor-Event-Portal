@@ -4,15 +4,23 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Event, Announcement } from "@/types";
 import { cn } from "@/lib/utils";
+import { EventTimer } from "@/components/timer/EventTimer";
 
 interface EventHeaderProps {
   event: Event;
   announcement?: Announcement | null;
+  showTimer?: boolean;
 }
 
-export function EventHeader({ event, announcement }: EventHeaderProps) {
+export function EventHeader({ event, announcement, showTimer = true }: EventHeaderProps) {
+  // Event starts at 5:00 PM MST on Jan 28, 2026 = 2026-01-29T00:00:00Z (midnight UTC on Jan 29)
+  // Red threshold at 8:30 PM = 3.5 hours = 210 minutes
+  const eventStartTime = "2026-01-29T00:00:00Z";
+  const redThreshold = 210; // 3.5 hours = 8:30 PM
+
   return (
     <header className="sticky top-0 z-40">
+      {showTimer && <EventTimer startTime={eventStartTime} redThreshold={redThreshold} />}
       {/* Announcement Banner */}
       {announcement && (
         <div className="bg-white text-black px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-center font-bold animate-fade-in">

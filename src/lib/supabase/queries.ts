@@ -309,11 +309,24 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
   return data;
 }
 
+// Slide queries
+export async function getSlides(eventId: string): Promise<Slide[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("slides")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("sort_order", { ascending: true });
+
+  if (error) return [];
+  return data;
+}
+
 // Display page data
 export async function getDisplayPageData(eventId: string): Promise<DisplayPageData | null> {
   const supabase = await createClient();
 
-  const [eventResult, agendaResult, questionsResult, announcementsResult] = await Promise.all([
+  const [eventResult, agendaResult, questionsResult, announcementsResult, slidesResult] = await Promise.all([
     supabase.from("events").select("*").eq("id", eventId).single(),
     supabase.from("agenda_items").select("*").eq("event_id", eventId).order("sort_order"),
     supabase
@@ -330,6 +343,11 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(3),
+    supabase
+      .from("slides")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("sort_order", { ascending: true }),
   ]);
 
   if (eventResult.error || !eventResult.data) return null;
@@ -360,6 +378,7 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
     nextSession,
     recentQuestions: questionsResult.data || [],
     announcements: announcementsResult.data || [],
+    slides: slidesResult.data || [],
   };
 }
 

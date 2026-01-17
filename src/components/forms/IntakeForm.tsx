@@ -104,8 +104,18 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
           disabled={loading}
           className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.3em] hover:text-white transition-colors"
         >
-          Skip
+          Skip for Now
         </button>
+      </div>
+
+      {/* Consent explanation */}
+      <div className="glass rounded-2xl p-4 bg-white/[0.02] border-white/5 space-y-2">
+        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-600 font-medium">
+          ✓ Optional & Voluntary
+        </p>
+        <p className="text-[10px] text-gray-500 leading-relaxed">
+          This data helps us match you with relevant people and opportunities. You can skip this step and still participate in all event features. Data is only used for this event and will not be shared externally.
+        </p>
       </div>
 
       <div className="space-y-10">

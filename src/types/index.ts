@@ -218,6 +218,16 @@ export interface SuggestedGroupMember {
   intake?: AttendeeIntake;
 }
 
+// Slide types
+export interface Slide {
+  id: string;
+  event_id: string;
+  title: string | null;
+  image_url: string;
+  sort_order: number;
+  created_at: string;
+}
+
 // Display page types
 export interface DisplayPageData {
   event: Event;
@@ -225,6 +235,7 @@ export interface DisplayPageData {
   nextSession: AgendaItem | null;
   recentQuestions: Question[];
   announcements: Announcement[];
+  slides: Slide[];
 }
 
 // LLM matching types

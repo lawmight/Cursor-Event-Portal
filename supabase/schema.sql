@@ -135,6 +135,8 @@ CREATE INDEX IF NOT EXISTS idx_surveys_event_id ON surveys(event_id);
 CREATE INDEX IF NOT EXISTS idx_survey_responses_survey_id ON survey_responses(survey_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_event_id ON sessions(event_id);
+CREATE INDEX IF NOT EXISTS idx_slides_event_id ON slides(event_id);
+CREATE INDEX IF NOT EXISTS idx_slides_sort_order ON slides(sort_order);
 
 -- Function to update question upvotes count
 CREATE OR REPLACE FUNCTION update_question_upvotes()
@@ -243,6 +245,16 @@ CREATE TABLE IF NOT EXISTS suggested_group_members (
   UNIQUE(group_id, user_id)
 );
 
+-- Slides table for display screen
+CREATE TABLE IF NOT EXISTS slides (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  title TEXT,
+  image_url TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Add intake completion tracking to registrations
 ALTER TABLE registrations ADD COLUMN IF NOT EXISTS intake_completed_at TIMESTAMPTZ;
 
@@ -313,6 +325,15 @@ CREATE POLICY "Polls can be deleted by service role" ON polls FOR DELETE USING (
 CREATE POLICY "Poll votes are viewable by everyone" ON poll_votes FOR SELECT USING (true);
 CREATE POLICY "Poll votes can be inserted by service role" ON poll_votes FOR INSERT WITH CHECK (true);
 CREATE POLICY "Poll votes can be deleted by service role" ON poll_votes FOR DELETE USING (true);
+
+-- RLS for slides
+ALTER TABLE slides ENABLE ROW LEVEL SECURITY;
+
+-- Slides policies
+CREATE POLICY "Slides are viewable by everyone" ON slides FOR SELECT USING (true);
+CREATE POLICY "Slides can be inserted by service role" ON slides FOR INSERT WITH CHECK (true);
+CREATE POLICY "Slides can be updated by service role" ON slides FOR UPDATE USING (true);
+CREATE POLICY "Slides can be deleted by service role" ON slides FOR DELETE USING (true);
 
 -- Insert sample event
 INSERT INTO events (slug, code, name, venue, address, capacity, start_time, end_time, status)
