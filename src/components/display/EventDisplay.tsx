@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { DisplayPageData, Question } from "@/types";
+import type { DisplayPageData } from "@/types";
 
 interface EventDisplayProps {
   initialData: DisplayPageData;
@@ -242,25 +240,5 @@ export function EventDisplay({
         </div>
       </footer>
     </div>
-  );
-}
-}
-
-function QuestionDisplayCard({ question }: { question: Question }) {
-  return (
-    <Card className="bg-gray-800/50 border-gray-700 p-4">
-      <div className="flex gap-3">
-        <div className="flex flex-col items-center">
-          <span className="text-cursor-purple">▲</span>
-          <span className="text-lg font-bold">{question.upvotes}</span>
-        </div>
-        <div className="flex-1">
-          <p className="text-lg">{question.content}</p>
-          <p className="text-sm text-gray-500 mt-2">
-            {question.user?.name || "Anonymous"}
-          </p>
-        </div>
-      </div>
-    </Card>
   );
 }
