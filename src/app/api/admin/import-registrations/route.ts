@@ -30,14 +30,18 @@ export async function POST(request: NextRequest) {
 
     // Verify admin role
     const supabase = await createServiceClient();
-    const { data: user } = await supabase
+    const { data: user, error: userError } = await supabase
       .from("users")
       .select("role")
       .eq("id", session.userId)
       .single();
 
     if (!user || user.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+      console.error("Admin check failed:", { userId: session.userId, user, userError });
+      return NextResponse.json({
+        error: "Admin access required",
+        debug: { userId: session.userId, userFound: !!user, role: user?.role }
+      }, { status: 403 });
     }
 
     // Verify event exists
