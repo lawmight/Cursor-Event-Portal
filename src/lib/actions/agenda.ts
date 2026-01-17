@@ -10,11 +10,11 @@ export async function createAgendaItem(
   eventSlug: string,
   data: {
     title: string;
-    description?: string;
-    location?: string;
-    speaker?: string;
-    start_time?: string;
-    end_time?: string;
+    description?: string | null;
+    location?: string | null;
+    speaker?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
     sort_order?: number;
   }
 ) {
@@ -78,11 +78,11 @@ export async function updateAgendaItem(
   eventSlug: string,
   data: Partial<{
     title: string;
-    description: string;
-    location: string;
-    speaker: string;
-    start_time: string;
-    end_time: string;
+    description: string | null;
+    location: string | null;
+    speaker: string | null;
+    start_time: string | null;
+    end_time: string | null;
     sort_order: number;
   }>
 ) {
