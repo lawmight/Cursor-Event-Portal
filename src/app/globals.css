@@ -40,11 +40,11 @@ body {
 
 /* Glass effect */
 .glass {
-  background: var(--card-bg);
+  background: rgba(20, 20, 20, 0.6);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid var(--card-border);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .floating {
@@ -64,7 +64,7 @@ body {
 
 @layer utilities {
   .bg-black-gradient {
-    background: radial-gradient(circle at top center, #111111 0%, #000000 100%);
+    background: radial-gradient(circle at top center, #1a1a1a 0%, #0a0a0a 50%, #000000 100%);
   }
   
   .text-shadow-glow {

@@ -99,7 +99,7 @@ export function EventDisplay({
             </div>
             <div className="text-left space-y-1">
               <h1 className="text-6xl font-light tracking-tight">{data.event.name}</h1>
-              <p className="text-[14px] uppercase tracking-[0.6em] text-gray-700 font-medium">{data.event.venue}</p>
+              <p className="text-[14px] uppercase tracking-[0.6em] text-gray-400 font-medium">{data.event.venue}</p>
             </div>
           </div>
           <div className="text-right space-y-1">
@@ -110,7 +110,7 @@ export function EventDisplay({
                 hour12: false
               })}
             </time>
-            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-800 font-medium">System Active</p>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-medium">System Active</p>
           </div>
         </div>
       </header>
@@ -119,20 +119,20 @@ export function EventDisplay({
         {/* Left Side: Sessions */}
         <div className="col-span-8 space-y-16">
           {/* Now Playing */}
-          <div className="glass rounded-[56px] p-16 relative overflow-hidden group border-white/[0.03]">
+          <div className="glass rounded-[56px] p-16 relative overflow-hidden group border-white/20">
             {data.currentSession ? (
               <div className="space-y-12">
                 <div className="flex items-center gap-6">
                   <div className="px-5 py-2 rounded-full border border-white/20 text-white text-[11px] font-medium uppercase tracking-[0.4em]">
                     Now
                   </div>
-                  <div className="h-[1px] flex-1 bg-white/[0.03]" />
+                  <div className="h-[1px] flex-1 bg-white/20" />
                 </div>
                 
                 <div className="space-y-6">
                   <h2 className="text-8xl font-light tracking-tight leading-[1.1] text-shadow-glow">{data.currentSession.title}</h2>
                   {data.currentSession.speaker && (
-                    <p className="text-4xl text-gray-600 font-light tracking-tight">
+                    <p className="text-4xl text-gray-300 font-light tracking-tight">
                       {data.currentSession.speaker}
                     </p>
                   )}
@@ -140,7 +140,7 @@ export function EventDisplay({
 
                 {/* Progress bar - Ultra Minimal */}
                 <div className="pt-12">
-                  <div className="h-[2px] bg-white/[0.03] rounded-full overflow-hidden">
+                  <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-white transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
                       style={{ width: `${getSessionProgress()}%` }}
@@ -158,27 +158,27 @@ export function EventDisplay({
           {/* Up Next & Announcements */}
           <div className="grid grid-cols-2 gap-16">
             {data.nextSession && (
-              <div className="glass rounded-[48px] p-12 space-y-8 border-white/[0.02]">
+              <div className="glass rounded-[48px] p-12 space-y-8 border-white/20">
                 <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-700">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-400">
                     Up Next
                   </div>
-                  <div className="text-2xl font-light tracking-tight text-white/40 tabular-nums">
+                  <div className="text-2xl font-light tracking-tight text-white/70 tabular-nums">
                     {countdown}
                   </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-4xl font-light tracking-tight leading-tight">{data.nextSession.title}</h3>
                   {data.nextSession.speaker && (
-                    <p className="text-gray-600 font-medium uppercase tracking-[0.3em] text-[10px]">{data.nextSession.speaker}</p>
+                    <p className="text-gray-400 font-medium uppercase tracking-[0.3em] text-[10px]">{data.nextSession.speaker}</p>
                   )}
                 </div>
               </div>
             )}
 
             {data.announcements.length > 0 && (
-              <div className="glass rounded-[48px] p-12 bg-white/[0.01] border-white/10">
-                <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-700 mb-8">
+              <div className="glass rounded-[48px] p-12 bg-white/5 border-white/20">
+                <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-400 mb-8">
                   Bulletin
                 </div>
                 <div className="space-y-6">
@@ -196,8 +196,8 @@ export function EventDisplay({
         {/* Right Side: Q&A */}
         <div className="col-span-4 flex flex-col space-y-12">
           <div className="flex items-center gap-6 px-6">
-            <h3 className="text-[11px] font-medium uppercase tracking-[0.5em] text-gray-700">Live Stream</h3>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <h3 className="text-[11px] font-medium uppercase tracking-[0.5em] text-gray-400">Live Stream</h3>
+            <div className="h-[1px] flex-1 bg-white/20" />
           </div>
 
           <div className="flex-1 space-y-8 overflow-hidden">
@@ -211,15 +211,15 @@ export function EventDisplay({
             ) : (
               <div className="space-y-8 animate-slide-up">
                 {data.recentQuestions.slice(0, 4).map((question) => (
-                  <div key={question.id} className="glass rounded-[40px] p-10 space-y-6 border-white/[0.02] hover:bg-white/[0.02] transition-colors">
+                  <div key={question.id} className="glass rounded-[40px] p-10 space-y-6 border-white/20 hover:bg-white/10 transition-colors">
                     <div className="flex gap-8">
                       <div className="flex flex-col items-center gap-2">
-                        <div className="w-[1px] h-6 bg-gradient-to-t from-white/40 to-transparent" />
+                        <div className="w-[1px] h-6 bg-gradient-to-t from-white/60 to-transparent" />
                         <span className="text-2xl font-light tabular-nums">{question.upvotes}</span>
                       </div>
                       <div className="flex-1 space-y-4">
                         <p className="text-2xl font-light tracking-tight leading-relaxed">{question.content}</p>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-medium">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">
                           {question.user?.name || "Anonymous"}
                         </p>
                       </div>
@@ -232,11 +232,11 @@ export function EventDisplay({
         </div>
       </div>
 
-      <footer className="mt-20 py-10 border-t border-white/[0.03] flex justify-between items-center z-10">
-        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-800 font-medium">Pop-Up Calgary / MMXXVI</p>
+      <footer className="mt-20 py-10 border-t border-white/20 flex justify-between items-center z-10">
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up Calgary / MMXXVI</p>
         <div className="flex items-center gap-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-800 font-medium">Event Portal</p>
-          <span className="text-[10px] font-medium text-white/40 px-5 py-2 bg-white/[0.02] rounded-full border border-white/[0.05]">luma.com/cursor</span>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Event Portal</p>
+          <span className="text-[10px] font-medium text-white/70 px-5 py-2 bg-white/10 rounded-full border border-white/20">luma.com/cursor</span>
         </div>
       </footer>
     </div>
