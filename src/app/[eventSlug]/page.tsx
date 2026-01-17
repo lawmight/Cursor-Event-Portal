@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getEventBySlug, getEventStats } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { AttendeeCheckinForm } from "@/components/forms/AttendeeCheckinForm";
+import { PreEventIntakeAccess } from "@/components/forms/PreEventIntakeAccess";
 import { formatDate, formatTime } from "@/lib/utils";
 
 interface EventPageProps {
@@ -18,10 +19,23 @@ export default async function EventPage({ params }: EventPageProps) {
     notFound();
   }
 
-  // Check if already registered
+  // Check if already registered and checked in
   const session = await getSession();
   if (session && session.eventId === event.id) {
-    redirect(`/${eventSlug}/agenda`);
+    // Check if checked in - if yes, go to agenda; if no, show intake option
+    const { createServiceClient } = await import("@/lib/supabase/server");
+    const supabase = await createServiceClient();
+    const { data: registration } = await supabase
+      .from("registrations")
+      .select("checked_in_at")
+      .eq("event_id", event.id)
+      .eq("user_id", session.userId)
+      .single();
+    
+    if (registration?.checked_in_at) {
+      redirect(`/${eventSlug}/agenda`);
+    }
+    // If not checked in but has session, they can complete intake pre-event
   }
 
   const stats = await getEventStats(event.id);
@@ -61,6 +75,11 @@ export default async function EventPage({ params }: EventPageProps) {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Pre-Event Intake Access */}
+        <div className="animate-slide-up" style={{ animationDelay: "50ms" }}>
+          <PreEventIntakeAccess eventId={event.id} eventSlug={eventSlug} />
         </div>
 
         {/* Main Content Area */}

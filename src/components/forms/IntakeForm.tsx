@@ -65,7 +65,9 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
       setError(result.error);
       setLoading(false);
     } else {
-      router.push(`/${eventSlug}/agenda`);
+      // Redirect based on check-in status
+      router.push(`/${eventSlug}`);
+      router.refresh();
     }
   };
 
@@ -89,7 +91,9 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
       setError(result.error);
       setLoading(false);
     } else {
-      router.push(`/${eventSlug}/agenda`);
+      // Redirect based on check-in status
+      router.push(`/${eventSlug}`);
+      router.refresh();
     }
   };
 

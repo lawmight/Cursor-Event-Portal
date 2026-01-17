@@ -17,7 +17,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
     notFound();
   }
 
-  // Check if registered
+  // Check if registered (session can be from check-in OR pre-event intake access)
   const session = await getSession();
   if (!session || session.eventId !== event.id) {
     redirect(`/${eventSlug}`);
@@ -26,7 +26,21 @@ export default async function IntakePage({ params }: IntakePageProps) {
   // Check if already completed intake
   const intakeStatus = await getIntakeStatus(event.id, session.userId);
   if (intakeStatus.completed) {
-    redirect(`/${eventSlug}/agenda`);
+    // If checked in, go to agenda; otherwise go back to main page
+    const { createServiceClient } = await import("@/lib/supabase/server");
+    const supabase = await createServiceClient();
+    const { data: registration } = await supabase
+      .from("registrations")
+      .select("checked_in_at")
+      .eq("event_id", event.id)
+      .eq("user_id", session.userId)
+      .single();
+    
+    if (registration?.checked_in_at) {
+      redirect(`/${eventSlug}/agenda`);
+    } else {
+      redirect(`/${eventSlug}`);
+    }
   }
 
   return (
