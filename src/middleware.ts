@@ -16,8 +16,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protected routes for admin (except login page)
-  if (request.nextUrl.pathname.includes("/admin/") && !request.nextUrl.pathname.includes("/admin/login")) {
+  // Protected routes for admin (except login page and API routes)
+  if (
+    request.nextUrl.pathname.startsWith("/admin/") &&
+    !request.nextUrl.pathname.startsWith("/admin/login") &&
+    !request.nextUrl.pathname.startsWith("/api/")
+  ) {
     const sessionCookie = request.cookies.get("portal_session");
     if (!sessionCookie) {
       const url = request.nextUrl.clone();
