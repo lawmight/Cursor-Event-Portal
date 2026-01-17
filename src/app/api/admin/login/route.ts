@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Find an event they're registered for (or any active event)
     const { data: registration } = await supabase
       .from("registrations")
-      .select("event_id, event:events(slug)")
+      .select("event_id, events(slug)")
       .eq("user_id", user.id)
       .limit(1)
       .single();
@@ -49,10 +49,13 @@ export async function POST(request: NextRequest) {
     let eventId: string;
     let eventSlug: string;
 
-    if (registration && registration.event) {
+    if (registration && registration.events) {
       eventId = registration.event_id;
-      const event = registration.event as { slug: string };
-      eventSlug = event.slug;
+      // Handle both array and single object responses from Supabase
+      const eventData = Array.isArray(registration.events)
+        ? registration.events[0]
+        : registration.events;
+      eventSlug = (eventData as { slug: string }).slug;
     } else {
       // Find any published event
       const { data: anyEvent } = await supabase
