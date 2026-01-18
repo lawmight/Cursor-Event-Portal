@@ -23,8 +23,15 @@ async function generateGroupSuggestions(intakes: AttendeeIntake[]) {
   const attendeeSummaries = intakes.map((intake) => ({
     id: intake.user_id,
     name: intake.user?.name || "Anonymous",
-    goals: [...intake.goals, intake.goals_other].filter(Boolean),
-    offers: [...intake.offers, intake.offers_other].filter(Boolean),
+    goals: (() => {
+      const goals = [...intake.goals, intake.goals_other].filter(Boolean);
+      return goals.length > 0 ? goals : ["general networking"];
+    })(),
+    offers: (() => {
+      const offers = [...intake.offers, intake.offers_other].filter(Boolean);
+      return offers.length > 0 ? offers : ["open to connect"];
+    })(),
+    skipped: intake.skipped,
   }));
 
   const targetGroupSize = Math.min(5, Math.max(3, Math.ceil(intakes.length / 3)));
@@ -35,15 +42,16 @@ CRITICAL MATCHING STRATEGY:
 - For each person, identify who in the pool can BEST help them achieve their stated GOALS
 - Prioritize matches where Person A's OFFERS directly address Person B's GOALS
 - Create groups where there are MULTIPLE mutual benefit connections (not just one-to-one)
-- Ensure every person in a group has at least one other person whose offers align with their goals
+- Ensure every person with stated goals has at least one other person whose offers align with their goals
 - Maximize the number of "value exchanges" within each group
+- Some attendees may have skipped the intake and have generic goals/offers; still assign them to a group based on best-fit and balance
 
 Attendees:
 ${JSON.stringify(attendeeSummaries, null, 2)}
 
 Your task:
 Create ${Math.ceil(attendeeSummaries.length / targetGroupSize)} groups of ${targetGroupSize}-${targetGroupSize + 1} people each, where:
-1. Each person's GOALS are matched with at least one other person's OFFERS in the same group
+1. When goals are provided, each person's GOALS are matched with at least one other person's OFFERS in the same group
 2. Groups enable multiple mutual benefit connections (Person A helps Person B, Person B helps Person C, Person C helps Person A, etc.)
 3. Each group has a clear theme based on the primary value exchange opportunities
 4. Every attendee is placed in exactly one group

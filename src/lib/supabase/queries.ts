@@ -3,6 +3,7 @@ import { createClient as createDirectClient } from "@supabase/supabase-js";
 import type {
   Event,
   User,
+  UserRole,
   Registration,
   AgendaItem,
   Announcement,
@@ -406,38 +407,83 @@ export async function getAttendeeIntake(
 }
 
 export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]> {
-  const supabase = await createClient();
+  const supabase = await createServiceClient();
 
-  // First get all checked-in user IDs for this event
-  const { data: checkedInRegs } = await supabase
+  // First get all checked-in registrations with user info
+  const { data: checkedInRegs, error: checkedInError } = await supabase
     .from("registrations")
-    .select("user_id")
+    .select("user_id, created_at, user:users(id, name, email, role, created_at)")
     .eq("event_id", eventId)
-    .not("checked_in_at", "is", null);
+    .not("checked_in_at", "is", null)
+    .order("created_at", { ascending: false });
 
-  const checkedInUserIds = (checkedInRegs || []).map((r) => r.user_id);
-
-  if (checkedInUserIds.length === 0) {
+  if (checkedInError) {
+    console.error("[getEventIntakes] Error loading checked-in registrations:", checkedInError);
     return [];
   }
 
-  // Then get intakes for those users, excluding admins
+  const checkedInUsers = (checkedInRegs || [])
+    .map((reg) => {
+      const user = Array.isArray(reg.user) ? reg.user[0] : reg.user;
+      if (!user || typeof user !== "object") return null;
+      return {
+        user_id: String(reg.user_id),
+        created_at: String(reg.created_at),
+        user: {
+          id: String(user.id),
+          name: String(user.name),
+          email: user.email ? String(user.email) : null,
+          role: user.role as UserRole,
+          created_at: user.created_at ? String(user.created_at) : "",
+        },
+      };
+    })
+    .filter((reg) => reg !== null);
+
+  if (checkedInUsers.length === 0) {
+    return [];
+  }
+
+  const checkedInUserIds = checkedInUsers.map((reg) => reg.user_id);
+
+  // Then get intakes for those users (include skipped and missing)
   const { data, error } = await supabase
     .from("attendee_intakes")
-    .select("*, user:users(*)")
+    .select("*")
     .eq("event_id", eventId)
-    .eq("skipped", false)
     .in("user_id", checkedInUserIds)
-    .neq("user.role", "admin")
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("[getEventIntakes] Error:", error);
-    return [];
   }
 
-  // Filter out admins (in case the neq didn't work on joined table)
-  return (data || []).filter((intake) => intake.user?.role !== "admin");
+  const intakeByUserId = new Map<string, AttendeeIntake>();
+  (data || []).forEach((intake) => {
+    intakeByUserId.set(intake.user_id, intake as AttendeeIntake);
+  });
+
+  return checkedInUsers.map((reg) => {
+    const intake = intakeByUserId.get(reg.user_id);
+    if (intake) {
+      return {
+        ...intake,
+        user: reg.user,
+      };
+    }
+    return {
+      id: `missing-${reg.user_id}`,
+      event_id: eventId,
+      user_id: reg.user_id,
+      goals: [],
+      goals_other: null,
+      offers: [],
+      offers_other: null,
+      skipped: true,
+      created_at: reg.created_at,
+      user: reg.user,
+    };
+  });
 }
 
 // Group queries
