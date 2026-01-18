@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +76,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
     }
   };
 
-  const submitIntakeData = async () => {
+  const submitIntakeData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -95,7 +95,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
       router.push(`/${eventSlug}`);
       router.refresh();
     }
-  };
+  }, [eventId, eventSlug, goals, goalsOther, offers, offersOther, router]);
 
   const handleSubmit = async () => {
     if (step === "goals") {
@@ -231,6 +231,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
             {loading ? "..." : step === "goals" ? "Continue" : "Complete"}
           </button>
         </div>
+      </div>
       </div>
     </>
   );
