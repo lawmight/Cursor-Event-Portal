@@ -48,7 +48,7 @@ export function useRealtimeSubscription({
     const supabase = createClient();
     const name = channelName || `realtime-${eventId}-${Date.now()}`;
 
-    let channel: ReturnType<typeof supabase.channel> = supabase.channel(name);
+    let channel: any = supabase.channel(name);
 
     subscriptions.forEach((config) => {
       const filter = config.filter || `event_id=eq.${eventId}`;
