@@ -417,7 +417,10 @@ export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]
 
 // Group queries
 export async function getSuggestedGroups(eventId: string): Promise<SuggestedGroup[]> {
-  const supabase = await createClient();
+  // Use service client to bypass RLS since groups are created by service client
+  const supabase = await createServiceClient();
+  console.log("[getSuggestedGroups] Fetching groups for event:", eventId);
+  
   const { data, error } = await supabase
     .from("suggested_groups")
     .select(`
@@ -431,7 +434,12 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
     .eq("event_id", eventId)
     .order("created_at", { ascending: false });
 
-  if (error) return [];
+  if (error) {
+    console.error("[getSuggestedGroups] Error fetching groups:", error);
+    return [];
+  }
+  
+  console.log("[getSuggestedGroups] Found groups:", data?.length || 0);
   return data;
 }
 
