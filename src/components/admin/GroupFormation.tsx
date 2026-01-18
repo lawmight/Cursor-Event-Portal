@@ -143,7 +143,7 @@ export function GroupFormation({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/attendees.png"
                 alt="Attendees"
@@ -152,7 +152,7 @@ export function GroupFormation({
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Intake Responses</p>
             </div>
@@ -161,7 +161,7 @@ export function GroupFormation({
 
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/proposals.png"
                 alt="Proposals"
@@ -170,7 +170,7 @@ export function GroupFormation({
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Proposals</p>
             </div>
@@ -179,7 +179,7 @@ export function GroupFormation({
 
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/group-synthesis.png"
                 alt="Synthesize"
@@ -188,24 +188,26 @@ export function GroupFormation({
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <button
-              onClick={handleGenerate}
-              disabled={generating || intakes.length < 2}
-              className={`flex-1 py-3 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
-                generating || intakes.length < 2
-                  ? "bg-white/5 text-white/20 cursor-not-allowed"
-                  : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-              }`}
-            >
-              {generating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  {progressMessage ? "Generating..." : "Processing..."}
-                </>
-              ) : (
-                "Synthesize Groups"
-              )}
-            </button>
+            <div className="flex-1">
+              <button
+                onClick={handleGenerate}
+                disabled={generating || intakes.length < 2}
+                className={`w-full py-4 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
+                  generating || intakes.length < 2
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                }`}
+              >
+                {generating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    {progressMessage ? "Generating..." : "Processing..."}
+                  </>
+                ) : (
+                  "Synthesize Groups"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
