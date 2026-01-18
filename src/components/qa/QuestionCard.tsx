@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { upvoteQuestion, createAnswer, updateQuestionStatus, acceptAnswer } from
 import { timeAgo } from "@/lib/utils";
 import type { Question, UserRole } from "@/types";
 import { ChevronUp, MessageCircle, Check, Pin, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface QuestionCardProps {
   question: Question;
@@ -18,6 +20,7 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, eventSlug, userRole, userId }: QuestionCardProps) {
+  const router = useRouter();
   const [showAnswerForm, setShowAnswerForm] = useState(false);
   const [answerContent, setAnswerContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,28 +29,50 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
 
   const handleUpvote = async () => {
     setLoading(true);
-    await upvoteQuestion(question.id, eventSlug);
+    const result = await upvoteQuestion(question.id, eventSlug);
+    if (result.error) {
+      toast.error(result.error);
+    }
+    router.refresh();
     setLoading(false);
   };
 
   const handleSubmitAnswer = async () => {
     if (!answerContent.trim()) return;
     setLoading(true);
-    await createAnswer(question.id, eventSlug, { content: answerContent.trim() });
-    setAnswerContent("");
-    setShowAnswerForm(false);
+    const result = await createAnswer(question.id, eventSlug, { content: answerContent.trim() });
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Reply posted");
+      setAnswerContent("");
+      setShowAnswerForm(false);
+      router.refresh();
+    }
     setLoading(false);
   };
 
   const handleStatusChange = async (status: "answered" | "pinned" | "hidden") => {
     setLoading(true);
-    await updateQuestionStatus(question.id, status, eventSlug);
+    const result = await updateQuestionStatus(question.id, status, eventSlug);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(status === "hidden" ? "Question discarded" : `Question ${status}`);
+      router.refresh();
+    }
     setLoading(false);
   };
 
   const handleAcceptAnswer = async (answerId: string) => {
     setLoading(true);
-    await acceptAnswer(answerId, question.id, eventSlug);
+    const result = await acceptAnswer(answerId, question.id, eventSlug);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Answer verified");
+      router.refresh();
+    }
     setLoading(false);
   };
 

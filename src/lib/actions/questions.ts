@@ -108,23 +108,29 @@ export async function createAnswer(
   eventSlug: string,
   formData: AnswerFormData
 ) {
+  console.log("[createAnswer] Called with:", { questionId, eventSlug, contentLength: formData.content?.length });
+  
   const session = await getSession();
   if (!session) {
+    console.log("[createAnswer] No session found");
     return { error: "Not authenticated" };
   }
+  console.log("[createAnswer] Session found:", session.userId);
 
   const supabase = await createServiceClient();
 
-  const { error } = await supabase.from("answers").insert({
+  const { data, error } = await supabase.from("answers").insert({
     question_id: questionId,
     user_id: session.userId,
     content: formData.content,
-  });
+  }).select();
 
   if (error) {
+    console.error("[createAnswer] Failed to create answer:", error);
     return { error: "Failed to create answer" };
   }
 
+  console.log("[createAnswer] Successfully created answer:", data?.[0]?.id);
   revalidatePath(`/${eventSlug}/qa`);
   revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
@@ -135,21 +141,28 @@ export async function updateQuestionStatus(
   status: QuestionStatus,
   eventSlug: string
 ) {
+  console.log("[updateQuestionStatus] Called with:", { questionId, status, eventSlug });
+  
   const session = await getSession();
   if (!session) {
+    console.log("[updateQuestionStatus] No session found");
     return { error: "Not authenticated" };
   }
+  console.log("[updateQuestionStatus] Session found:", session.userId);
 
   const supabase = await createServiceClient();
 
   // Verify user is staff/admin
-  const { data: user } = await supabase
+  const { data: user, error: userError } = await supabase
     .from("users")
     .select("role")
     .eq("id", session.userId)
     .single();
 
+  console.log("[updateQuestionStatus] User role check:", { role: user?.role, error: userError?.message });
+
   if (!user || !["staff", "admin", "facilitator"].includes(user.role)) {
+    console.log("[updateQuestionStatus] Not authorized - role:", user?.role);
     return { error: "Not authorized" };
   }
 
@@ -159,9 +172,11 @@ export async function updateQuestionStatus(
     .eq("id", questionId);
 
   if (error) {
+    console.error("[updateQuestionStatus] Failed to update:", error);
     return { error: "Failed to update question" };
   }
 
+  console.log("[updateQuestionStatus] Successfully updated question status to:", status);
   revalidatePath(`/${eventSlug}/qa`);
   revalidatePath(`/admin/${eventSlug}/qa`);
   return { success: true };
