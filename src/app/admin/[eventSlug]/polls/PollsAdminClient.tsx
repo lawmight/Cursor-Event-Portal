@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPoll, updatePoll, deletePoll, togglePollActive } from "@/lib/actions/polls";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function PollsAdminClient({
   eventSlug,
   initialPolls,
 }: PollsAdminClientProps) {
+  const router = useRouter();
   const [polls, setPolls] = useState(initialPolls);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function PollsAdminClient({
           p.id === pollId ? { ...p, is_active: result.is_active! } : p
         )
       );
+      router.refresh();
     }
     setLoading(null);
   };
@@ -53,6 +56,7 @@ export function PollsAdminClient({
     const result = await deletePoll(pollId, eventSlug);
     if (result.success) {
       setPolls((prev) => prev.filter((p) => p.id !== pollId));
+      router.refresh();
     }
     setLoading(null);
   };
@@ -80,6 +84,7 @@ export function PollsAdminClient({
         ...prev,
       ]);
       setShowCreateModal(false);
+      router.refresh();
       return { success: true };
     } else {
       const errorMsg = result.error || "Failed to create poll";

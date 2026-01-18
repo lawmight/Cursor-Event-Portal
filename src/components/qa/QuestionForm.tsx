@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ interface QuestionFormProps {
 const TAGS = ["Setup", "Cursor", "Prompting", "Debugging", "Other"];
 
 export function QuestionForm({ eventId, eventSlug }: QuestionFormProps) {
+  const router = useRouter();
   const [content, setContent] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +55,7 @@ export function QuestionForm({ eventId, eventSlug }: QuestionFormProps) {
         setContent("");
         setSelectedTags([]);
         setSuccess(true);
+        router.refresh(); // Refresh to show the new question
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (err) {

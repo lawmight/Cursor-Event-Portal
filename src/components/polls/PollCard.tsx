@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { votePoll } from "@/lib/actions/polls";
 import { cn } from "@/lib/utils";
 import { Check, Clock, Users } from "lucide-react";
@@ -32,6 +33,7 @@ function formatTimeRemaining(endsAt: string): string {
 }
 
 export function PollCard({ poll, eventSlug }: PollCardProps) {
+  const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<number | null>(
     poll.user_vote?.option_index ?? null
   );
@@ -88,6 +90,9 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
       setTotalVotes(poll.total_votes);
       setSelectedOption(poll.user_vote?.option_index ?? null);
       setHasVoted(!!poll.user_vote);
+    } else {
+      // Refresh to get updated vote counts
+      router.refresh();
     }
 
     setLoading(false);
