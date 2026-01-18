@@ -9,12 +9,16 @@ interface SurveyConsentModalProps {
   eventId: string;
   eventSlug: string;
   userEmail: string | null;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 export function SurveyConsentModal({
   eventId,
   eventSlug,
   userEmail,
+  onClose,
+  onSuccess,
 }: SurveyConsentModalProps) {
   const [consented, setConsented] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +28,7 @@ export function SurveyConsentModal({
     e.preventDefault();
     
     if (!consented) {
-      setError("You must agree to the terms to continue");
+      setError("Please agree to continue");
       return;
     }
 
@@ -38,8 +42,11 @@ export function SurveyConsentModal({
         setError(result.error);
         setSubmitting(false);
       } else {
-        // Success - modal will be hidden by parent component via refresh
-        window.location.reload();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          window.location.reload();
+        }
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -48,97 +55,98 @@ export function SurveyConsentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl glass rounded-[40px] p-10 border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="space-y-8">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="relative w-full max-w-md glass rounded-[32px] p-8 border border-white/10 shadow-2xl">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+
+        <div className="space-y-6">
           {/* Header */}
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl font-light text-white tracking-tight">
-              Data Collection Consent
+          <div className="space-y-2">
+            <h2 className="text-xl font-light text-white tracking-tight">
+              Data Consent
             </h2>
-            <p className="text-sm text-gray-400">
-              Required to access the event portal
+            <p className="text-xs text-gray-400">
+              Required to share your signals
             </p>
           </div>
 
-          {/* Consent Text */}
-          <div className="space-y-6 text-sm text-gray-300 leading-relaxed">
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <p className="font-medium text-white mb-4 text-base">
-                By entering, you agree to:
-              </p>
-              
-              <div className="space-y-4">
-                <p>
-                  The <strong className="text-white">Cursor Calgary community organizers</strong> may collect, 
-                  use, and store your survey response data, including responses tied to your email address 
-                  ({userEmail || "your provided email"}), for the following purposes:
-                </p>
+          {/* Concise Consent Text */}
+          <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
+            <p>
+              By sharing your signals, you agree that <strong className="text-white">Cursor Calgary organizers</strong> may use your survey responses (tied to {userEmail || "your email"}) for:
+            </p>
 
-                <ul className="list-disc list-inside space-y-2 ml-2">
-                  <li>Event management and administration</li>
-                  <li>Improving future events and community engagement</li>
-                  <li>Internal analysis and reporting by event organizers</li>
-                  <li>Facilitating networking and connections at this event</li>
-                </ul>
+            <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs">
+              <li>Event management & networking facilitation</li>
+              <li>Improving future events</li>
+              <li>Internal analysis (not shared with third parties)</li>
+            </ul>
 
-                <div className="pt-4 border-t border-white/10">
-                  <p className="text-xs text-gray-400">
-                    <strong className="text-white">Your Rights (PIPEDA Compliance):</strong> You have the right to 
-                    access, correct, or withdraw your consent at any time by contacting the event organizers. 
-                    Your data will be used only for the purposes stated above and will not be sold or shared 
-                    with third parties without your explicit consent.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-gray-400 pt-2 border-t border-white/10">
+              <strong className="text-white">Your Rights:</strong> You can withdraw consent anytime. Data is only used for this event.
+            </p>
           </div>
 
           {/* Consent Checkbox */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-start gap-4 p-6 bg-white/5 rounded-2xl border border-white/10">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
               <button
                 type="button"
                 onClick={() => setConsented(!consented)}
                 className={cn(
-                  "w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
                   consented
                     ? "bg-white border-white text-black"
                     : "bg-transparent border-white/30 text-transparent hover:border-white/50"
                 )}
               >
-                {consented && <Check className="w-4 h-4" />}
+                {consented && <Check className="w-3 h-3" />}
               </button>
               <label
                 onClick={() => setConsented(!consented)}
-                className="flex-1 text-sm text-gray-300 leading-relaxed cursor-pointer"
+                className="flex-1 text-xs text-gray-300 leading-relaxed cursor-pointer"
               >
-                <span className="text-white font-medium">I consent</span> to the collection, 
-                use, and storage of my survey response data, including data tied to my email address, 
-                by the Cursor Calgary community organizers for the purposes described above. I understand 
-                that I can withdraw my consent at any time.
+                I consent to data collection for the purposes described above.
               </label>
             </div>
 
             {error && (
-              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
-                <p className="text-sm text-red-400">{error}</p>
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                <p className="text-xs text-red-400">{error}</p>
               </div>
             )}
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={!consented || submitting}
-              className={cn(
-                "w-full h-14 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] transition-all shadow-xl",
-                consented && !submitting
-                  ? "bg-white text-black hover:scale-[1.02] hover:shadow-2xl"
-                  : "bg-white/10 text-white/30 cursor-not-allowed"
+            <div className="flex gap-3">
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 h-11 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all text-xs font-medium uppercase tracking-[0.1em]"
+                >
+                  Cancel
+                </button>
               )}
-            >
-              {submitting ? "Processing..." : "I Agree & Continue"}
-            </button>
+              <button
+                type="submit"
+                disabled={!consented || submitting}
+                className={cn(
+                  "flex-1 h-11 rounded-full font-bold uppercase tracking-[0.1em] text-xs transition-all",
+                  consented && !submitting
+                    ? "bg-white text-black hover:scale-[1.02] shadow-lg"
+                    : "bg-white/10 text-white/30 cursor-not-allowed"
+                )}
+              >
+                {submitting ? "..." : "Agree & Continue"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

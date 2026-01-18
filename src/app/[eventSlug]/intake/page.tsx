@@ -3,6 +3,8 @@ import Image from "next/image";
 import { getEventBySlug } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
+import { getSurveyConsentStatus } from "@/lib/actions/consent";
+import { createServiceClient } from "@/lib/supabase/server";
 import { IntakeForm } from "@/components/forms/IntakeForm";
 
 interface IntakePageProps {
@@ -27,7 +29,6 @@ export default async function IntakePage({ params }: IntakePageProps) {
   const intakeStatus = await getIntakeStatus(event.id, session.userId);
   if (intakeStatus.completed) {
     // If checked in, go to agenda; otherwise go back to main page
-    const { createServiceClient } = await import("@/lib/supabase/server");
     const supabase = await createServiceClient();
     const { data: registration } = await supabase
       .from("registrations")
@@ -42,6 +43,15 @@ export default async function IntakePage({ params }: IntakePageProps) {
       redirect(`/${eventSlug}`);
     }
   }
+
+  // Get consent status and user email
+  const consentStatus = await getSurveyConsentStatus(event.id, session.userId);
+  const supabase = await createServiceClient();
+  const { data: user } = await supabase
+    .from("users")
+    .select("email")
+    .eq("id", session.userId)
+    .single();
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -75,7 +85,12 @@ export default async function IntakePage({ params }: IntakePageProps) {
         </div>
 
         <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
-          <IntakeForm eventId={event.id} eventSlug={eventSlug} />
+          <IntakeForm 
+            eventId={event.id} 
+            eventSlug={eventSlug}
+            hasConsented={consentStatus.hasConsented}
+            userEmail={user?.email || null}
+          />
         </div>
       </div>
     </div>

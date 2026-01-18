@@ -7,11 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronRight } from "lucide-react";
 import { submitIntake, skipIntake } from "@/lib/actions/intake";
+import { SurveyConsentModal } from "@/components/consent/SurveyConsentModal";
 import type { IntakeGoalTag, IntakeOfferTag } from "@/types";
 
 interface IntakeFormProps {
   eventId: string;
   eventSlug: string;
+  hasConsented?: boolean;
+  userEmail?: string | null;
 }
 
 const GOAL_OPTIONS: { value: IntakeGoalTag; label: string }[] = [
@@ -36,7 +39,7 @@ const OFFER_OPTIONS: { value: IntakeOfferTag; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
+export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail = null }: IntakeFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<"goals" | "offers">("goals");
   const [goals, setGoals] = useState<IntakeGoalTag[]>([]);
@@ -45,6 +48,8 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
   const [offersOther, setOffersOther] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consented, setConsented] = useState(hasConsented);
 
   const toggleGoal = (goal: IntakeGoalTag) => {
     setGoals((prev) =>
@@ -71,12 +76,7 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
     }
   };
 
-  const handleSubmit = async () => {
-    if (step === "goals") {
-      setStep("offers");
-      return;
-    }
-
+  const submitIntakeData = async () => {
     setLoading(true);
     setError(null);
 
@@ -97,8 +97,40 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
     }
   };
 
+  const handleSubmit = async () => {
+    if (step === "goals") {
+      setStep("offers");
+      return;
+    }
+
+    // Check consent before submitting
+    if (!consented) {
+      setShowConsentModal(true);
+      return;
+    }
+
+    await submitIntakeData();
+  };
+
+  const handleConsentSuccess = () => {
+    setConsented(true);
+    setShowConsentModal(false);
+    // Automatically submit after consent
+    submitIntakeData();
+  };
+
   return (
-    <div className="glass rounded-[40px] p-10 space-y-10 max-w-lg mx-auto relative overflow-hidden animate-slide-up">
+    <>
+      {showConsentModal && (
+        <SurveyConsentModal
+          eventId={eventId}
+          eventSlug={eventSlug}
+          userEmail={userEmail}
+          onClose={() => setShowConsentModal(false)}
+          onSuccess={handleConsentSuccess}
+        />
+      )}
+      <div className="glass rounded-[40px] p-10 space-y-10 max-w-lg mx-auto relative overflow-hidden animate-slide-up">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
           {step === "goals" ? "Step 01" : "Step 02"}
@@ -200,6 +232,6 @@ export function IntakeForm({ eventId, eventSlug }: IntakeFormProps) {
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

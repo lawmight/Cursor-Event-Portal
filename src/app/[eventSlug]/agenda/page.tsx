@@ -8,7 +8,6 @@ import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { AgendaList } from "@/components/agenda/AgendaList";
 import { LiveSlideOverlay } from "@/components/slides/LiveSlideOverlay";
-import { SurveyConsentModal } from "@/components/consent/SurveyConsentModal";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -55,14 +54,6 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
-      {!consentStatus.hasConsented && (
-        <SurveyConsentModal
-          eventId={event.id}
-          eventSlug={eventSlug}
-          userEmail={user?.email || null}
-        />
-      )}
-      
       <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
