@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { upvoteQuestion, createAnswer, updateQuestionStatus, acceptAnswer } from "@/lib/actions/questions";
+import { upvoteQuestion, createAnswer, updateQuestionStatus, acceptAnswer, deleteQuestion } from "@/lib/actions/questions";
 import { timeAgo } from "@/lib/utils";
 import type { Question, UserRole } from "@/types";
 import { ChevronUp, MessageCircle, Check, Pin, EyeOff } from "lucide-react";
@@ -52,13 +52,28 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
     setLoading(false);
   };
 
-  const handleStatusChange = async (status: "answered" | "pinned" | "hidden") => {
+  const handleStatusChange = async (status: "answered" | "pinned") => {
     setLoading(true);
     const result = await updateQuestionStatus(question.id, status, eventSlug);
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(status === "hidden" ? "Question discarded" : `Question ${status}`);
+      toast.success(`Question ${status}`);
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to permanently delete this question?")) {
+      return;
+    }
+    setLoading(true);
+    const result = await deleteQuestion(question.id, eventSlug);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Question discarded");
       router.refresh();
     }
     setLoading(false);
@@ -193,7 +208,7 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
                   </button>
                 )}
                 <button
-                  onClick={() => handleStatusChange("hidden")}
+                  onClick={handleDelete}
                   disabled={loading}
                   className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-red-900 transition-colors"
                 >

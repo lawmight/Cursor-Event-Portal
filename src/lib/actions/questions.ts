@@ -182,6 +182,52 @@ export async function updateQuestionStatus(
   return { success: true };
 }
 
+export async function deleteQuestion(
+  questionId: string,
+  eventSlug: string
+) {
+  console.log("[deleteQuestion] Called with:", { questionId, eventSlug });
+  
+  const session = await getSession();
+  if (!session) {
+    console.log("[deleteQuestion] No session found");
+    return { error: "Not authenticated" };
+  }
+  console.log("[deleteQuestion] Session found:", session.userId);
+
+  const supabase = await createServiceClient();
+
+  // Verify user is staff/admin
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  console.log("[deleteQuestion] User role check:", { role: user?.role, error: userError?.message });
+
+  if (!user || !["staff", "admin", "facilitator"].includes(user.role)) {
+    console.log("[deleteQuestion] Not authorized - role:", user?.role);
+    return { error: "Not authorized" };
+  }
+
+  // Delete the question (CASCADE will handle related answers and upvotes)
+  const { error } = await supabase
+    .from("questions")
+    .delete()
+    .eq("id", questionId);
+
+  if (error) {
+    console.error("[deleteQuestion] Failed to delete:", error);
+    return { error: "Failed to delete question" };
+  }
+
+  console.log("[deleteQuestion] Successfully deleted question:", questionId);
+  revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/admin/${eventSlug}/qa`);
+  return { success: true };
+}
+
 export async function acceptAnswer(
   answerId: string,
   questionId: string,
