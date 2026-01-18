@@ -202,7 +202,7 @@ export function SlidesAdminClient({
         {/* Info */}
         <div className="glass rounded-[32px] p-6 bg-blue-500/10 border border-blue-500/20">
           <p className="text-sm text-blue-400">
-            Upload a slide deck (PDF, PPT, PPTX) and all slides will be extracted automatically. Slides will be displayed to attendees when marked as "Live". Click the eye icon to toggle visibility. Only one slide can be live at a time.
+            Upload slide images (PNG, JPG) one at a time. <span className="text-blue-300">To export from PowerPoint: File → Export → Change File Type → PNG</span>. Slides will be displayed to attendees when marked as "Live" (eye icon). Only one slide can be live at a time.
           </p>
         </div>
 
@@ -338,15 +338,15 @@ export function SlidesAdminClient({
             )}
 
             <div className="space-y-6">
-              <div>
+                <div>
                 <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-3">
-                  Select Slide Deck
+                  Select Slide Image
                 </label>
                 <div className="relative">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf,.ppt,.pptx,.ppsx"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
                     onChange={handleFileSelect}
                     disabled={uploading}
                     className="hidden"
@@ -363,13 +363,13 @@ export function SlidesAdminClient({
                   >
                     <Upload className={cn("w-8 h-8 mb-3", uploading ? "text-gray-700" : "text-gray-500")} />
                     <p className="text-sm text-gray-400">
-                      {uploading ? "Processing slide deck..." : "Click to select slide deck"}
+                      {uploading ? "Uploading..." : "Click to select slide image"}
                     </p>
                     <p className="text-[9px] text-gray-700 mt-1">
-                      PDF, PPT, PPTX, PPSX up to 50MB
+                      PNG, JPG, WebP up to 50MB
                     </p>
                     <p className="text-[8px] text-gray-800 mt-2 text-center max-w-xs">
-                      All slides will be extracted and added automatically
+                      Export slides from PowerPoint as images
                     </p>
                   </label>
                 </div>

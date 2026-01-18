@@ -38,8 +38,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type - accept slide deck formats
-    const validTypes = [
+    // Validate file type - accept images and slide deck formats
+    const validImageTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
+    const validDeckTypes = [
       "application/pdf",
       "application/vnd.ms-powerpoint",
       "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
@@ -47,12 +48,14 @@ export async function POST(request: NextRequest) {
     ];
     
     const fileExtension = file.name.split(".").pop()?.toLowerCase();
-    const isValidType = validTypes.includes(file.type) || 
+    const isValidImage = validImageTypes.includes(file.type) || 
+      ["png", "jpg", "jpeg", "webp", "gif"].includes(fileExtension || "");
+    const isValidDeck = validDeckTypes.includes(file.type) || 
       ["pdf", "ppt", "pptx", "ppsx"].includes(fileExtension || "");
 
-    if (!isValidType) {
+    if (!isValidImage && !isValidDeck) {
       return NextResponse.json(
-        { error: "Invalid file type. Please upload a PDF or PowerPoint file (.pdf, .ppt, .pptx, .ppsx)" },
+        { error: "Invalid file type. Please upload an image (PNG, JPG) or a PDF/PowerPoint file." },
         { status: 400 }
       );
     }

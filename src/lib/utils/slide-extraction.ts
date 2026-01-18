@@ -1,39 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// Dynamic imports to handle serverless environments
-let pdfjsLib: any;
-let createCanvas: any;
-
-async function loadPdfJs() {
-  if (!pdfjsLib) {
-    try {
-      pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-      // Configure pdfjs to work in Node.js
-      if (typeof window === "undefined" && pdfjsLib.GlobalWorkerOptions) {
-        // @ts-ignore
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-      }
-    } catch (e) {
-      console.error("Failed to load pdfjs-dist:", e);
-      throw new Error("PDF processing library not available");
-    }
-  }
-  return pdfjsLib;
-}
-
-async function loadCanvas() {
-  if (!createCanvas) {
-    try {
-      const canvasModule = await import("canvas");
-      createCanvas = canvasModule.createCanvas;
-    } catch (e) {
-      console.warn("Canvas module not available:", e);
-      return null;
-    }
-  }
-  return createCanvas;
-}
-
 interface SlideExtractionResult {
   slides: Array<{ url: string; path: string; pageNumber: number }>;
   error?: string;
@@ -45,124 +11,84 @@ export async function uploadSlideDeck(
   supabase: SupabaseClient
 ): Promise<SlideExtractionResult> {
   const fileExtension = file.name.split(".").pop()?.toLowerCase();
+  const mimeType = file.type;
 
+  console.log("[uploadSlideDeck] Processing file:", file.name, "type:", mimeType, "ext:", fileExtension);
+
+  // Handle direct image uploads
+  if (mimeType.startsWith("image/") || ["png", "jpg", "jpeg", "webp", "gif"].includes(fileExtension || "")) {
+    return await uploadSingleImage(file, eventId, supabase);
+  }
+
+  // For PDF and PowerPoint files, direct rendering requires native dependencies
+  // Return a helpful error message
   if (fileExtension === "pdf") {
-    return await extractSlidesFromPDF(file, eventId, supabase);
-  } else if (["ppt", "pptx", "ppsx"].includes(fileExtension || "")) {
-    // For PowerPoint files, we'll need a different approach
-    // For now, return an error suggesting conversion to PDF
     return {
       slides: [],
-      error: "PowerPoint files (.ppt, .pptx, .ppsx) are not yet supported. Please convert your presentation to PDF and upload that instead.",
+      error: "PDF slide extraction is currently disabled. Please export your slides as individual images (PNG or JPG) and upload them one at a time.",
+    };
+  }
+  
+  if (["ppt", "pptx", "ppsx"].includes(fileExtension || "")) {
+    return {
+      slides: [],
+      error: "PowerPoint files are not directly supported. Please export your slides as individual images (PNG or JPG) from PowerPoint (File > Export > Change File Type > PNG) and upload them one at a time.",
     };
   }
 
   return {
     slides: [],
-    error: "Unsupported file format",
+    error: "Unsupported file format. Please upload PNG, JPG, or other image files.",
   };
 }
 
-async function extractSlidesFromPDF(
+async function uploadSingleImage(
   file: File,
   eventId: string,
   supabase: SupabaseClient
 ): Promise<SlideExtractionResult> {
   try {
-    console.log("[extractSlidesFromPDF] Starting PDF extraction");
+    console.log("[uploadSingleImage] Uploading image:", file.name);
     
-    // Load required libraries
-    const pdfjs = await loadPdfJs();
-    const createCanvasFn = await loadCanvas();
-    
-    if (!createCanvasFn) {
+    const timestamp = Date.now();
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filePath = `${eventId}/${timestamp}-${safeFileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("slides")
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("[uploadSingleImage] Upload error:", uploadError);
       return {
         slides: [],
-        error: "PDF extraction requires the canvas library which is not available in this environment. Please convert your PDF to individual images (PNG/JPG) and upload them separately, or contact support to enable PDF extraction.",
+        error: `Failed to upload image: ${uploadError.message}`,
       };
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    console.log("[extractSlidesFromPDF] PDF loaded, size:", arrayBuffer.byteLength);
-    
-    // Load PDF document
-    const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
-    const pdf = await loadingTask.promise;
-    const numPages = pdf.numPages;
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("slides")
+      .getPublicUrl(filePath);
 
-    console.log(`[extractSlidesFromPDF] Processing PDF with ${numPages} pages`);
+    console.log("[uploadSingleImage] Successfully uploaded to:", urlData.publicUrl);
 
-    const slides: Array<{ url: string; path: string; pageNumber: number }> = [];
-
-    // Extract each page as an image
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      try {
-        const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
-
-        // Create canvas
-        const pageCanvas = createCanvasFn(viewport.width, viewport.height);
-        const context = pageCanvas.getContext("2d");
-
-        // Render PDF page to canvas
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-        await page.render(renderContext).promise;
-
-        // Convert canvas to buffer
-        const imageBuffer = pageCanvas.toBuffer("image/png");
-
-        // Upload image to Supabase storage
-        const timestamp = Date.now();
-        const fileName = `slide-${timestamp}-${pageNum}.png`;
-        const filePath = `${eventId}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("slides")
-          .upload(filePath, imageBuffer, {
-            contentType: "image/png",
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error(`Failed to upload slide ${pageNum}:`, uploadError);
-          continue;
-        }
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("slides")
-          .getPublicUrl(filePath);
-
-        slides.push({
-          url: urlData.publicUrl,
-          path: filePath,
-          pageNumber: pageNum,
-        });
-
-        console.log(`[extractSlidesFromPDF] Extracted slide ${pageNum}/${numPages}`);
-      } catch (pageError) {
-        console.error(`Error processing page ${pageNum}:`, pageError);
-        // Continue with other pages
-      }
-    }
-
-    if (slides.length === 0) {
-      return {
-        slides: [],
-        error: "Failed to extract any slides from the PDF",
-      };
-    }
-
-    console.log(`[extractSlidesFromPDF] Successfully extracted ${slides.length} slides`);
-    return { slides };
+    return {
+      slides: [{
+        url: urlData.publicUrl,
+        path: filePath,
+        pageNumber: 1,
+      }],
+    };
   } catch (error) {
-    console.error("PDF extraction error:", error);
+    console.error("[uploadSingleImage] Exception:", error);
     return {
       slides: [],
-      error: error instanceof Error ? error.message : "Failed to process PDF",
+      error: error instanceof Error ? error.message : "Failed to upload image",
     };
   }
 }
+
