@@ -88,7 +88,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Calgary Cursor Meetup - January 2026</p>
               <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Console: Cursor</p>
             </div>
           </div>
