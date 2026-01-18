@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock } from "lucide-react";
+import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Event } from "@/types";
 
@@ -15,6 +15,7 @@ interface EventNavProps {
 
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
+  { href: "slides", label: "Slides", icon: FileText },
   { href: "qa", label: "Q&A", icon: MessageCircle },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "resources", label: "Resources", icon: FolderOpen },

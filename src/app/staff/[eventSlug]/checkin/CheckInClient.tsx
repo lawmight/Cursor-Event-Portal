@@ -247,7 +247,7 @@ export function CheckInClient({
               placeholder="Add attendee email"
               value={addEmail}
               onChange={(e) => setAddEmail(e.target.value)}
-              className="flex-1 bg-transparent border-b border-white/10 rounded-none px-0 h-12 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
+              className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-4 h-12 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
             />
             <button
               onClick={handleAddRegistration}
