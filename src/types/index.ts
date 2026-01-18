@@ -32,6 +32,7 @@ export interface Registration {
   event_id: string;
   user_id: string;
   consent_at: string | null;
+  survey_consent_at: string | null;
   source: RegistrationSource;
   checked_in_at: string | null;
   intake_completed_at?: string | null;

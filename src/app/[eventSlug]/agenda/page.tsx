@@ -2,10 +2,13 @@ import { notFound, redirect } from "next/navigation";
 import { getEventBySlug, getAgendaItems, getAnnouncements, getLiveSlide } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
+import { getSurveyConsentStatus } from "@/lib/actions/consent";
+import { createServiceClient } from "@/lib/supabase/server";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { AgendaList } from "@/components/agenda/AgendaList";
 import { LiveSlideOverlay } from "@/components/slides/LiveSlideOverlay";
+import { SurveyConsentModal } from "@/components/consent/SurveyConsentModal";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -31,6 +34,17 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
     redirect(`/${eventSlug}/intake`);
   }
 
+  // Check survey consent status
+  const consentStatus = await getSurveyConsentStatus(event.id, session.userId);
+  
+  // Get user email for consent display
+  const supabase = await createServiceClient();
+  const { data: user } = await supabase
+    .from("users")
+    .select("email")
+    .eq("id", session.userId)
+    .single();
+
   const [items, announcements, liveSlide] = await Promise.all([
     getAgendaItems(event.id),
     getAnnouncements(event.id),
@@ -41,6 +55,14 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
+      {!consentStatus.hasConsented && (
+        <SurveyConsentModal
+          eventId={event.id}
+          eventSlug={eventSlug}
+          userEmail={user?.email || null}
+        />
+      )}
+      
       <EventHeader event={event} announcement={latestAnnouncement} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
