@@ -37,7 +37,7 @@ export function SlidesAdminClient({
     setUploading(true);
 
     try {
-      // Upload file to server
+      // Upload slide deck to server
       const formData = new FormData();
       formData.append("file", file);
       formData.append("eventId", event.id);
@@ -49,27 +49,49 @@ export function SlidesAdminClient({
 
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || "Failed to upload file");
+        throw new Error(errorData.error || "Failed to upload slide deck");
       }
 
-      const { url } = await uploadResponse.json();
+      const { slides, count } = await uploadResponse.json();
 
-      // Create slide record
+      if (!slides || slides.length === 0) {
+        throw new Error("No slides were extracted from the file");
+      }
+
+      // Create slide records for each extracted slide
       startTransition(async () => {
-        const result = await uploadSlide(event.id, eventSlug, url, file.name);
-        if (result.success) {
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const slide of slides) {
+          const result = await uploadSlide(
+            event.id,
+            eventSlug,
+            slide.url,
+            `Slide ${slide.pageNumber}`
+          );
+          if (result.success) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        }
+
+        if (errorCount > 0) {
+          setError(
+            `Uploaded ${successCount} of ${slides.length} slides. ${errorCount} failed.`
+          );
+        } else {
           router.refresh();
           setShowUploadModal(false);
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
           }
-        } else {
-          setError(result.error || "Failed to create slide");
         }
         setUploading(false);
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to upload slide";
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload slide deck";
       setError(errorMessage);
       setUploading(false);
     }
@@ -180,7 +202,7 @@ export function SlidesAdminClient({
         {/* Info */}
         <div className="glass rounded-[32px] p-6 bg-blue-500/10 border border-blue-500/20">
           <p className="text-sm text-blue-400">
-            Slides will be displayed to attendees when marked as "Live". Click the eye icon to toggle visibility. Only one slide can be live at a time.
+            Upload a slide deck (PDF, PPT, PPTX) and all slides will be extracted automatically. Slides will be displayed to attendees when marked as "Live". Click the eye icon to toggle visibility. Only one slide can be live at a time.
           </p>
         </div>
 
@@ -318,13 +340,13 @@ export function SlidesAdminClient({
             <div className="space-y-6">
               <div>
                 <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-3">
-                  Select Image
+                  Select Slide Deck
                 </label>
                 <div className="relative">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    accept=".pdf,.ppt,.pptx,.ppsx"
                     onChange={handleFileSelect}
                     disabled={uploading}
                     className="hidden"
@@ -341,10 +363,13 @@ export function SlidesAdminClient({
                   >
                     <Upload className={cn("w-8 h-8 mb-3", uploading ? "text-gray-700" : "text-gray-500")} />
                     <p className="text-sm text-gray-400">
-                      {uploading ? "Uploading..." : "Click to select image"}
+                      {uploading ? "Processing slide deck..." : "Click to select slide deck"}
                     </p>
                     <p className="text-[9px] text-gray-700 mt-1">
-                      JPG, PNG, WebP up to 10MB
+                      PDF, PPT, PPTX, PPSX up to 50MB
+                    </p>
+                    <p className="text-[8px] text-gray-800 mt-2 text-center max-w-xs">
+                      All slides will be extracted and added automatically
                     </p>
                   </label>
                 </div>

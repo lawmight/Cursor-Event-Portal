@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
+import { uploadSlideDeck } from "@/lib/utils/slide-extraction";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,57 +38,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!validTypes.includes(file.type)) {
+    // Validate file type - accept slide deck formats
+    const validTypes = [
+      "application/pdf",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+      "application/vnd.openxmlformats-officedocument.presentationml.slideshow", // .ppsx
+    ];
+    
+    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+    const isValidType = validTypes.includes(file.type) || 
+      ["pdf", "ppt", "pptx", "ppsx"].includes(fileExtension || "");
+
+    if (!isValidType) {
       return NextResponse.json(
-        { error: "Invalid file type. Only images are allowed." },
+        { error: "Invalid file type. Please upload a PDF or PowerPoint file (.pdf, .ppt, .pptx, .ppsx)" },
         { status: 400 }
       );
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validate file size (max 50MB for slide decks)
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "File size exceeds 10MB limit" },
+        { error: "File size exceeds 50MB limit" },
         { status: 400 }
       );
     }
 
-    // Generate unique filename
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `${eventId}/${fileName}`;
+    // Process the slide deck and extract slides
+    const result = await uploadSlideDeck(file, eventId, supabase);
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("slides")
-      .upload(filePath, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
+    if (result.error) {
       return NextResponse.json(
-        { error: "Failed to upload file" },
+        { error: result.error },
         { status: 500 }
       );
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("slides")
-      .getPublicUrl(filePath);
-
     return NextResponse.json({
       success: true,
-      url: urlData.publicUrl,
-      path: filePath,
+      slides: result.slides,
+      count: result.slides.length,
     });
   } catch (error) {
-    console.error("Upload slide error:", error);
+    console.error("Upload slide deck error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

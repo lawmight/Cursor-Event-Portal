@@ -23,6 +23,35 @@ export function EventNav({ eventSlug }: EventNavProps) {
   const [hasActivePolls, setHasActivePolls] = useState(false);
   const [pollAlertVisible, setPollAlertVisible] = useState(false);
 
+  // Get seen poll IDs from localStorage
+  const getSeenPollIds = (): string[] => {
+    if (typeof window === "undefined") return [];
+    const seen = localStorage.getItem(`polls-seen-${eventSlug}`);
+    return seen ? JSON.parse(seen) : [];
+  };
+
+  // Mark polls as seen when visiting polls page
+  useEffect(() => {
+    if (pathname.includes("/polls")) {
+      const markPollsAsSeen = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("polls")
+          .select("id")
+          .eq("is_active", true);
+
+        if (data && data.length > 0) {
+          const seenIds = getSeenPollIds();
+          const newSeenIds = [...new Set([...seenIds, ...data.map((p) => p.id)])];
+          localStorage.setItem(`polls-seen-${eventSlug}`, JSON.stringify(newSeenIds));
+          setPollAlertVisible(false);
+        }
+      };
+
+      markPollsAsSeen();
+    }
+  }, [pathname, eventSlug]);
+
   // Check for active polls and subscribe to changes
   useEffect(() => {
     const checkActivePolls = async () => {
@@ -30,15 +59,24 @@ export function EventNav({ eventSlug }: EventNavProps) {
       const { data } = await supabase
         .from("polls")
         .select("id")
-        .eq("is_active", true)
-        .limit(1);
+        .eq("is_active", true);
 
-      const hasPolls = (data?.length ?? 0) > 0;
+      if (!data) {
+        setHasActivePolls(false);
+        setPollAlertVisible(false);
+        return;
+      }
+
+      const hasPolls = data.length > 0;
       setHasActivePolls(hasPolls);
 
-      // Show alert animation if there are active polls and we're not on polls page
+      // Only show alert if there are active polls that haven't been seen
       if (hasPolls && !pathname.includes("/polls")) {
-        setPollAlertVisible(true);
+        const seenIds = getSeenPollIds();
+        const unseenPolls = data.filter((p) => !seenIds.includes(p.id));
+        setPollAlertVisible(unseenPolls.length > 0);
+      } else {
+        setPollAlertVisible(false);
       }
     };
 
@@ -60,14 +98,7 @@ export function EventNav({ eventSlug }: EventNavProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [pathname]);
-
-  // Clear alert when visiting polls page
-  useEffect(() => {
-    if (pathname.includes("/polls")) {
-      setPollAlertVisible(false);
-    }
-  }, [pathname]);
+  }, [pathname, eventSlug]);
 
   return (
     <nav className="fixed bottom-8 left-0 right-0 z-50 safe-area-pb p-4 pointer-events-none">

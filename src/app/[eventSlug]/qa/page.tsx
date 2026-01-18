@@ -4,7 +4,7 @@ import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
-import { QuestionCard } from "@/components/qa/QuestionCard";
+import { QuestionsList } from "@/components/qa/QuestionsList";
 import { QuestionForm } from "@/components/qa/QuestionForm";
 import { createClient } from "@/lib/supabase/server";
 
@@ -51,10 +51,6 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
 
   const latestAnnouncement = announcements[0] || null;
 
-  // Separate pinned questions
-  const pinnedQuestions = questions.filter((q) => q.status === "pinned");
-  const otherQuestions = questions.filter((q) => q.status !== "pinned");
-
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
       <EventHeader event={event} announcement={latestAnnouncement} />
@@ -100,63 +96,15 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
           <QuestionForm eventId={event.id} eventSlug={eventSlug} />
         </div>
 
-        {/* Questions List */}
-        <div className="space-y-12">
-          {/* Pinned Questions */}
-          {pinnedQuestions.length > 0 && (
-            <div className="space-y-6 animate-slide-up" style={{ animationDelay: "200ms" }}>
-              <div className="flex items-center gap-4 px-2">
-                <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
-                  Featured
-                </p>
-                <div className="h-[1px] flex-1 bg-white/[0.03]" />
-              </div>
-              <div className="space-y-6">
-                {pinnedQuestions.map((question) => (
-                  <QuestionCard
-                    key={question.id}
-                    question={question}
-                    eventSlug={eventSlug}
-                    userRole={user?.role}
-                    userId={session.userId}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* All Questions */}
-          <div className="space-y-6 animate-slide-up" style={{ animationDelay: "300ms" }}>
-            {pinnedQuestions.length > 0 && (
-              <div className="flex items-center gap-4 px-2">
-                <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
-                  Recent
-                </p>
-                <div className="h-[1px] flex-1 bg-white/[0.03]" />
-              </div>
-            )}
-
-            {otherQuestions.length === 0 ? (
-              <div className="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[40px] border-dashed opacity-40">
-                <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-medium">
-                  Awaiting first inquiry
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {otherQuestions.map((question) => (
-                  <QuestionCard
-                    key={question.id}
-                    question={question}
-                    eventSlug={eventSlug}
-                    userRole={user?.role}
-                    userId={session.userId}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Questions List with Real-time Updates */}
+        <QuestionsList
+          initialQuestions={questions}
+          eventSlug={eventSlug}
+          eventId={event.id}
+          userRole={user?.role}
+          userId={session.userId}
+          sortBy={sortBy}
+        />
       </main>
 
       <EventNav eventSlug={eventSlug} />

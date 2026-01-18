@@ -51,7 +51,7 @@ const agendaItems = [
   {
     title: "Short Demos",
     description: "A few quick demos (2-3 minutes each) showcasing what's possible with Cursor.",
-    speaker: "Jia Ming Huang",
+    speaker: "Simon Loewen",
     start_time: "2026-01-29T01:05:00Z", // 6:05pm MST
     end_time: "2026-01-29T01:20:00Z", // 6:20pm MST
     sort_order: 2,
