@@ -80,17 +80,17 @@ export function SurveyConsentModal({
           {/* Concise Consent Text */}
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By sharing your signals, you agree that <strong className="text-white">Cursor Calgary organizers</strong> may use your survey responses (tied to {userEmail || "your email"}) for:
+              By sharing your signals, you agree that <strong className="text-white">Cursor Calgary community organizers</strong> may use your survey responses and feedback to:
             </p>
 
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs">
-              <li>Event management & networking facilitation</li>
-              <li>Improving future events</li>
-              <li>Internal analysis (not shared with third parties)</li>
+              <li>Improve the quality of future events</li>
+              <li>Facilitate networking and connections at this event</li>
+              <li>Conduct internal analysis for event management</li>
             </ul>
 
             <p className="text-xs text-gray-400 pt-2 border-t border-white/10">
-              <strong className="text-white">Your Rights:</strong> You can withdraw consent anytime. Data is only used for this event.
+              <strong className="text-white">Important:</strong> Your data is <strong className="text-white">not sold</strong> and is <strong className="text-white">not tied to your name</strong> in any public way. It is used anonymously to improve future events. You can withdraw consent anytime.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export function SurveyConsentModal({
                 onClick={() => setConsented(!consented)}
                 className="flex-1 text-xs text-gray-300 leading-relaxed cursor-pointer"
               >
-                I consent to data collection for the purposes described above.
+                I consent to the collection and use of my feedback and data by Cursor Calgary community organizers to improve future events. I understand my data is not sold and not tied to my name publicly.
               </label>
             </div>
 
