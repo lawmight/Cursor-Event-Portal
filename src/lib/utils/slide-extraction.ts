@@ -90,7 +90,6 @@ async function extractPdfSlides(
         const context = canvas.getContext("2d");
         
         // Render the page to canvas
-        // @ts-expect-error - node-canvas context is compatible
         await page.render({
           canvasContext: context,
           viewport: viewport,
