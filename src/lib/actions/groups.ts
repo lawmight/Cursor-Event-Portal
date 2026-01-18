@@ -218,8 +218,9 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     console.error("[generateGroups] Error clearing existing groups:", deleteError);
   }
 
-  // Store suggested groups
+  // Store suggested groups with sequential table numbers
   let savedCount = 0;
+  let tableNumber = 1;
   for (const group of groups) {
     const { data: newGroup, error: groupError } = await supabase
       .from("suggested_groups")
@@ -228,9 +229,12 @@ export async function generateGroups(eventId: string, eventSlug: string) {
         name: group.name,
         description: group.description,
         status: "pending",
+        table_number: tableNumber,
       })
       .select("id")
       .single();
+    
+    tableNumber++; // Increment for next group
 
     if (groupError || !newGroup) {
       console.error("[generateGroups] Error saving group:", groupError, group);
@@ -290,6 +294,38 @@ export async function updateGroupStatus(
     .eq("id", groupId);
 
   if (error) return { error: "Failed to update group status" };
+
+  revalidatePath(`/admin/${eventSlug}/groups`);
+  return { success: true };
+}
+
+export async function updateGroupTableNumber(
+  groupId: string,
+  tableNumber: number | null,
+  eventSlug: string
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  // Verify admin role
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("suggested_groups")
+    .update({ table_number: tableNumber })
+    .eq("id", groupId);
+
+  if (error) return { error: "Failed to update table number" };
 
   revalidatePath(`/admin/${eventSlug}/groups`);
   return { success: true };

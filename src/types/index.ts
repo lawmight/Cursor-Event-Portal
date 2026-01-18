@@ -207,6 +207,7 @@ export interface SuggestedGroup {
   name: string;
   description: string | null;
   status: GroupStatus;
+  table_number: number | null;
   created_at: string;
   // Joined fields
   members?: SuggestedGroupMember[];

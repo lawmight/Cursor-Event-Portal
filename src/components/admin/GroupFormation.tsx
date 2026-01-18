@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { generateGroups, updateGroupStatus } from "@/lib/actions/groups";
+import { generateGroups, updateGroupStatus, updateGroupTableNumber } from "@/lib/actions/groups";
 import { Users, Sparkles, Zap } from "lucide-react";
 import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
@@ -192,6 +192,7 @@ export function GroupFormation({
               <GroupCard
                 key={group.id}
                 group={group}
+                eventSlug={eventSlug}
                 onStatusChange={handleStatusChange}
               />
             ))}
@@ -204,10 +205,30 @@ export function GroupFormation({
 
 interface GroupCardProps {
   group: SuggestedGroup;
+  eventSlug: string;
   onStatusChange: (groupId: string, status: GroupStatus) => void;
 }
 
-function GroupCard({ group, onStatusChange }: GroupCardProps) {
+function GroupCard({ group, eventSlug, onStatusChange }: GroupCardProps) {
+  const router = useRouter();
+  const [editingTableNumber, setEditingTableNumber] = useState(false);
+  const [tableNumber, setTableNumber] = useState<string>(group.table_number?.toString() || "");
+
+  const handleTableNumberChange = async (newValue: string) => {
+    const numValue = newValue === "" ? null : parseInt(newValue, 10);
+    if (numValue !== null && (isNaN(numValue) || numValue < 1)) {
+      return; // Invalid number
+    }
+    
+    const result = await updateGroupTableNumber(group.id, numValue, eventSlug);
+    if (result.error) {
+      alert(result.error);
+      setTableNumber(group.table_number?.toString() || "");
+    } else {
+      router.refresh();
+    }
+    setEditingTableNumber(false);
+  };
   const statusColors: Record<GroupStatus, string> = {
     pending: "text-amber-500 bg-amber-500/10 border-amber-500/20",
     approved: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
@@ -218,8 +239,36 @@ function GroupCard({ group, onStatusChange }: GroupCardProps) {
   return (
     <div className="glass rounded-[48px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all group">
       <div className="flex items-start justify-between mb-10">
-        <div className="space-y-3">
-          <h3 className="text-3xl font-light tracking-tight text-white/90">{group.name}</h3>
+        <div className="space-y-3 flex-1">
+          <div className="flex items-center gap-4">
+            <h3 className="text-3xl font-light tracking-tight text-white/90">{group.name}</h3>
+            {editingTableNumber ? (
+              <input
+                type="number"
+                min="1"
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                onBlur={() => handleTableNumberChange(tableNumber)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleTableNumberChange(tableNumber);
+                  } else if (e.key === "Escape") {
+                    setTableNumber(group.table_number?.toString() || "");
+                    setEditingTableNumber(false);
+                  }
+                }}
+                className="w-20 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-light focus:outline-none focus:border-white/40"
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => setEditingTableNumber(true)}
+                className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white/90 text-lg font-light hover:bg-white/20 transition-colors"
+              >
+                {group.table_number ? `Table ${group.table_number}` : "Assign Table"}
+              </button>
+            )}
+          </div>
           <p className="text-gray-700 text-sm tracking-tight leading-relaxed max-w-xl">{group.description}</p>
         </div>
         <span className={`px-5 py-2 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold border ${statusColors[group.status]}`}>
