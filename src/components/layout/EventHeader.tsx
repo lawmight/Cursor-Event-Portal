@@ -165,25 +165,27 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
       )}
 
       {/* Main Header */}
-      <div className="glass border-b border-white/5 py-4 backdrop-blur-3xl">
+      <div className="glass border-b border-white/5 py-8 backdrop-blur-3xl">
         <div className="max-w-lg mx-auto px-6 flex items-center justify-between">
-          <Link href={`/${event.slug}`} className="flex items-center gap-4 group">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 overflow-hidden shadow-2xl group-hover:scale-110 transition-all flex items-center justify-center">
-              <Image
-                src="/cursor-calgary.avif"
-                alt="Cursor Calgary"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-                priority
-              />
+          <Link href={`/${event.slug}`} className="flex items-center gap-5 group">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-2xl group-hover:scale-105 transition-all flex items-center justify-center p-1">
+              <div className="w-full h-full rounded-[14px] overflow-hidden">
+                <Image
+                  src="/cursor-calgary.avif"
+                  alt="Cursor Calgary"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                  priority
+                />
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="font-medium text-white text-sm leading-tight tracking-tight">
+            <div className="flex flex-col gap-1">
+              <span className="font-semibold text-white text-xl leading-tight tracking-tight">
                 {event.name}
               </span>
               {event.venue && (
-                <span className="text-[9px] uppercase tracking-[0.2em] text-gray-500 font-medium leading-tight mt-1">
+                <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold leading-tight">
                   {event.venue}
                 </span>
               )}
@@ -192,11 +194,14 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
 
           {/* Table Assignment */}
           {tableAssignment && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20">
-              <MapPin className="w-3 h-3 text-white/70" />
-              <span className="text-xs font-medium text-white">
-                Table {tableAssignment.tableNumber}
-              </span>
+            <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-xl backdrop-blur-xl group hover:bg-white/[0.05] transition-all">
+              <MapPin className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Table</span>
+                <span className="text-sm font-semibold text-white">
+                  {tableAssignment.tableNumber}
+                </span>
+              </div>
             </div>
           )}
         </div>

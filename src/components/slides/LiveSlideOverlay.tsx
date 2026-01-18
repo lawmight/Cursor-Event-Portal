@@ -1,20 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { X, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Slide } from "@/types";
+import { createClient } from "@/lib/supabase/client";
 
 interface LiveSlideOverlayProps {
   slide: Slide;
+  eventId: string;
 }
 
-export function LiveSlideOverlay({ slide }: LiveSlideOverlayProps) {
+export function LiveSlideOverlay({ slide: initialSlide, eventId }: LiveSlideOverlayProps) {
+  const router = useRouter();
+  const [slide, setSlide] = useState<Slide | null>(initialSlide);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  if (isDismissed) return null;
+  // Subscribe to slide changes
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`slides-live-${eventId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "slides",
+          filter: `event_id=eq.${eventId}`,
+        },
+        async () => {
+          // Refresh to get the latest live slide
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventId, router]);
+
+  // Update slide when initialSlide changes
+  useEffect(() => {
+    setSlide(initialSlide);
+    // Reset dismissed state when a new slide is pushed
+    if (initialSlide && (!slide || initialSlide.id !== slide.id)) {
+      setIsDismissed(false);
+    }
+  }, [initialSlide]);
+
+  if (isDismissed || !slide) return null;
 
   return (
     <div
@@ -22,7 +62,7 @@ export function LiveSlideOverlay({ slide }: LiveSlideOverlayProps) {
         "fixed z-50 transition-all duration-300",
         isMaximized
           ? "inset-0 bg-black/95 backdrop-blur-sm"
-          : "bottom-24 right-6 w-96"
+          : "top-1/2 -translate-y-1/2 right-12 w-[400px]"
       )}
     >
       <div

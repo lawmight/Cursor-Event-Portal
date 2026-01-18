@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { formatTime, isNow, isNext } from "@/lib/utils";
 import type { AgendaItem } from "@/types";
 import { MapPin, User, X, ChevronRight, Clock } from "lucide-react";
 import { AgendaItemTimer } from "@/components/timer/AgendaItemTimer";
+import { createClient } from "@/lib/supabase/client";
 
 interface AgendaListProps {
   items: AgendaItem[];
+  eventId: string;
 }
 
 interface AgendaItemDetails {
@@ -32,8 +35,41 @@ function parseDescription(description: string | null): AgendaItemDetails {
   return { summary: description };
 }
 
-export function AgendaList({ items }: AgendaListProps) {
+export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
+  const router = useRouter();
+  const [items, setItems] = useState<AgendaItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<AgendaItem | null>(null);
+
+  // Subscribe to real-time agenda updates
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`agenda-${eventId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "agenda_items",
+          filter: `event_id=eq.${eventId}`,
+        },
+        async () => {
+          // Refresh the page to get updated agenda items
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventId, router]);
+
+  // Update items when initialItems changes (from server refresh)
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
 
   if (items.length === 0) {
     return (

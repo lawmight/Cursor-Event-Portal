@@ -133,10 +133,10 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   }, [pathname, eventSlug]);
 
   return (
-    <nav className="fixed bottom-8 left-0 right-0 z-50 safe-area-pb p-4 pointer-events-none">
-      <div className="glass rounded-[40px] border border-white/5 max-w-md mx-auto pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
-        <div className="px-2">
-          <div className="flex items-center justify-between h-20">
+    <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">
+      <div className="glass rounded-[40px] border border-white/5 w-20 pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
+        <div className="py-6">
+          <div className="flex flex-col items-center gap-4">
             {navItems.map((item) => {
               const isActive = pathname.includes(`/${eventSlug}/${item.href}`);
               const Icon = item.icon;
@@ -150,7 +150,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
                 return (
                   <div
                     key={item.href}
-                    className="flex flex-col items-center justify-center gap-1.5 px-3 h-full transition-all duration-300 relative group text-gray-800 cursor-not-allowed"
+                    className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-800 cursor-not-allowed"
                   >
                     <div className="transition-all duration-300 relative opacity-40">
                       <Icon className="w-5 h-5 stroke-[1.5px]" />
@@ -165,7 +165,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
                   key={item.href}
                   href={`/${eventSlug}/${item.href}`}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1.5 px-3 h-full transition-all duration-300 relative group",
+                    "flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group",
                     isActive
                       ? "text-white"
                       : "text-gray-600 hover:text-white"
@@ -195,7 +195,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
                   </span>
 
                   {isActive && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                   )}
                 </Link>
               );

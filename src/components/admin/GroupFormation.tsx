@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateGroups, updateGroupStatus, updateGroupTableNumber, removeGroupMember, cancelGroup } from "@/lib/actions/groups";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
 
@@ -154,7 +154,7 @@ export function GroupFormation({
             </div>
             <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Intake Responses</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Intake Responses</p>
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function GroupFormation({
             </div>
             <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Proposals</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Proposals</p>
             </div>
           </div>
         </div>
@@ -192,19 +192,27 @@ export function GroupFormation({
               <button
                 onClick={handleGenerate}
                 disabled={generating || intakes.length < 2}
-                className={`w-full py-4 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
+                className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${
                   generating || intakes.length < 2
-                    ? "bg-white/5 text-white/20 cursor-not-allowed"
-                    : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                    ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
+                    : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
                 }`}
               >
                 {generating ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                    {progressMessage ? "Generating..." : "Processing..."}
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span className="animate-pulse">{progressMessage ? "Generating..." : "Processing..."}</span>
                   </>
                 ) : (
-                  "Synthesize Groups"
+                  <>
+                    <Sparkles className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-all" />
+                    <span>Synthesize Groups</span>
+                  </>
+                )}
+                
+                {/* Subtle shimmer effect on hover */}
+                {!generating && intakes.length >= 2 && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover/btn:animate-shimmer pointer-events-none" />
                 )}
               </button>
             </div>
@@ -256,7 +264,7 @@ export function GroupFormation({
       {/* Intake Summary */}
       <div className="glass rounded-[40px] p-10 border-white/[0.03]">
         <div className="flex items-center gap-4 mb-6">
-          <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Input Matrix</h3>
+          <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Input Matrix</h3>
           <div className="h-[1px] flex-1 bg-white/[0.03]" />
         </div>
         
@@ -316,7 +324,7 @@ export function GroupFormation({
       {groups.length > 0 && (
         <div className="space-y-8">
           <div className="flex items-center gap-4">
-            <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Proposed Formations</h2>
+            <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Proposed Formations</h2>
             <div className="h-[1px] flex-1 bg-white/[0.03]" />
           </div>
           <div className="space-y-6">

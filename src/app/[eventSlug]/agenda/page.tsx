@@ -67,13 +67,13 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
         </div>
 
         <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
-          <AgendaList items={items} />
+          <AgendaList items={items} eventId={event.id} />
         </div>
       </main>
 
       <EventNav eventSlug={eventSlug} event={event} />
       
-      {liveSlide && <LiveSlideOverlay slide={liveSlide} />}
+      {liveSlide && <LiveSlideOverlay slide={liveSlide} eventId={event.id} />}
     </div>
   );
 }

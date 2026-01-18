@@ -88,9 +88,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Console: Cursor</p>
               <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Calgary Cursor Meetup - January 2026</p>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Smart Seating</p>
+              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Console: Cursor</p>
             </div>
           </div>
 
@@ -286,7 +285,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
-                    <Sparkles className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                    <Users className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
@@ -414,7 +413,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Control Center</p>
-          <span className="text-[10px] font-medium text-white/40 px-5 py-2 bg-white/10 rounded-full border border-white/[0.05]">Active Session</span>
         </div>
       </footer>
     </div>

@@ -4,7 +4,7 @@ import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
-import { PollCard } from "@/components/polls/PollCard";
+import { PollsList } from "@/components/polls/PollsList";
 
 interface PollsPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -55,27 +55,13 @@ export default async function PollsPage({ params }: PollsPageProps) {
           </h1>
         </div>
 
-        <div className="space-y-6 animate-slide-up" style={{ animationDelay: "100ms" }}>
-          {polls.length === 0 ? (
-            <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/5 opacity-40">
-              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-                No active polls
-              </p>
-              <p className="text-xs text-gray-700">
-                Check back when a poll is started
-              </p>
-            </div>
-          ) : (
-            polls.map((poll, index) => (
-              <div
-                key={poll.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${(index + 1) * 100}ms` }}
-              >
-                <PollCard poll={poll} eventSlug={eventSlug} />
-              </div>
-            ))
-          )}
+        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+          <PollsList 
+            initialPolls={polls} 
+            eventId={event.id} 
+            eventSlug={eventSlug}
+            userId={session.userId}
+          />
         </div>
       </main>
 
