@@ -53,6 +53,8 @@ For each group, explain:
 - The primary theme and why these people benefit from meeting each other
 - For each member, specifically which other member(s) can help them and how
 
+IMPORTANT: In matchReasons, use the person's NAME (not their ID) when referring to other members.
+
 Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
 {
   "groups": [
@@ -61,13 +63,15 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
       "description": "Detailed explanation of why these people are matched together and the mutual benefit opportunities",
       "memberIds": ["user-id-1", "user-id-2", "user-id-3"],
       "matchReasons": {
-        "user-id-1": "Can benefit from meeting user-id-2 (who offers X which aligns with their goal Y) and user-id-3 (who offers Z)",
-        "user-id-2": "Can benefit from meeting user-id-1 (who offers A which aligns with their goal B)",
-        "user-id-3": "Can benefit from meeting user-id-1 (who offers C which aligns with their goal D)"
+        "user-id-1": "Can benefit from meeting [Person Name 2] (who offers X which aligns with their goal Y) and [Person Name 3] (who offers Z)",
+        "user-id-2": "Can benefit from meeting [Person Name 1] (who offers A which aligns with their goal B)",
+        "user-id-3": "Can benefit from meeting [Person Name 1] (who offers C which aligns with their goal D)"
       }
     }
   ]
-}`;
+}
+
+Remember: Use actual names from the attendees list in matchReasons, NOT user IDs.`;
 
   try {
     console.log("[generateGroupSuggestions] Calling OpenAI API with", attendeeSummaries.length, "attendees");
@@ -109,8 +113,34 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
       result = JSON.parse(jsonMatch[0]);
     }
 
-    const groups = result.groups || [];
+    let groups = result.groups || [];
     console.log("[generateGroupSuggestions] Successfully parsed", groups.length, "groups from OpenAI response");
+    
+    // Create a map of user IDs to names for replacing IDs in matchReasons
+    const userIdToName = new Map<string, string>();
+    attendeeSummaries.forEach((attendee) => {
+      userIdToName.set(attendee.id, attendee.name);
+    });
+    
+    // Process groups to replace any user IDs in matchReasons with names
+    groups = groups.map((group: any) => {
+      if (group.matchReasons && typeof group.matchReasons === 'object') {
+        const processedReasons: Record<string, string> = {};
+        Object.keys(group.matchReasons).forEach((userId) => {
+          let reason = group.matchReasons[userId];
+          // Replace any user IDs in the reason text with names
+          userIdToName.forEach((name, id) => {
+            // Replace ID references with names
+            reason = reason.replace(new RegExp(id, 'g'), name);
+          });
+          processedReasons[userId] = reason;
+        });
+        return { ...group, matchReasons: processedReasons };
+      }
+      return group;
+    });
+    
+    console.log("[generateGroupSuggestions] Processed match reasons to use names instead of IDs");
     
     return groups;
   } catch (error) {
