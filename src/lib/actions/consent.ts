@@ -20,18 +20,42 @@ export async function submitSurveyConsent(
 
   const supabase = await createServiceClient();
 
-  // Update registration with survey consent timestamp
-  const { error } = await supabase
+  // Check if registration exists
+  const { data: existingReg } = await supabase
     .from("registrations")
-    .update({
-      survey_consent_at: new Date().toISOString(),
-    })
+    .select("id")
     .eq("event_id", eventId)
-    .eq("user_id", session.userId);
+    .eq("user_id", session.userId)
+    .single();
 
-  if (error) {
-    console.error("[submitSurveyConsent] Error:", error);
-    return { error: "Failed to save consent" };
+  if (existingReg) {
+    // Update existing registration
+    const { error } = await supabase
+      .from("registrations")
+      .update({
+        survey_consent_at: new Date().toISOString(),
+      })
+      .eq("id", existingReg.id);
+
+    if (error) {
+      console.error("[submitSurveyConsent] Update error:", error);
+      return { error: "Failed to save consent" };
+    }
+  } else {
+    // Create registration if it doesn't exist (for pre-event intake users)
+    const { error } = await supabase
+      .from("registrations")
+      .insert({
+        event_id: eventId,
+        user_id: session.userId,
+        source: "link", // Default source for pre-event intake
+        survey_consent_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error("[submitSurveyConsent] Insert error:", error);
+      return { error: "Failed to save consent" };
+    }
   }
 
   revalidatePath(`/${eventSlug}/agenda`);
