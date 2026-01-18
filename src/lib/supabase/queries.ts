@@ -252,9 +252,10 @@ export async function getQuestions(
   includeHidden: boolean = false
 ): Promise<Question[]> {
   const supabase = await createClient();
+  // Explicitly specify the relationship to avoid ambiguity with question_upvotes
   const query = supabase
     .from("questions")
-    .select("*, user:users(*), answers(*, user:users(*))")
+    .select("*, user:users!questions_user_id_fkey(*), answers(*, user:users!answers_user_id_fkey(*))")
     .eq("event_id", eventId);
 
   if (!includeHidden) {
@@ -295,9 +296,10 @@ export async function getQuestionsForAdmin(
 ): Promise<Question[]> {
   console.log("[getQuestionsForAdmin] Fetching questions for admin, eventId:", eventId);
   const supabase = await createServiceClient();
+  // Explicitly specify the relationship to avoid ambiguity with question_upvotes
   const query = supabase
     .from("questions")
-    .select("*, user:users(*), answers(*, user:users(*))")
+    .select("*, user:users!questions_user_id_fkey(*), answers(*, user:users!answers_user_id_fkey(*))")
     .eq("event_id", eventId);
 
   if (!includeHidden) {
@@ -335,9 +337,10 @@ export async function getQuestionsForAdmin(
 
 export async function getQuestionById(id: string): Promise<Question | null> {
   const supabase = await createClient();
+  // Explicitly specify the relationship to avoid ambiguity with question_upvotes
   const { data, error } = await supabase
     .from("questions")
-    .select("*, user:users(*), answers(*, user:users(*))")
+    .select("*, user:users!questions_user_id_fkey(*), answers(*, user:users!answers_user_id_fkey(*))")
     .eq("id", id)
     .single();
 
