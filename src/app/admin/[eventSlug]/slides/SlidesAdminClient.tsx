@@ -64,7 +64,7 @@ export function SlidesAdminClient({
       await page.render({
         canvasContext: context,
         viewport: viewport,
-      }).promise;
+      } as any).promise;
 
       // Convert canvas to blob
       const blob = await new Promise<Blob>((resolve, reject) => {
