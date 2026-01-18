@@ -184,11 +184,9 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               <span className="font-semibold text-white text-xl leading-tight tracking-tight">
                 {event.name}
               </span>
-              {event.venue && (
-                <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold leading-tight">
-                  {event.venue}
-                </span>
-              )}
+              <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold leading-tight">
+                Event Platform
+              </span>
             </div>
           </Link>
 
