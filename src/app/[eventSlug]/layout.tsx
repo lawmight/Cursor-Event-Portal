@@ -1,6 +1,8 @@
 import { getEventBySlug } from "@/lib/supabase/queries";
+import { getSession } from "@/lib/actions/registration";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { SeatAssignmentOverlay } from "@/components/seating/SeatAssignmentOverlay";
 
 interface EventLayoutProps {
   children: React.ReactNode;
@@ -31,5 +33,16 @@ export default async function EventLayout({ children, params }: EventLayoutProps
     notFound();
   }
 
-  return children;
+  // Get session to check for seat assignment
+  const session = await getSession();
+
+  return (
+    <>
+      {children}
+      {/* Seat Assignment Overlay - blocks everything when lockout is active */}
+      {session?.userId && (
+        <SeatAssignmentOverlay event={event} userId={session.userId} />
+      )}
+    </>
+  );
 }

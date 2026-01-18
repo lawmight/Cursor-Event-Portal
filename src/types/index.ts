@@ -16,6 +16,7 @@ export interface Event {
   start_time: string | null;
   end_time: string | null;
   status: EventStatus;
+  seat_lockout_active: boolean;
   created_at: string;
 }
 

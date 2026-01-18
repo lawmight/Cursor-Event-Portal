@@ -19,6 +19,7 @@ import {
   Vote,
   Calendar,
 } from "lucide-react";
+import { SeatLockoutControl } from "@/components/admin/SeatLockoutControl";
 
 interface AdminDashboardProps {
   params: Promise<{ eventSlug: string }>;
@@ -161,6 +162,9 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </span>
           </div>
         </div>
+
+        {/* Seat Lockout Control - Critical for event start */}
+        <SeatLockoutControl event={event} eventSlug={eventSlug} />
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6">
