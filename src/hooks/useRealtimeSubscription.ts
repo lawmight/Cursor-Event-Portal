@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { RealtimeChannelState } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 type PostgresEvent = "INSERT" | "UPDATE" | "DELETE" | "*";
@@ -20,6 +19,8 @@ interface UseRealtimeSubscriptionOptions {
   channelName?: string;
   autoRefresh?: boolean;
 }
+
+type RealtimeChannelStatus = "SUBSCRIBED" | "TIMED_OUT" | "CLOSED" | "CHANNEL_ERROR";
 
 /**
  * Hook for subscribing to Supabase Realtime database changes
@@ -73,7 +74,7 @@ export function useRealtimeSubscription({
       );
     });
 
-    channel.subscribe((status: RealtimeChannelState) => {
+    channel.subscribe((status: RealtimeChannelStatus) => {
       if (status === "SUBSCRIBED") {
         console.log(`[Realtime] Subscribed to ${name}`);
       } else if (status === "CHANNEL_ERROR") {
