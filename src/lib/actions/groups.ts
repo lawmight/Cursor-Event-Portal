@@ -203,19 +203,24 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   }
 
   // Call LLM for matching directly with timeout handling
-  let groups;
+  let groups: Array<{
+    name: string;
+    description: string;
+    memberIds: string[];
+    matchReasons?: Record<string, string>;
+  }>;
   try {
     console.log("[generateGroups] Calling OpenAI to generate groups...");
     
     // Set a timeout for the OpenAI call (5 minutes max)
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error("Group generation timed out after 5 minutes")), 5 * 60 * 1000);
     });
     
     groups = await Promise.race([
       generateGroupSuggestions(intakes),
       timeoutPromise
-    ]) as typeof groups;
+    ]);
     
     console.log("[generateGroups] Generated groups:", groups?.length || 0);
   } catch (error) {
