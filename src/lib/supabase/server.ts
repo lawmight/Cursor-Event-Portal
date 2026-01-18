@@ -44,8 +44,8 @@ export async function createServiceClient() {
     throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY. Please check your environment variables. This key is required for server actions.");
   }
 
-  // Validate the key format (service role keys typically start with 'eyJ')
-  if (!serviceRoleKey.startsWith('eyJ')) {
+  // Validate the key format (service role keys start with 'eyJ' for legacy JWT or 'sb_secret_' for new format)
+  if (!serviceRoleKey.startsWith('eyJ') && !serviceRoleKey.startsWith('sb_secret_')) {
     console.error("Invalid SUPABASE_SERVICE_ROLE_KEY format");
     throw new Error("Invalid SUPABASE_SERVICE_ROLE_KEY format. Please verify the key is correct.");
   }
