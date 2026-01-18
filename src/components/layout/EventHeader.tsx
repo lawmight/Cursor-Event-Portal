@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Event, Announcement } from "@/types";
 import { cn } from "@/lib/utils";
 import { EventTimer } from "@/components/timer/EventTimer";
+import { createClient } from "@/lib/supabase/client";
 
 interface EventHeaderProps {
   event: Event;
@@ -12,7 +14,64 @@ interface EventHeaderProps {
   showTimer?: boolean;
 }
 
-export function EventHeader({ event, announcement, showTimer = true }: EventHeaderProps) {
+export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true }: EventHeaderProps) {
+  const [announcement, setAnnouncement] = useState<Announcement | null>(initialAnnouncement || null);
+
+  // Subscribe to real-time announcement updates
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const channel = supabase
+      .channel(`announcements-${event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "announcements",
+          filter: `event_id=eq.${event.id}`,
+        },
+        async (payload) => {
+          // Fetch the new announcement
+          const { data: newAnnouncement } = await supabase
+            .from("announcements")
+            .select("*")
+            .eq("id", payload.new.id)
+            .single();
+          
+          if (newAnnouncement) {
+            setAnnouncement(newAnnouncement);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "announcements",
+          filter: `event_id=eq.${event.id}`,
+        },
+        async (payload) => {
+          // Fetch the updated announcement
+          const { data: updatedAnnouncement } = await supabase
+            .from("announcements")
+            .select("*")
+            .eq("id", payload.new.id)
+            .single();
+          
+          if (updatedAnnouncement) {
+            setAnnouncement(updatedAnnouncement);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event.id]);
+
   // Event starts at 5:00 PM MST on Jan 28, 2026 = 2026-01-29T00:00:00Z (midnight UTC on Jan 29)
   // Red threshold at 8:30 PM = 3.5 hours = 210 minutes
   const eventStartTime = "2026-01-29T00:00:00Z";

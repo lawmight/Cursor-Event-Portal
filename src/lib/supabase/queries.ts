@@ -225,6 +225,22 @@ export async function getAnnouncements(eventId: string): Promise<Announcement[]>
 }
 
 // Question queries
+// Calculate a "hot score" for trending questions
+// Formula: (upvotes * 2 + answers_count * 1.5) / (hours_since_creation + 2)^1.5
+// This gives a boost to recent questions and those with engagement
+function calculateHotScore(question: Question): number {
+  const upvotes = question.upvotes || 0;
+  const answersCount = question.answers?.length || 0;
+  const createdAt = new Date(question.created_at);
+  const now = new Date();
+  const hoursSinceCreation = Math.max(0, (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+  
+  // Hot score: engagement weighted by recency
+  const engagement = upvotes * 2 + answersCount * 1.5;
+  const timeDecay = Math.pow(hoursSinceCreation + 2, 1.5);
+  return engagement / timeDecay;
+}
+
 export async function getQuestions(
   eventId: string,
   sort: "trending" | "new" = "trending",
@@ -240,10 +256,12 @@ export async function getQuestions(
     query.neq("status", "hidden");
   }
 
-  if (sort === "trending") {
-    query.order("upvotes", { ascending: false });
-  } else {
+  // For "new", just order by created_at
+  if (sort === "new") {
     query.order("created_at", { ascending: false });
+  } else {
+    // For "trending", fetch all and sort by hot score
+    query.order("created_at", { ascending: false }); // Get all first
   }
 
   const { data, error } = await query;
@@ -251,7 +269,17 @@ export async function getQuestions(
     console.error("[getQuestions] Error fetching questions:", error);
     return [];
   }
-  return data;
+
+  // If trending, sort by hot score
+  if (sort === "trending" && data) {
+    return data.sort((a, b) => {
+      const scoreA = calculateHotScore(a);
+      const scoreB = calculateHotScore(b);
+      return scoreB - scoreA; // Descending order
+    });
+  }
+
+  return data || [];
 }
 
 // Admin version that bypasses RLS to see all questions
@@ -271,10 +299,12 @@ export async function getQuestionsForAdmin(
     query.neq("status", "hidden");
   }
 
-  if (sort === "trending") {
-    query.order("upvotes", { ascending: false });
-  } else {
+  // For "new", just order by created_at
+  if (sort === "new") {
     query.order("created_at", { ascending: false });
+  } else {
+    // For "trending", fetch all and sort by hot score
+    query.order("created_at", { ascending: false }); // Get all first
   }
 
   const { data, error } = await query;
@@ -282,6 +312,18 @@ export async function getQuestionsForAdmin(
     console.error("[getQuestionsForAdmin] Error fetching questions:", error);
     return [];
   }
+
+  // If trending, sort by hot score
+  if (sort === "trending" && data) {
+    const sorted = data.sort((a, b) => {
+      const scoreA = calculateHotScore(a);
+      const scoreB = calculateHotScore(b);
+      return scoreB - scoreA; // Descending order
+    });
+    console.log("[getQuestionsForAdmin] Found", sorted.length, "questions, sorted by hot score");
+    return sorted;
+  }
+
   console.log("[getQuestionsForAdmin] Found", data?.length || 0, "questions");
   return data || [];
 }

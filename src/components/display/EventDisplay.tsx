@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { DisplayPageData } from "@/types";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 interface EventDisplayProps {
   initialData: DisplayPageData;
@@ -22,6 +23,43 @@ export function EventDisplay({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showSlides, setShowSlides] = useState(data.slides.length > 0);
+
+  // Subscribe to real-time announcement updates
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const channel = supabase
+      .channel(`announcements-display-${initialData.event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "announcements",
+          filter: `event_id=eq.${initialData.event.id}`,
+        },
+        async () => {
+          // Refresh announcements when they change
+          try {
+            const res = await fetch(`/api/display/${eventSlug}`);
+            if (res.ok) {
+              const newData = await res.json();
+              setData((prev) => ({
+                ...prev,
+                announcements: newData.announcements,
+              }));
+            }
+          } catch (error) {
+            console.error("Failed to refresh announcements");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventSlug, initialData.event.id]);
 
   // Refresh data periodically
   useEffect(() => {

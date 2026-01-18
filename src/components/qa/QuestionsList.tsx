@@ -55,13 +55,24 @@ export function QuestionsList({
               if (prev.some((q) => q.id === newQuestion.id)) {
                 return prev;
               }
-              // Add new question at the beginning for "new" sort, or by upvotes for "trending"
+              // Add new question at the beginning for "new" sort, or by hot score for "trending"
               if (sortBy === "new") {
                 return [newQuestion, ...prev];
               } else {
-                // Insert in sorted order by upvotes
+                // Calculate hot score for sorting
+                const calculateHotScore = (q: Question) => {
+                  const upvotes = q.upvotes || 0;
+                  const answersCount = q.answers?.length || 0;
+                  const createdAt = new Date(q.created_at);
+                  const now = new Date();
+                  const hoursSinceCreation = Math.max(0, (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+                  const engagement = upvotes * 2 + answersCount * 1.5;
+                  const timeDecay = Math.pow(hoursSinceCreation + 2, 1.5);
+                  return engagement / timeDecay;
+                };
+                // Insert in sorted order by hot score
                 const sorted = [...prev, newQuestion].sort(
-                  (a, b) => (b.upvotes || 0) - (a.upvotes || 0)
+                  (a, b) => calculateHotScore(b) - calculateHotScore(a)
                 );
                 return sorted;
               }
@@ -98,7 +109,17 @@ export function QuestionsList({
                 updated[index] = updatedQuestion;
                 // Re-sort if needed
                 if (sortBy === "trending") {
-                  return updated.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
+                  const calculateHotScore = (q: Question) => {
+                    const upvotes = q.upvotes || 0;
+                    const answersCount = q.answers?.length || 0;
+                    const createdAt = new Date(q.created_at);
+                    const now = new Date();
+                    const hoursSinceCreation = Math.max(0, (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+                    const engagement = upvotes * 2 + answersCount * 1.5;
+                    const timeDecay = Math.pow(hoursSinceCreation + 2, 1.5);
+                    return engagement / timeDecay;
+                  };
+                  return updated.sort((a, b) => calculateHotScore(b) - calculateHotScore(a));
                 }
                 return updated;
               } else {
@@ -106,8 +127,18 @@ export function QuestionsList({
                 if (sortBy === "new") {
                   return [updatedQuestion, ...prev];
                 } else {
+                  const calculateHotScore = (q: Question) => {
+                    const upvotes = q.upvotes || 0;
+                    const answersCount = q.answers?.length || 0;
+                    const createdAt = new Date(q.created_at);
+                    const now = new Date();
+                    const hoursSinceCreation = Math.max(0, (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60));
+                    const engagement = upvotes * 2 + answersCount * 1.5;
+                    const timeDecay = Math.pow(hoursSinceCreation + 2, 1.5);
+                    return engagement / timeDecay;
+                  };
                   const sorted = [...prev, updatedQuestion].sort(
-                    (a, b) => (b.upvotes || 0) - (a.upvotes || 0)
+                    (a, b) => calculateHotScore(b) - calculateHotScore(a)
                   );
                   return sorted;
                 }
