@@ -133,7 +133,7 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
         ))}
       </main>
 
-      <EventNav eventSlug={eventSlug} />
+      <EventNav eventSlug={eventSlug} event={event} />
     </div>
   );
 }

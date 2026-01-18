@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar, MessageCircle, FolderOpen, BarChart3 } from "lucide-react";
+import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Event } from "@/types";
 
 interface EventNavProps {
   eventSlug: string;
+  event?: Event;
 }
 
 const navItems = [
@@ -18,10 +20,39 @@ const navItems = [
   { href: "resources", label: "Resources", icon: FolderOpen },
 ];
 
-export function EventNav({ eventSlug }: EventNavProps) {
+export function EventNav({ eventSlug, event }: EventNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [hasActivePolls, setHasActivePolls] = useState(false);
   const [pollAlertVisible, setPollAlertVisible] = useState(false);
+  const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
+
+  // Subscribe to lockout status changes
+  useEffect(() => {
+    if (!event) return;
+    
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`event-lockout-nav-${event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "events",
+          filter: `id=eq.${event.id}`,
+        },
+        (payload) => {
+          const newEvent = payload.new as Event;
+          setIsLockoutActive(newEvent.seat_lockout_active);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event]);
 
   // Get seen poll IDs from localStorage
   const getSeenPollIds = (): string[] => {
@@ -111,6 +142,23 @@ export function EventNav({ eventSlug }: EventNavProps) {
               const Icon = item.icon;
               const showPollAlert =
                 item.hasAlert && hasActivePolls && pollAlertVisible && !isActive;
+              
+              // During lockout, only Agenda is accessible
+              const isDisabled = isLockoutActive && item.href !== "agenda";
+
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.href}
+                    className="flex flex-col items-center justify-center gap-1.5 px-3 h-full transition-all duration-300 relative group text-gray-800 cursor-not-allowed"
+                  >
+                    <div className="transition-all duration-300 relative opacity-40">
+                      <Icon className="w-5 h-5 stroke-[1.5px]" />
+                      <Lock className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 text-gray-600" />
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <Link

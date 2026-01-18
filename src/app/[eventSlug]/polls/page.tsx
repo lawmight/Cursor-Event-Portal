@@ -75,7 +75,7 @@ export default async function PollsPage({ params }: PollsPageProps) {
         </div>
       </main>
 
-      <EventNav eventSlug={eventSlug} />
+      <EventNav eventSlug={eventSlug} event={event} />
     </div>
   );
 }

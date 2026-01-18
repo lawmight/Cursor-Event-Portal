@@ -107,7 +107,7 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
         />
       </main>
 
-      <EventNav eventSlug={eventSlug} />
+      <EventNav eventSlug={eventSlug} event={event} />
     </div>
   );
 }

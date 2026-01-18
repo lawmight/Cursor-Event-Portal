@@ -2,7 +2,7 @@ import { getEventBySlug } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SeatAssignmentOverlay } from "@/components/seating/SeatAssignmentOverlay";
+import { SeatAssignmentBanner } from "@/components/seating/SeatAssignmentBanner";
 
 interface EventLayoutProps {
   children: React.ReactNode;
@@ -38,11 +38,11 @@ export default async function EventLayout({ children, params }: EventLayoutProps
 
   return (
     <>
-      {children}
-      {/* Seat Assignment Overlay - blocks everything when lockout is active */}
+      {/* Seat Assignment Banner - shows table assignment at top when lockout is active */}
       {session?.userId && (
-        <SeatAssignmentOverlay event={event} userId={session.userId} />
+        <SeatAssignmentBanner event={event} userId={session.userId} />
       )}
+      {children}
     </>
   );
 }

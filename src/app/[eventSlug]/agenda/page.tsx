@@ -80,7 +80,7 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
         </div>
       </main>
 
-      <EventNav eventSlug={eventSlug} />
+      <EventNav eventSlug={eventSlug} event={event} />
       
       {liveSlide && <LiveSlideOverlay slide={liveSlide} />}
     </div>
