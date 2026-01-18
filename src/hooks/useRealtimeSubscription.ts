@@ -53,7 +53,6 @@ export function useRealtimeSubscription({
     subscriptions.forEach((config) => {
       const filter = config.filter || `event_id=eq.${eventId}`;
       
-      // @ts-expect-error - Supabase types are strict but runtime supports this
       channel = channel.on(
         "postgres_changes",
         {
