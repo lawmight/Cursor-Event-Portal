@@ -84,7 +84,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Intelligence</p>
+              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Smart Seating</p>
             </div>
           </div>
 
@@ -282,7 +282,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Intelligence
+                      Smart Seating
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                       Networking Engine
