@@ -229,6 +229,13 @@ export function PollsAdminClient({
         )}
       </main>
 
+      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
+        <div className="flex items-center gap-6">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Live Polls</p>
+        </div>
+      </footer>
+
       {/* Create Modal */}
       {showCreateModal && (
         <CreatePollModal

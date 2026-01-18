@@ -236,6 +236,17 @@ export interface SlideDeck {
   updated_at: string;
 }
 
+// Individual slide types (for admin-uploaded slides)
+export interface Slide {
+  id: string;
+  event_id: string;
+  title: string | null;
+  image_url: string;
+  sort_order: number;
+  is_live: boolean;
+  created_at: string;
+}
+
 // Display page types
 export interface DisplayPageData {
   event: Event;

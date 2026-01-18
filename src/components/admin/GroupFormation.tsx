@@ -47,12 +47,10 @@ export function GroupFormation({
 }: GroupFormationProps) {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
-  const [showRejected, setShowRejected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  const visibleGroups = showRejected ? groups : groups.filter((group) => group.status !== "rejected");
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -147,14 +145,14 @@ export function GroupFormation({
           <div className="flex items-center gap-6">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
-                src="/attendees-2.png"
+                src="/attendees.png"
                 alt="Attendees"
                 width={40}
                 height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity -translate-y-[1px]"
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div className="flex-1 flex flex-col justify-center min-h-[56px]">
+            <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Intake Responses</p>
             </div>
@@ -169,10 +167,10 @@ export function GroupFormation({
                 alt="Proposals"
                 width={40}
                 height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity translate-y-[1px]"
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div className="flex-1 flex flex-col justify-center min-h-[56px]">
+            <div className="flex-1">
               <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Proposals</p>
             </div>
@@ -190,7 +188,7 @@ export function GroupFormation({
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div className="flex-1 flex items-center min-h-[56px]">
+            <div className="flex-1">
               <button
                 onClick={handleGenerate}
                 disabled={generating || intakes.length < 2}
@@ -207,6 +205,7 @@ export function GroupFormation({
                   </>
                 ) : (
                   <>
+                    <Sparkles className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-all" />
                     <span>Synthesize Groups</span>
                   </>
                 )}
@@ -327,17 +326,9 @@ export function GroupFormation({
           <div className="flex items-center gap-4">
             <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Proposed Formations</h2>
             <div className="h-[1px] flex-1 bg-white/[0.03]" />
-            {groups.some((group) => group.status === "rejected") && (
-              <button
-                onClick={() => setShowRejected((prev) => !prev)}
-                className="px-4 py-2 rounded-full text-[9px] uppercase tracking-[0.2em] font-bold border transition-all text-gray-500 border-white/10 hover:text-white hover:border-white/20"
-              >
-                {showRejected ? "Hide Rejected" : "Show Rejected"}
-              </button>
-            )}
           </div>
           <div className="space-y-6">
-            {visibleGroups.map((group) => (
+            {groups.map((group) => (
               <GroupCard
                 key={group.id}
                 group={group}
@@ -347,11 +338,6 @@ export function GroupFormation({
                 onGroupCancel={handleGroupCancel}
               />
             ))}
-            {visibleGroups.length === 0 && (
-              <div className="glass rounded-[32px] p-8 border-white/[0.03] text-center text-[10px] uppercase tracking-[0.3em] text-gray-600">
-                No visible formations
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -507,6 +493,15 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
               Discard
             </button>
           </>
+        )}
+
+        {group.status === "rejected" && (
+          <button
+            onClick={() => onGroupCancel(group.id)}
+            className="px-8 py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-red-500/20 transition-all"
+          >
+            Permanently Remove
+          </button>
         )}
 
         {(group.status === "approved" || group.status === "modified") && (

@@ -87,10 +87,9 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
       </main>
 
       <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
-        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-800 font-medium">Pop-Up System / MMXXVI</p>
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-800 font-medium">Smart Seating</p>
-          <span className="text-[10px] font-medium text-white/40 px-5 py-2 bg-white/[0.02] rounded-full border border-white/[0.05]">Neural Protocol</span>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Smart Seating</p>
         </div>
       </footer>
     </div>

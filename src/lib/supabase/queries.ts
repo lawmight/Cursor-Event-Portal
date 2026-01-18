@@ -407,17 +407,37 @@ export async function getAttendeeIntake(
 
 export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]> {
   const supabase = await createClient();
+
+  // First get all checked-in user IDs for this event
+  const { data: checkedInRegs } = await supabase
+    .from("registrations")
+    .select("user_id")
+    .eq("event_id", eventId)
+    .not("checked_in_at", "is", null);
+
+  const checkedInUserIds = (checkedInRegs || []).map((r) => r.user_id);
+
+  if (checkedInUserIds.length === 0) {
+    return [];
+  }
+
+  // Then get intakes for those users, excluding admins
   const { data, error } = await supabase
     .from("attendee_intakes")
-    .select("*, user:users(*), registrations!inner(checked_in_at)")
+    .select("*, user:users(*)")
     .eq("event_id", eventId)
-    .eq("registrations.event_id", eventId)
-    .not("registrations.checked_in_at", "is", null)
     .eq("skipped", false)
+    .in("user_id", checkedInUserIds)
+    .neq("user.role", "admin")
     .order("created_at", { ascending: false });
 
-  if (error) return [];
-  return data;
+  if (error) {
+    console.error("[getEventIntakes] Error:", error);
+    return [];
+  }
+
+  // Filter out admins (in case the neq didn't work on joined table)
+  return (data || []).filter((intake) => intake.user?.role !== "admin");
 }
 
 // Group queries

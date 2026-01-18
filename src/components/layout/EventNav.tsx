@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
 import type { Event } from "@/types";
 
 interface EventNavProps {
@@ -15,7 +16,7 @@ interface EventNavProps {
 
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
-  { href: "slides", label: "Slides", icon: FileText },
+  { href: "slides", label: "Slides", icon: FileText, requiresLiveSlide: true },
   { href: "qa", label: "Q&A", icon: MessageCircle },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "resources", label: "Resources", icon: FolderOpen },
@@ -27,6 +28,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   const [hasActivePolls, setHasActivePolls] = useState(false);
   const [pollAlertVisible, setPollAlertVisible] = useState(false);
   const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
+  const [hasLiveSlide, setHasLiveSlide] = useState(false);
 
   // Subscribe to lockout status changes
   useEffect(() => {
@@ -46,6 +48,46 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         (payload) => {
           const newEvent = payload.new as Event;
           setIsLockoutActive(newEvent.seat_lockout_active);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event]);
+
+  // Check for live slides and subscribe to changes
+  useEffect(() => {
+    if (!event) return;
+
+    const checkLiveSlide = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("slides")
+        .select("id")
+        .eq("event_id", event.id)
+        .eq("is_live", true)
+        .limit(1);
+
+      setHasLiveSlide((data?.length || 0) > 0);
+    };
+
+    checkLiveSlide();
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`slides-nav-${event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "slides",
+          filter: `event_id=eq.${event.id}`,
+        },
+        () => {
+          checkLiveSlide();
         }
       )
       .subscribe();
@@ -134,7 +176,11 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   }, [pathname, eventSlug]);
 
   return (
-    <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">
+    <>
+      {/* Live Slide Popup - shows on right side when slides are live */}
+      {event && <LiveSlidePopup eventId={event.id} eventSlug={eventSlug} />}
+
+      <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">
       <div className="glass rounded-[40px] border border-white/5 w-20 pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
         <div className="py-6">
           <div className="flex flex-col items-center gap-4">
@@ -143,7 +189,12 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
               const Icon = item.icon;
               const showPollAlert =
                 item.hasAlert && hasActivePolls && pollAlertVisible && !isActive;
-              
+
+              // Hide slides tab if no live slide
+              if (item.requiresLiveSlide && !hasLiveSlide) {
+                return null;
+              }
+
               // During lockout, only Agenda is accessible
               const isDisabled = isLockoutActive && item.href !== "agenda";
 
@@ -205,5 +256,6 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         </div>
       </div>
     </nav>
+    </>
   );
 }
