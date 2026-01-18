@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
+// Admin login API route
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
