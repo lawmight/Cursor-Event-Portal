@@ -424,14 +424,15 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
   const supabase = await createServiceClient();
   console.log("[getSuggestedGroups] Fetching groups for event:", eventId);
   
+  // Note: suggested_group_members has user_id FK to users, but NOT to attendee_intakes
+  // So we only join users here
   const { data, error } = await supabase
     .from("suggested_groups")
     .select(`
       *,
       members:suggested_group_members(
         *,
-        user:users(*),
-        intake:attendee_intakes(*)
+        user:users(*)
       )
     `)
     .eq("event_id", eventId)
