@@ -29,63 +29,97 @@ async function generateGroupSuggestions(intakes: AttendeeIntake[]) {
 
   const targetGroupSize = Math.min(5, Math.max(3, Math.ceil(intakes.length / 3)));
 
-  const prompt = `You are an expert at forming productive networking groups at tech events.
+  const prompt = `You are an expert at creating high-value networking opportunities at tech events. Your goal is to form groups where each person can meet others who can genuinely help them achieve their goals.
 
-Given these attendees with their goals and offers, create balanced groups of ${targetGroupSize}-${targetGroupSize + 1} people where members can help each other.
+CRITICAL MATCHING STRATEGY:
+- For each person, identify who in the pool can BEST help them achieve their stated GOALS
+- Prioritize matches where Person A's OFFERS directly address Person B's GOALS
+- Create groups where there are MULTIPLE mutual benefit connections (not just one-to-one)
+- Ensure every person in a group has at least one other person whose offers align with their goals
+- Maximize the number of "value exchanges" within each group
 
 Attendees:
 ${JSON.stringify(attendeeSummaries, null, 2)}
 
-Rules:
-1. Match people whose OFFERS align with others' GOALS
-2. Ensure diversity of skills in each group
-3. Create groups that enable mutual value exchange
-4. Name each group based on its primary theme
-5. Every attendee should be in exactly one group
+Your task:
+Create ${Math.ceil(attendeeSummaries.length / targetGroupSize)} groups of ${targetGroupSize}-${targetGroupSize + 1} people each, where:
+1. Each person's GOALS are matched with at least one other person's OFFERS in the same group
+2. Groups enable multiple mutual benefit connections (Person A helps Person B, Person B helps Person C, Person C helps Person A, etc.)
+3. Each group has a clear theme based on the primary value exchange opportunities
+4. Every attendee is placed in exactly one group
+5. Groups are balanced - avoid putting all similar people together; create complementary skill/interest diversity
+
+For each group, explain:
+- The primary theme and why these people benefit from meeting each other
+- For each member, specifically which other member(s) can help them and how
 
 Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
 {
   "groups": [
     {
-      "name": "Group theme name",
-      "description": "Why these people are matched together",
-      "memberIds": ["user-id-1", "user-id-2"],
+      "name": "Group theme name (e.g., 'AI Founders & Technical Talent')",
+      "description": "Detailed explanation of why these people are matched together and the mutual benefit opportunities",
+      "memberIds": ["user-id-1", "user-id-2", "user-id-3"],
       "matchReasons": {
-        "user-id-1": "Why this person fits",
-        "user-id-2": "Why this person fits"
+        "user-id-1": "Can benefit from meeting user-id-2 (who offers X which aligns with their goal Y) and user-id-3 (who offers Z)",
+        "user-id-2": "Can benefit from meeting user-id-1 (who offers A which aligns with their goal B)",
+        "user-id-3": "Can benefit from meeting user-id-1 (who offers C which aligns with their goal D)"
       }
     }
   ]
 }`;
 
   try {
+    console.log("[generateGroupSuggestions] Calling OpenAI API with", attendeeSummaries.length, "attendees");
     const openai = getOpenAIClient();
+    
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 2048,
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert networking facilitator specializing in creating high-value connections at tech events. Your expertise is in identifying complementary skills, goals, and offers to maximize mutual benefit opportunities."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.8, // Slightly higher for more creative matching
+      max_tokens: 3000, // Increased for more detailed explanations
+      response_format: { type: "json_object" }, // Force JSON output
     });
+
+    console.log("[generateGroupSuggestions] OpenAI API call successful");
 
     // Extract JSON from response
     const responseText = completion.choices[0]?.message?.content || "";
+    console.log("[generateGroupSuggestions] Response length:", responseText.length, "characters");
 
     // Try to parse as JSON directly first, then try to extract JSON from markdown
     let result;
     try {
       result = JSON.parse(responseText);
-    } catch {
+    } catch (parseError) {
+      console.warn("[generateGroupSuggestions] Direct JSON parse failed, trying to extract JSON from response");
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        console.error("Failed to parse LLM response:", responseText);
-        throw new Error("Failed to parse LLM response");
+        console.error("[generateGroupSuggestions] Failed to parse LLM response:", responseText.substring(0, 500));
+        throw new Error("Failed to parse LLM response as JSON");
       }
       result = JSON.parse(jsonMatch[0]);
     }
 
-    return result.groups || [];
+    const groups = result.groups || [];
+    console.log("[generateGroupSuggestions] Successfully parsed", groups.length, "groups from OpenAI response");
+    
+    return groups;
   } catch (error) {
-    console.error("Group matching error:", error);
+    console.error("[generateGroupSuggestions] OpenAI API error:", error);
+    if (error instanceof Error) {
+      console.error("[generateGroupSuggestions] Error message:", error.message);
+      console.error("[generateGroupSuggestions] Error stack:", error.stack);
+    }
     throw error;
   }
 }
