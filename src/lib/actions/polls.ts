@@ -267,3 +267,57 @@ export async function togglePollActive(pollId: string, eventSlug: string) {
   revalidatePath(`/${eventSlug}/polls`);
   return { success: true, is_active: !poll.is_active };
 }
+
+/**
+ * Automatically deactivate polls that have expired
+ * This should be called when loading polls to ensure expired polls are marked as inactive
+ */
+export async function deactivateExpiredPolls(eventId: string, eventSlug?: string): Promise<number> {
+  try {
+    const supabase = await createServiceClient();
+    const now = new Date().toISOString();
+
+    // Find all active polls that have expired
+    const { data: expiredPolls, error: fetchError } = await supabase
+      .from("polls")
+      .select("id")
+      .eq("event_id", eventId)
+      .eq("is_active", true)
+      .not("ends_at", "is", null)
+      .lt("ends_at", now);
+
+    if (fetchError) {
+      console.error("[deactivateExpiredPolls] Error fetching expired polls:", fetchError);
+      return 0;
+    }
+
+    if (!expiredPolls || expiredPolls.length === 0) {
+      return 0;
+    }
+
+    // Deactivate all expired polls
+    const pollIds = expiredPolls.map(p => p.id);
+    const { error: updateError } = await supabase
+      .from("polls")
+      .update({ is_active: false })
+      .in("id", pollIds);
+
+    if (updateError) {
+      console.error("[deactivateExpiredPolls] Error deactivating polls:", updateError);
+      return 0;
+    }
+
+    console.log(`[deactivateExpiredPolls] Deactivated ${expiredPolls.length} expired poll(s)`);
+
+    // Revalidate paths if eventSlug is provided
+    if (eventSlug) {
+      revalidatePath(`/admin/${eventSlug}/polls`);
+      revalidatePath(`/${eventSlug}/polls`);
+    }
+
+    return expiredPolls.length;
+  } catch (error) {
+    console.error("[deactivateExpiredPolls] Exception:", error);
+    return 0;
+  }
+}

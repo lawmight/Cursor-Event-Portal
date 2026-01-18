@@ -48,7 +48,7 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
   const [voteCounts, setVoteCounts] = useState(poll.vote_counts);
   const [totalVotes, setTotalVotes] = useState(poll.total_votes);
 
-  // Countdown timer
+  // Countdown timer and auto-refresh when poll expires
   useEffect(() => {
     if (!poll.ends_at) return;
 
@@ -59,11 +59,15 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
       if (remaining === "Ended") {
         setIsEnded(true);
         clearInterval(interval);
+        // Refresh the page after a short delay to update poll status
+        setTimeout(() => {
+          router.refresh();
+        }, 2000);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [poll.ends_at]);
+  }, [poll.ends_at, router]);
 
   const handleVote = async (optionIndex: number) => {
     if (loading || isEnded) return;

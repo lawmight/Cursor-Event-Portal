@@ -1,7 +1,7 @@
 /**
  * Script to add agenda items for Calgary Cursor Meetup - January 2026
  * 
- * Event: 2026-01-28 18:00:00+00 to 21:00:00+00 (6pm-9pm MST)
+ * Event: 5:00pm opening, 5:30pm start, 8:30pm finish MST on Jan 28, 2026
  * 
  * Run this script to populate the agenda items for the event.
  * Make sure to set the EVENT_ID environment variable or update it in the script.
@@ -22,45 +22,41 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const EVENT_SLUG = "calgary-jan-2026";
 const EVENT_DATE = "2026-01-28";
 
-// All times in UTC (MST is UTC-7, so 6pm MST = 1am UTC next day)
-// Actually, let's use local time and convert properly
-// Event is 6pm-9pm MST on Jan 28, 2026
-// MST is UTC-7, so 6pm MST = 1am UTC on Jan 29
-// But let's use the event's timezone properly
-
-// Times in ISO format (assuming event is in Calgary timezone, UTC-7)
-// We'll use UTC times: 6pm MST = 1am UTC next day
-const BASE_DATE = "2026-01-29T01:00:00Z"; // 6pm MST Jan 28 = 1am UTC Jan 29
+// All times in UTC (MST is UTC-7)
+// Event: 5:00pm opening, 5:30pm start, 8:30pm finish MST on Jan 28, 2026
+// 5:00pm MST = 12:00am UTC on Jan 29
+// 5:30pm MST = 12:30am UTC on Jan 29
+// 8:30pm MST = 3:30am UTC on Jan 29
 
 const agendaItems = [
   {
     title: "Mingling & Networking",
     description: "Arrive early and connect with fellow developers. The room will be set up into pods for collaboration.",
-    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
-    end_time: "2026-01-29T01:00:00Z", // 6:00pm MST
+    start_time: "2026-01-29T00:00:00Z", // 5:00pm MST (opening)
+    end_time: "2026-01-29T00:30:00Z", // 5:30pm MST (start)
     sort_order: 0,
   },
   {
     title: "Welcome & Introductions",
     description: "Quick 5-minute introduction to kick off the event.",
     speaker: "Jia Ming Huang",
-    start_time: "2026-01-29T01:00:00Z", // 6:00pm MST
-    end_time: "2026-01-29T01:05:00Z", // 6:05pm MST
+    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
+    end_time: "2026-01-29T00:35:00Z", // 5:35pm MST
     sort_order: 1,
   },
   {
     title: "Short Demos",
     description: "A few quick demos (2-3 minutes each) showcasing what's possible with Cursor.",
     speaker: "Simon Loewen",
-    start_time: "2026-01-29T01:05:00Z", // 6:05pm MST
-    end_time: "2026-01-29T01:20:00Z", // 6:20pm MST
+    start_time: "2026-01-29T00:35:00Z", // 5:35pm MST
+    end_time: "2026-01-29T00:50:00Z", // 5:50pm MST
     sort_order: 2,
   },
   {
     title: "Build Session",
     description: "Work with your pod to build something together. Walk around to get help and answer questions. Room is set up in collaboration pods.",
     speaker: "Jia Ming Huang",
-    start_time: "2026-01-29T01:20:00Z", // 6:20pm MST
+    start_time: "2026-01-29T00:50:00Z", // 5:50pm MST
     end_time: "2026-01-29T02:20:00Z", // 7:20pm MST
     sort_order: 3,
   },
@@ -75,7 +71,7 @@ const agendaItems = [
     title: "Networking & Tear-Down",
     description: "Continue networking, share contact information, and help clean up.",
     start_time: "2026-01-29T03:00:00Z", // 8:00pm MST
-    end_time: "2026-01-29T04:00:00Z", // 9:00pm MST
+    end_time: "2026-01-29T03:30:00Z", // 8:30pm MST (finish)
     sort_order: 5,
   },
 ];

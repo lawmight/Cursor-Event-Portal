@@ -30,6 +30,10 @@ export default async function PollsPage({ params }: PollsPageProps) {
     redirect(`/${eventSlug}/intake`);
   }
 
+  // Deactivate expired polls before loading
+  const { deactivateExpiredPolls } = await import("@/lib/actions/polls");
+  await deactivateExpiredPolls(event.id, eventSlug);
+
   const [polls, announcements] = await Promise.all([
     getActivePollsWithVotes(event.id, session.userId),
     getAnnouncements(event.id),

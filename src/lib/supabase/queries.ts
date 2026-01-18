@@ -538,11 +538,19 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
 // Poll queries
 export async function getActivePolls(eventId: string): Promise<Poll[]> {
   const supabase = await createClient();
+  
+  // First, deactivate any expired polls
+  const { deactivateExpiredPolls } = await import("@/lib/actions/polls");
+  await deactivateExpiredPolls(eventId);
+  
+  const now = new Date().toISOString();
+  // Query active polls that either have no end time or haven't ended yet
   const { data, error } = await supabase
     .from("polls")
     .select("*")
     .eq("event_id", eventId)
     .eq("is_active", true)
+    .or(`ends_at.is.null,ends_at.gt."${now}"`) // Only include polls that haven't ended
     .order("created_at", { ascending: false });
 
   if (error) return [];
@@ -551,6 +559,11 @@ export async function getActivePolls(eventId: string): Promise<Poll[]> {
 
 export async function getAllPolls(eventId: string): Promise<Poll[]> {
   const supabase = await createClient();
+  
+  // First, deactivate any expired polls
+  const { deactivateExpiredPolls } = await import("@/lib/actions/polls");
+  await deactivateExpiredPolls(eventId);
+  
   const { data, error } = await supabase
     .from("polls")
     .select("*")
@@ -606,11 +619,18 @@ export async function getActivePollsWithVotes(
 ): Promise<PollWithVotes[]> {
   const supabase = await createClient();
 
+  // First, deactivate any expired polls
+  const { deactivateExpiredPolls } = await import("@/lib/actions/polls");
+  await deactivateExpiredPolls(eventId);
+
+  const now = new Date().toISOString();
+  // Query active polls that either have no end time or haven't ended yet
   const { data: polls, error } = await supabase
     .from("polls")
     .select("*")
     .eq("event_id", eventId)
     .eq("is_active", true)
+    .or(`ends_at.is.null,ends_at.gt."${now}"`) // Only include polls that haven't ended
     .order("created_at", { ascending: false });
 
   if (error || !polls) return [];

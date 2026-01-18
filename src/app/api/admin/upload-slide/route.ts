@@ -11,7 +11,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const supabase = await createServiceClient();
+    let supabase;
+    try {
+      supabase = await createServiceClient();
+    } catch (error) {
+      console.error("[upload-slide] Failed to create Supabase client:", error);
+      return NextResponse.json(
+        { error: "Failed to initialize database connection. Please check server configuration." },
+        { status: 500 }
+      );
+    }
 
     // Verify user is admin
     const { data: user } = await supabase
@@ -71,6 +80,25 @@ export async function POST(request: NextRequest) {
 
     console.log("[upload-slide] Starting slide deck processing, file size:", file.size, "type:", file.type);
 
+    // Check if storage bucket exists and is accessible
+    const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+    if (bucketError) {
+      console.error("[upload-slide] Error listing buckets:", bucketError);
+      return NextResponse.json(
+        { error: `Storage access error: ${bucketError.message}` },
+        { status: 500 }
+      );
+    }
+
+    const slidesBucket = buckets?.find(b => b.name === "slides");
+    if (!slidesBucket) {
+      console.error("[upload-slide] Slides bucket not found. Available buckets:", buckets?.map(b => b.name));
+      return NextResponse.json(
+        { error: "Storage bucket 'slides' not found. Please create it in Supabase dashboard." },
+        { status: 500 }
+      );
+    }
+
     // Process the slide deck and extract slides
     const result = await uploadSlideDeck(file, eventId, supabase);
 
@@ -104,9 +132,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[upload-slide] Exception:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    const errorMessage = error instanceof Error 
+      ? `${error.message}${error.stack ? `\nStack: ${error.stack}` : ''}` 
+      : "Internal server error";
+    console.error("[upload-slide] Full error details:", {
+      message: errorMessage,
+      error: error,
+    });
     return NextResponse.json(
-      { error: errorMessage },
+      { 
+        error: error instanceof Error ? error.message : "Internal server error",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }

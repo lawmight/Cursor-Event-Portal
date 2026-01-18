@@ -163,7 +163,14 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   }
 
   // Verify admin role
-  const supabase = await createServiceClient();
+  let supabase;
+  try {
+    supabase = await createServiceClient();
+  } catch (error) {
+    console.error("[generateGroups] Failed to create Supabase client:", error);
+    return { error: "Failed to connect to database. Please try again." };
+  }
+
   const { data: user } = await supabase
     .from("users")
     .select("role")
@@ -176,8 +183,14 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   }
 
   // Get all intakes
-  const intakes = await getEventIntakes(eventId);
-  console.log("[generateGroups] Found intakes:", intakes.length);
+  let intakes;
+  try {
+    intakes = await getEventIntakes(eventId);
+    console.log("[generateGroups] Found intakes:", intakes.length);
+  } catch (error) {
+    console.error("[generateGroups] Failed to get intakes:", error);
+    return { error: "Failed to load attendee data. Please try again." };
+  }
   
   if (intakes.length < 2) {
     return { error: "Need at least 2 intake responses to form groups" };
@@ -189,15 +202,31 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     return { error: "OpenAI API key is not configured. Please contact support." };
   }
 
-  // Call LLM for matching directly
+  // Call LLM for matching directly with timeout handling
   let groups;
   try {
     console.log("[generateGroups] Calling OpenAI to generate groups...");
-    groups = await generateGroupSuggestions(intakes);
+    
+    // Set a timeout for the OpenAI call (5 minutes max)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Group generation timed out after 5 minutes")), 5 * 60 * 1000);
+    });
+    
+    groups = await Promise.race([
+      generateGroupSuggestions(intakes),
+      timeoutPromise
+    ]) as typeof groups;
+    
     console.log("[generateGroups] Generated groups:", groups?.length || 0);
   } catch (error) {
     console.error("[generateGroups] Failed to generate groups:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to generate group suggestions";
+    
+    // If it's a timeout, still try to save any partial results
+    if (errorMessage.includes("timed out")) {
+      return { error: "Group generation is taking longer than expected. Please wait a moment and refresh the page to check if groups were created." };
+    }
+    
     return { error: errorMessage };
   }
 
@@ -221,49 +250,86 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   // Store suggested groups with sequential table numbers
   let savedCount = 0;
   let tableNumber = 1;
+  const errors: string[] = [];
+  
   for (const group of groups) {
-    const { data: newGroup, error: groupError } = await supabase
-      .from("suggested_groups")
-      .insert({
-        event_id: eventId,
-        name: group.name,
-        description: group.description,
-        status: "pending",
-        table_number: tableNumber,
-      })
-      .select("id")
-      .single();
-    
-    tableNumber++; // Increment for next group
+    try {
+      const { data: newGroup, error: groupError } = await supabase
+        .from("suggested_groups")
+        .insert({
+          event_id: eventId,
+          name: group.name,
+          description: group.description,
+          status: "pending",
+          table_number: tableNumber,
+        })
+        .select("id")
+        .single();
+      
+      tableNumber++; // Increment for next group
 
-    if (groupError || !newGroup) {
-      console.error("[generateGroups] Error saving group:", groupError, group);
-      continue;
-    }
-
-    // Insert group members
-    if (group.memberIds && Array.isArray(group.memberIds)) {
-      const members = group.memberIds.map((userId: string) => ({
-        group_id: newGroup.id,
-        user_id: userId,
-        match_reason: group.matchReasons?.[userId] || null,
-      }));
-
-      const { error: membersError } = await supabase
-        .from("suggested_group_members")
-        .insert(members);
-
-      if (membersError) {
-        console.error("[generateGroups] Error saving group members:", membersError);
-      } else {
-        savedCount++;
+      if (groupError || !newGroup) {
+        console.error("[generateGroups] Error saving group:", groupError, group);
+        errors.push(`Failed to save group "${group.name}": ${groupError?.message || "Unknown error"}`);
+        continue;
       }
+
+      // Insert group members
+      if (group.memberIds && Array.isArray(group.memberIds) && group.memberIds.length > 0) {
+        const members = group.memberIds.map((userId: string) => ({
+          group_id: newGroup.id,
+          user_id: userId,
+          match_reason: group.matchReasons?.[userId] || null,
+        }));
+
+        const { error: membersError } = await supabase
+          .from("suggested_group_members")
+          .insert(members);
+
+        if (membersError) {
+          console.error("[generateGroups] Error saving group members:", membersError);
+          errors.push(`Failed to save members for group "${group.name}": ${membersError.message}`);
+        } else {
+          savedCount++;
+          console.log("[generateGroups] Successfully saved group:", group.name, "with", members.length, "members");
+        }
+      } else {
+        console.warn("[generateGroups] Group has no members:", group.name);
+        errors.push(`Group "${group.name}" has no members assigned`);
+      }
+    } catch (error) {
+      console.error("[generateGroups] Exception saving group:", error, group);
+      errors.push(`Exception saving group "${group.name}": ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
 
   console.log("[generateGroups] Saved", savedCount, "out of", groups.length, "groups");
+  if (errors.length > 0) {
+    console.warn("[generateGroups] Errors encountered:", errors);
+  }
 
-  revalidatePath(`/admin/${eventSlug}/groups`);
+  // Revalidate the path to show new groups
+  try {
+    revalidatePath(`/admin/${eventSlug}/groups`);
+  } catch (error) {
+    console.error("[generateGroups] Error revalidating path:", error);
+  }
+
+  if (savedCount === 0) {
+    return { 
+      error: `Failed to save any groups. ${errors.length > 0 ? errors.join("; ") : "Please try again."}` 
+    };
+  }
+
+  if (errors.length > 0 && savedCount < groups.length) {
+    // Partial success
+    return { 
+      success: true, 
+      groupCount: savedCount,
+      warning: `Saved ${savedCount} of ${groups.length} groups. Some errors occurred: ${errors.slice(0, 3).join("; ")}${errors.length > 3 ? "..." : ""}`
+    };
+  }
+
   return { success: true, groupCount: savedCount };
 }
 

@@ -54,7 +54,7 @@ async function uploadSingleImage(
     const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filePath = `${eventId}/${timestamp}-${safeFileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError, data: uploadData } = await supabase.storage
       .from("slides")
       .upload(filePath, file, {
         contentType: file.type,
@@ -63,9 +63,25 @@ async function uploadSingleImage(
 
     if (uploadError) {
       console.error("[uploadSingleImage] Upload error:", uploadError);
+      console.error("[uploadSingleImage] Error details:", {
+        message: uploadError.message,
+        statusCode: uploadError.statusCode,
+        error: uploadError.error,
+      });
+      
+      // Provide more helpful error messages
+      let errorMessage = `Failed to upload image: ${uploadError.message}`;
+      if (uploadError.message?.includes("Bucket not found") || uploadError.message?.includes("The resource was not found")) {
+        errorMessage = "Storage bucket 'slides' not found. Please create it in Supabase dashboard with public access.";
+      } else if (uploadError.message?.includes("new row violates row-level security")) {
+        errorMessage = "Storage bucket permissions issue. Please check bucket policies in Supabase.";
+      } else if (uploadError.message?.includes("JWT")) {
+        errorMessage = "Authentication error. Please check SUPABASE_SERVICE_ROLE_KEY configuration.";
+      }
+      
       return {
         slides: [],
-        error: `Failed to upload image: ${uploadError.message}`,
+        error: errorMessage,
       };
     }
 

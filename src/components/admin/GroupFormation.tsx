@@ -48,20 +48,70 @@ export function GroupFormation({
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progressMessage, setProgressMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     setGenerating(true);
     setError(null);
+    setSuccessMessage(null);
+    setProgressMessage("Initializing group generation...");
 
-    const result = await generateGroups(eventId, eventSlug);
+    try {
+      // Set progress messages at different stages
+      const progressTimeout = setTimeout(() => {
+        setProgressMessage("Analyzing attendee data and generating matches... This may take 30-60 seconds.");
+      }, 2000);
 
-    if (result.error) {
-      setError(result.error);
-    } else {
-      router.refresh();
+      const result = await generateGroups(eventId, eventSlug);
+
+      clearTimeout(progressTimeout);
+
+      if (result.error) {
+        setError(result.error);
+        setProgressMessage(null);
+        setWarningMessage(null);
+      } else {
+        setProgressMessage("Finalizing groups...");
+        // Wait a moment for database to sync
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Refresh to show the new groups
+        router.refresh();
+        
+        // Show success or warning message
+        if (result.warning) {
+          setWarningMessage(result.warning);
+          setSuccessMessage(`Generated ${result.groupCount || 0} group proposals (with warnings)`);
+        } else {
+          setSuccessMessage(`Successfully generated ${result.groupCount || 0} group proposals!`);
+        }
+        setProgressMessage(null);
+        
+        // Clear messages after 8 seconds
+        setTimeout(() => {
+          setSuccessMessage(null);
+          setWarningMessage(null);
+        }, 8000);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setError(`Failed to generate groups: ${errorMessage}`);
+      setProgressMessage(null);
+      
+      // Even if there was an error, check if groups were actually created
+      // (in case of timeout but job completed)
+      setTimeout(async () => {
+        router.refresh();
+      }, 1000);
+    } finally {
+      setGenerating(false);
+      // Clear progress message after a delay
+      setTimeout(() => {
+        setProgressMessage(null);
+      }, 2000);
     }
-
-    setGenerating(false);
   };
 
   const handleStatusChange = async (groupId: string, status: GroupStatus) => {
@@ -110,7 +160,7 @@ export function GroupFormation({
             {generating ? (
               <>
                 <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                Processing...
+                {progressMessage ? "Generating..." : "Processing..."}
               </>
             ) : (
               <>
@@ -121,6 +171,41 @@ export function GroupFormation({
           </button>
         </div>
       </div>
+
+      {progressMessage && generating && (
+        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-6 rounded-[24px] text-sm tracking-tight">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 border-2 border-blue-400/20 border-t-blue-400 rounded-full animate-spin" />
+            <span>{progressMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-6 rounded-[24px] text-sm tracking-tight">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span>{successMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {warningMessage && (
+        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-6 rounded-[24px] text-sm tracking-tight">
+          <div className="flex items-start gap-3">
+            <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <span>{warningMessage}</span>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-6 rounded-[24px] text-sm tracking-tight">

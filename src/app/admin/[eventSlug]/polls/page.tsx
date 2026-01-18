@@ -33,6 +33,10 @@ export default async function AdminPollsPage({ params }: AdminPollsPageProps) {
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Deactivate expired polls before loading
+  const { deactivateExpiredPolls } = await import("@/lib/actions/polls");
+  await deactivateExpiredPolls(event.id, eventSlug);
+
   const polls = await getAllPolls(event.id);
 
   return (
