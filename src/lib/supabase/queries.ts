@@ -358,7 +358,6 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
 
   if (eventResult.error || !eventResult.data) return null;
 
-  const now = new Date();
   const agendaItems = agendaResult.data || [];
 
   // Find current and next sessions
