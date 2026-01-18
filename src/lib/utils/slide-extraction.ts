@@ -50,7 +50,6 @@ async function extractPdfSlides(
     const pdfjs = await import("pdfjs-dist");
     
     // Set up the worker source - using legacy build for Node.js compatibility
-    // @ts-expect-error - pdfjs types don't match exactly
     pdfjs.GlobalWorkerOptions.workerSrc = "";
     
     // Convert File to ArrayBuffer
