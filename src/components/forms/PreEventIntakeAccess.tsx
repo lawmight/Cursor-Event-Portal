@@ -99,3 +99,4 @@ export function PreEventIntakeAccess({ eventId, eventSlug }: PreEventIntakeAcces
     </div>
   );
 }
+

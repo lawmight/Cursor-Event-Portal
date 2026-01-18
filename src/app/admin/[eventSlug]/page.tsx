@@ -88,6 +88,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
+              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Console: Cursor</p>
+              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Calgary Cursor Meetup - January 2026</p>
               <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Smart Seating</p>
             </div>
           </div>
@@ -342,27 +344,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/export`}>
-            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
-                    <Download className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Data Export
-                    </h3>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Export CSV Files
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </Link>
-
           <Link href={`/admin/${eventSlug}/registrations/import`}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
               <div className="flex items-center justify-between">
@@ -376,6 +357,27 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                       Luma Sync
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
+
+          <Link href={`/admin/${eventSlug}/export`}>
+            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                    <Download className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Data Export
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                      Export CSV Files
                     </p>
                   </div>
                 </div>

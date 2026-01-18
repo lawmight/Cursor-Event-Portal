@@ -64,3 +64,4 @@ export function EventTimer({ startTime, redThreshold }: EventTimerProps) {
     </div>
   );
 }
+

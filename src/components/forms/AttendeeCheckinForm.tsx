@@ -14,6 +14,7 @@ import {
   Phone,
 } from "lucide-react";
 import { submitIntake, skipIntake } from "@/lib/actions/intake";
+import { submitSurveyConsent } from "@/lib/actions/consent";
 import type { IntakeGoalTag, IntakeOfferTag } from "@/types";
 
 interface Attendee {
@@ -33,6 +34,7 @@ type Step =
   | "guest"
   | "submitting"
   | "success"
+  | "consent"
   | "intake-goals"
   | "intake-offers"
   | "complete";
@@ -82,6 +84,10 @@ export function AttendeeCheckinForm({
   const [offers, setOffers] = useState<IntakeOfferTag[]>([]);
   const [offersOther, setOffersOther] = useState("");
   const [intakeLoading, setIntakeLoading] = useState(false);
+
+  // Consent state
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -265,6 +271,30 @@ export function AttendeeCheckinForm({
   const handleGoToAgenda = () => {
     router.push(`/${eventSlug}/agenda`);
     router.refresh();
+  };
+
+  const handleConsentSubmit = async () => {
+    if (!consentChecked) {
+      setError("Please agree to continue");
+      return;
+    }
+
+    setConsentLoading(true);
+    setError("");
+
+    try {
+      const result = await submitSurveyConsent(eventId, eventSlug, true);
+      if (result.error) {
+        setError(result.error);
+        setConsentLoading(false);
+      } else {
+        setConsentLoading(false);
+        setStep("intake-goals");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setConsentLoading(false);
+    }
   };
 
   // Step 1: Email input
@@ -539,7 +569,7 @@ export function AttendeeCheckinForm({
 
           <div className="space-y-4">
             <button
-              onClick={() => setStep("intake-goals")}
+              onClick={() => setStep("consent")}
               className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               <span className="text-sm font-bold uppercase tracking-[0.2em]">
@@ -566,7 +596,94 @@ export function AttendeeCheckinForm({
     );
   }
 
-  // Step 5 & 6: Intake form (goals and offers)
+  // Step 5: Quick Consent
+  if (step === "consent") {
+    return (
+      <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-light text-white tracking-tight">
+              Quick Consent
+            </h2>
+            <p className="text-xs text-gray-400">
+              Before sharing your signals
+            </p>
+          </div>
+
+          <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
+            <p>
+              By sharing your signals, you agree that your responses may be used to:
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs text-gray-400">
+              <li>Facilitate networking at this event</li>
+              <li>Improve future events</li>
+            </ul>
+            <p className="text-[11px] text-gray-500 pt-2 border-t border-white/10">
+              Your data is <strong className="text-white">not sold</strong> and is <strong className="text-white">not tied to your name publicly</strong>.
+            </p>
+          </div>
+
+          {/* Consent Checkbox */}
+          <div className="flex items-start gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
+            <button
+              type="button"
+              onClick={() => setConsentChecked(!consentChecked)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+                consentChecked
+                  ? "bg-white border-white text-black"
+                  : "bg-transparent border-white/30 text-transparent hover:border-white/50"
+              }`}
+            >
+              {consentChecked && <Check className="w-3 h-3" />}
+            </button>
+            <label
+              onClick={() => setConsentChecked(!consentChecked)}
+              className="flex-1 text-xs text-gray-300 leading-relaxed cursor-pointer"
+            >
+              I consent to the use of my feedback for networking and event improvement.
+            </label>
+          </div>
+
+          {error && (
+            <div className="text-center p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => {
+                setStep("success");
+                setConsentChecked(false);
+                setError("");
+              }}
+              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
+            <button
+              onClick={handleConsentSubmit}
+              disabled={!consentChecked || consentLoading}
+              className={`flex-1 h-16 rounded-[32px] font-bold uppercase tracking-[0.2em] text-[10px] transition-all ${
+                consentChecked && !consentLoading
+                  ? "bg-white text-black hover:bg-gray-200 shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+                  : "bg-white/10 text-white/30 cursor-not-allowed"
+              }`}
+            >
+              {consentLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : (
+                "Continue"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 6 & 7: Intake form (goals and offers)
   if (step === "intake-goals" || step === "intake-offers") {
     const isGoals = step === "intake-goals";
     const options = isGoals ? GOAL_OPTIONS : OFFER_OPTIONS;

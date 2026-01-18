@@ -135,3 +135,4 @@ export async function checkAndUnlockAtStartTime(eventId: string, eventSlug: stri
     revalidatePath(`/${eventSlug}/`);
   }
 }
+

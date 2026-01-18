@@ -78,3 +78,4 @@ export function AgendaItemTimer({ startTime, endTime }: AgendaItemTimerProps) {
     </div>
   );
 }
+

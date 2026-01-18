@@ -82,3 +82,4 @@ NODE_ENV=production
    INSERT INTO users (name, email, role) 
    VALUES ('Admin', 'admin@example.com', 'admin');
    ```
+

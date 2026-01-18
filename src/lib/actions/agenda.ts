@@ -144,3 +144,4 @@ export async function deleteAgendaItem(itemId: string, eventSlug: string) {
   revalidatePath(`/${eventSlug}/agenda`);
   return { success: true };
 }
+

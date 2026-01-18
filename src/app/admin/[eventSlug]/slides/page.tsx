@@ -37,3 +37,4 @@ export default async function AdminSlidesPage({ params }: AdminSlidesPageProps) 
 
   return <SlidesAdminClient event={event} eventSlug={eventSlug} initialSlides={slides} />;
 }
+

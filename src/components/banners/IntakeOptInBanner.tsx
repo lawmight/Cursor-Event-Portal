@@ -71,3 +71,4 @@ export function IntakeOptInBanner({ eventSlug, onDismiss }: IntakeOptInBannerPro
     </div>
   );
 }
+

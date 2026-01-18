@@ -21,3 +21,4 @@ CREATE POLICY "Slides are viewable by everyone" ON slides FOR SELECT USING (true
 CREATE POLICY "Slides can be inserted by service role" ON slides FOR INSERT WITH CHECK (true);
 CREATE POLICY "Slides can be updated by service role" ON slides FOR UPDATE USING (true);
 CREATE POLICY "Slides can be deleted by service role" ON slides FOR DELETE USING (true);
+

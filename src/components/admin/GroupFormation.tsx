@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { generateGroups, updateGroupStatus, updateGroupTableNumber } from "@/lib/actions/groups";
-import { Users, Sparkles, Zap } from "lucide-react";
+import { generateGroups, updateGroupStatus, updateGroupTableNumber, removeGroupMember, cancelGroup } from "@/lib/actions/groups";
+import { X } from "lucide-react";
 import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
 
@@ -119,14 +119,38 @@ export function GroupFormation({
     router.refresh();
   };
 
+  const handleMemberRemove = async (groupId: string, userId: string) => {
+    const result = await removeGroupMember(groupId, userId, eventSlug);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+    }
+  };
+
+  const handleGroupCancel = async (groupId: string) => {
+    const result = await cancelGroup(groupId, eventSlug);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+    }
+  };
+
   return (
     <div className="space-y-12">
       {/* Stats Header */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
-              <Users className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+              <Image
+                src="/attendees.png"
+                alt="Attendees"
+                width={40}
+                height={40}
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+              />
             </div>
             <div>
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
@@ -137,8 +161,14 @@ export function GroupFormation({
 
         <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
-              <Sparkles className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+              <Image
+                src="/proposals.png"
+                alt="Proposals"
+                width={40}
+                height={40}
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+              />
             </div>
             <div>
               <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
@@ -147,28 +177,36 @@ export function GroupFormation({
           </div>
         </div>
 
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] flex items-center justify-center">
-          <button
-            onClick={handleGenerate}
-            disabled={generating || intakes.length < 2}
-            className={`w-full py-4 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
-              generating || intakes.length < 2
-                ? "bg-white/5 text-white/20 cursor-not-allowed"
-                : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            }`}
-          >
-            {generating ? (
-              <>
-                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                {progressMessage ? "Generating..." : "Processing..."}
-              </>
-            ) : (
-              <>
-                <Zap className="w-4 h-4" />
-                Synthesize Groups
-              </>
-            )}
-          </button>
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden">
+              <Image
+                src="/group-synthesis.png"
+                alt="Synthesize"
+                width={40}
+                height={40}
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+              />
+            </div>
+            <button
+              onClick={handleGenerate}
+              disabled={generating || intakes.length < 2}
+              className={`flex-1 py-3 rounded-2xl font-medium text-sm transition-all flex items-center justify-center gap-3 ${
+                generating || intakes.length < 2
+                  ? "bg-white/5 text-white/20 cursor-not-allowed"
+                  : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              }`}
+            >
+              {generating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  {progressMessage ? "Generating..." : "Processing..."}
+                </>
+              ) : (
+                "Synthesize Groups"
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -286,6 +324,8 @@ export function GroupFormation({
                 group={group}
                 eventSlug={eventSlug}
                 onStatusChange={handleStatusChange}
+                onMemberRemove={handleMemberRemove}
+                onGroupCancel={handleGroupCancel}
               />
             ))}
           </div>
@@ -299,12 +339,16 @@ interface GroupCardProps {
   group: SuggestedGroup;
   eventSlug: string;
   onStatusChange: (groupId: string, status: GroupStatus) => void;
+  onMemberRemove: (groupId: string, userId: string) => void;
+  onGroupCancel: (groupId: string) => void;
 }
 
-function GroupCard({ group, eventSlug, onStatusChange }: GroupCardProps) {
+function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCancel }: GroupCardProps) {
   const router = useRouter();
   const [editingTableNumber, setEditingTableNumber] = useState(false);
   const [tableNumber, setTableNumber] = useState<string>(group.table_number?.toString() || "");
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
 
   const handleTableNumberChange = async (newValue: string) => {
     const numValue = newValue === "" ? null : parseInt(newValue, 10);
@@ -373,9 +417,37 @@ function GroupCard({ group, eventSlug, onStatusChange }: GroupCardProps) {
         {group.members?.map((member) => (
             <div
               key={member.id}
-              className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all"
+              className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all relative group/member"
             >
-              <div className="flex items-center gap-2">
+              {/* Remove member button */}
+              {removingMemberId === member.user_id ? (
+                <div className="absolute top-3 right-3 flex items-center gap-2 animate-fade-in">
+                  <button
+                    onClick={() => {
+                      onMemberRemove(group.id, member.user_id);
+                      setRemovingMemberId(null);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-[0.1em] hover:bg-red-500/30 transition-all"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => setRemovingMemberId(null)}
+                    className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-500 text-[9px] font-bold uppercase tracking-[0.1em] hover:text-white transition-all"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setRemovingMemberId(member.user_id)}
+                  className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/[0.02] border border-white/[0.05] text-gray-700 hover:text-red-500 hover:border-red-500/30 transition-all flex items-center justify-center opacity-0 group-hover/member:opacity-100"
+                  title="Remove from group"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <div className="flex items-center gap-2 pr-10">
                 <span className="text-lg font-light tracking-tight text-white/90">{member.user?.name || "Unknown"}</span>
                 {member.user?.role === "admin" && (
                   <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center" title="Admin">
@@ -389,28 +461,72 @@ function GroupCard({ group, eventSlug, onStatusChange }: GroupCardProps) {
       </div>
 
       {/* Actions */}
-      {group.status === "pending" && (
-        <div className="flex flex-wrap gap-4 pt-4">
-          <button
-            onClick={() => onStatusChange(group.id, "approved")}
-            className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-          >
-            Approve Formation
-          </button>
-          <button
-            onClick={() => onStatusChange(group.id, "modified")}
-            className="px-8 py-3 bg-white/5 border border-white/10 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
-          >
-            Modify
-          </button>
-          <button
-            onClick={() => onStatusChange(group.id, "rejected")}
-            className="px-8 py-3 text-gray-800 hover:text-red-500 transition-colors font-bold text-xs uppercase tracking-widest"
-          >
-            Discard
-          </button>
-        </div>
-      )}
+      <div className="flex flex-wrap gap-4 pt-4">
+        {group.status === "pending" && (
+          <>
+            <button
+              onClick={() => onStatusChange(group.id, "approved")}
+              className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+            >
+              Approve Formation
+            </button>
+            <button
+              onClick={() => onStatusChange(group.id, "modified")}
+              className="px-8 py-3 bg-white/5 border border-white/10 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              Modify
+            </button>
+            <button
+              onClick={() => onStatusChange(group.id, "rejected")}
+              className="px-8 py-3 text-gray-800 hover:text-red-500 transition-colors font-bold text-xs uppercase tracking-widest"
+            >
+              Discard
+            </button>
+          </>
+        )}
+
+        {(group.status === "approved" || group.status === "modified") && (
+          <>
+            {confirmCancel ? (
+              <div className="flex items-center gap-3 animate-fade-in">
+                <span className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">Cancel this group?</span>
+                <button
+                  onClick={() => {
+                    onGroupCancel(group.id);
+                    setConfirmCancel(false);
+                  }}
+                  className="px-6 py-2.5 bg-red-500/20 border border-red-500/30 text-red-400 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-red-500/30 transition-all"
+                >
+                  Yes, Cancel
+                </button>
+                <button
+                  onClick={() => setConfirmCancel(false)}
+                  className="px-4 py-2.5 bg-white/5 border border-white/10 text-gray-400 rounded-full font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <>
+                {group.status === "modified" && (
+                  <button
+                    onClick={() => onStatusChange(group.id, "approved")}
+                    className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  >
+                    Approve Changes
+                  </button>
+                )}
+                <button
+                  onClick={() => setConfirmCancel(true)}
+                  className="px-8 py-3 text-gray-700 hover:text-red-500 transition-colors font-bold text-xs uppercase tracking-widest"
+                >
+                  Cancel Group
+                </button>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -107,3 +107,4 @@ No feature is gated behind the signals opt-in.
 ✅ **No external sharing** - Clearly stated in UI
 
 This architecture ensures compliance with data privacy best practices while maximizing voluntary participation.
+

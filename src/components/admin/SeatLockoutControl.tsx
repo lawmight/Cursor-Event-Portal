@@ -102,3 +102,4 @@ export function SeatLockoutControl({ event, eventSlug }: SeatLockoutControlProps
     </div>
   );
 }
+

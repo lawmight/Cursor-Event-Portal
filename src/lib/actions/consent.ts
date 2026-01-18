@@ -78,3 +78,4 @@ export async function getSurveyConsentStatus(eventId: string, userId: string) {
 
   return { hasConsented: !!data.survey_consent_at };
 }
+

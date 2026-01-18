@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { checkIn, undoCheckIn } from "@/lib/actions/registration";
+import { checkIn, undoCheckIn, deregister } from "@/lib/actions/registration";
 import type { Event, Registration } from "@/types";
-import { Search, UserCheck, UserX, Users, Clock, ArrowLeft } from "lucide-react";
+import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +45,7 @@ export function CheckInClient({
   const [isPending, startTransition] = useTransition();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeregisterId, setConfirmDeregisterId] = useState<string | null>(null);
 
   const filteredRegistrations = registrations.filter((reg) => {
     const query = searchQuery.toLowerCase();
@@ -108,6 +109,31 @@ export function CheckInClient({
         const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
         setError(errorMessage);
         console.error("Undo check-in exception:", err);
+      } finally {
+        setActiveId(null);
+      }
+    });
+  };
+
+  const handleDeregister = async (registrationId: string) => {
+    setActiveId(registrationId);
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await deregister(registrationId, event.slug);
+        if (result.success) {
+          setRegistrations((prev) =>
+            prev.filter((r) => r.id !== registrationId)
+          );
+          setConfirmDeregisterId(null);
+        } else {
+          setError(result.error || "Failed to deregister");
+          console.error("Deregister failed:", result.error);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+        setError(errorMessage);
+        console.error("Deregister exception:", err);
       } finally {
         setActiveId(null);
       }
@@ -262,26 +288,58 @@ export function CheckInClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    {isCheckedIn ? (
-                      <button
-                        onClick={() => {
-                          console.log("Undo button clicked for:", registration.id);
-                          handleUndoCheckIn(registration.id);
-                        }}
-                        disabled={isPending && activeId === registration.id}
-                        className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <UserX className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                      </button>
+                  <div className="flex items-center gap-2">
+                    {/* Deregister confirmation or button */}
+                    {confirmDeregisterId === registration.id ? (
+                      <div className="flex items-center gap-2 animate-fade-in">
+                        <button
+                          onClick={() => handleDeregister(registration.id)}
+                          disabled={isPending && activeId === registration.id}
+                          className="h-10 px-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-[0.15em] hover:bg-red-500/30 transition-all disabled:opacity-50"
+                        >
+                          {isActive ? "..." : "Confirm"}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeregisterId(null)}
+                          className="h-10 px-3 rounded-xl bg-white/5 border border-white/10 text-gray-500 text-[9px] font-bold uppercase tracking-[0.15em] hover:text-white transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => handleCheckIn(registration.id)}
-                        disabled={isPending}
-                        className="h-12 px-6 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all shadow-xl"
-                      >
-                        {isActive ? "..." : "Check In"}
-                      </button>
+                      <>
+                        {/* Deregister button */}
+                        <button
+                          onClick={() => setConfirmDeregisterId(registration.id)}
+                          disabled={isPending}
+                          className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Remove registration"
+                        >
+                          <Trash2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                        </button>
+
+                        {isCheckedIn ? (
+                          <button
+                            onClick={() => {
+                              console.log("Undo button clicked for:", registration.id);
+                              handleUndoCheckIn(registration.id);
+                            }}
+                            disabled={isPending && activeId === registration.id}
+                            className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-orange-500 hover:border-orange-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Undo check-in"
+                          >
+                            <UserX className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleCheckIn(registration.id)}
+                            disabled={isPending}
+                            className="h-12 px-6 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all shadow-xl"
+                          >
+                            {isActive ? "..." : "Check In"}
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

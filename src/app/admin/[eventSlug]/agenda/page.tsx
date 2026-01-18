@@ -37,3 +37,4 @@ export default async function AdminAgendaPage({ params }: AdminAgendaPageProps) 
 
   return <AgendaAdminClient event={event} eventSlug={eventSlug} initialItems={items} />;
 }
+

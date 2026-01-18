@@ -47,3 +47,4 @@ This project is configured for deployment on Render. See `render.yaml` for confi
 ## Database Schema
 
 See `supabase/schema.sql` for the complete database schema.
+

@@ -43,7 +43,7 @@ export default function RootLayout({
         />
         <footer className="fixed bottom-4 left-0 right-0 text-center pointer-events-none z-40">
           <span className="text-[9px] text-gray-500 uppercase tracking-[0.3em] font-medium">
-            Coded by Cursor
+            Coded With Cursor
           </span>
         </footer>
       </body>

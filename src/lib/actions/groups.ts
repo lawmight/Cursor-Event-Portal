@@ -191,9 +191,29 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     console.error("[generateGroups] Failed to get intakes:", error);
     return { error: "Failed to load attendee data. Please try again." };
   }
-  
+
+  // Filter out users who are already assigned to approved groups
+  const { data: approvedGroupMembers } = await supabase
+    .from("suggested_group_members")
+    .select(`
+      user_id,
+      suggested_groups!inner(event_id, status)
+    `)
+    .eq("suggested_groups.event_id", eventId)
+    .eq("suggested_groups.status", "approved");
+
+  const assignedUserIds = new Set(
+    (approvedGroupMembers || []).map((m: any) => m.user_id)
+  );
+
+  if (assignedUserIds.size > 0) {
+    console.log("[generateGroups] Filtering out", assignedUserIds.size, "users already in approved groups");
+    intakes = intakes.filter((intake) => !assignedUserIds.has(intake.user_id));
+    console.log("[generateGroups] Remaining unassigned intakes:", intakes.length);
+  }
+
   if (intakes.length < 2) {
-    return { error: "Need at least 2 intake responses to form groups" };
+    return { error: "Need at least 2 unassigned attendees to form groups. All attendees with intake responses are already assigned to approved groups." };
   }
 
   // Check if OpenAI API key is set
@@ -461,5 +481,123 @@ export async function updateGroupTableNumber(
   if (error) return { error: "Failed to update table number" };
 
   revalidatePath(`/admin/${eventSlug}/groups`);
+  return { success: true };
+}
+
+export async function removeGroupMember(
+  groupId: string,
+  userId: string,
+  eventSlug: string
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  // Verify admin role
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Check how many members the group has
+  const { data: memberCount } = await supabase
+    .from("suggested_group_members")
+    .select("id")
+    .eq("group_id", groupId);
+
+  if (memberCount && memberCount.length <= 2) {
+    return { error: "Cannot remove member: group must have at least 2 members. Consider canceling the entire group instead." };
+  }
+
+  // Remove the member
+  const { error } = await supabase
+    .from("suggested_group_members")
+    .delete()
+    .eq("group_id", groupId)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("[removeGroupMember] Error:", error);
+    return { error: "Failed to remove member from group" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}/groups`);
+  return { success: true };
+}
+
+export async function cancelGroup(groupId: string, eventSlug: string) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  // Verify admin role
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Get the group to find event_id
+  const { data: group } = await supabase
+    .from("suggested_groups")
+    .select("event_id, status")
+    .eq("id", groupId)
+    .single();
+
+  if (!group) {
+    return { error: "Group not found" };
+  }
+
+  // Delete the group members first (due to foreign key constraint)
+  const { error: membersError } = await supabase
+    .from("suggested_group_members")
+    .delete()
+    .eq("group_id", groupId);
+
+  if (membersError) {
+    console.error("[cancelGroup] Error deleting members:", membersError);
+    return { error: "Failed to remove group members" };
+  }
+
+  // Delete the group itself
+  const { error: groupError } = await supabase
+    .from("suggested_groups")
+    .delete()
+    .eq("id", groupId);
+
+  if (groupError) {
+    console.error("[cancelGroup] Error deleting group:", groupError);
+    return { error: "Failed to cancel group" };
+  }
+
+  // Check if there are any remaining approved groups
+  const { data: remainingApproved } = await supabase
+    .from("suggested_groups")
+    .select("id")
+    .eq("event_id", group.event_id)
+    .eq("status", "approved");
+
+  // If no more approved groups, deactivate lockout
+  if (!remainingApproved || remainingApproved.length === 0) {
+    await supabase
+      .from("events")
+      .update({ seat_lockout_active: false })
+      .eq("id", group.event_id);
+  }
+
+  revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  revalidatePath(`/${eventSlug}/`);
   return { success: true };
 }

@@ -21,3 +21,4 @@ export function AdminBadge({ className = "", size = "md" }: AdminBadgeProps) {
     </div>
   );
 }
+

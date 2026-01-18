@@ -60,3 +60,4 @@ export function SimulateStartButton({ event, eventSlug }: SimulateStartButtonPro
     </button>
   );
 }
+

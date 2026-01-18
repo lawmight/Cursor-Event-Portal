@@ -58,3 +58,4 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
     />
   );
 }
+

@@ -12,3 +12,4 @@ CREATE POLICY "Slides are viewable by everyone" ON slides FOR SELECT USING (true
 
 -- Allow service role to manage slides
 CREATE POLICY "Slides can be managed by service role" ON slides FOR ALL USING (true);
+

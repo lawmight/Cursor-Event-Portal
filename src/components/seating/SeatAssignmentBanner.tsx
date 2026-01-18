@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Event } from "@/types";
-import { MapPin } from "lucide-react";
+import { MapPin, Sparkles } from "lucide-react";
 
 interface SeatAssignmentBannerProps {
   event: Event;
@@ -19,6 +19,8 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
   const [assignment, setAssignment] = useState<TableAssignment | null>(null);
   const [isLockoutActive, setIsLockoutActive] = useState(event.seat_lockout_active);
   const [loading, setLoading] = useState(true);
+  const [isFirstView, setIsFirstView] = useState(false);
+  const hasMarkedAsSeen = useRef(false);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -41,10 +43,26 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
       if (!error && data?.group) {
         const group = data.group as any;
         if (group.status === "approved" && group.table_number) {
-          setAssignment({
+          const newAssignment = {
             tableNumber: group.table_number,
             groupName: group.name,
-          });
+          };
+          setAssignment(newAssignment);
+
+          // Check if this is the first time seeing this assignment
+          const seenKey = `seat-seen-${event.id}-${userId}-${group.table_number}`;
+          const hasSeen = localStorage.getItem(seenKey);
+
+          if (!hasSeen && !hasMarkedAsSeen.current) {
+            setIsFirstView(true);
+            hasMarkedAsSeen.current = true;
+
+            // Mark as seen after the animation completes (5 seconds)
+            setTimeout(() => {
+              localStorage.setItem(seenKey, "true");
+              setIsFirstView(false);
+            }, 5000);
+          }
         }
       }
       setLoading(false);
@@ -100,27 +118,68 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
   }
 
   return (
-    <div className="sticky top-0 z-50 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 py-4">
+    <div
+      className={`sticky top-0 z-50 text-white shadow-lg relative overflow-hidden transition-all duration-1000 ${
+        isFirstView
+          ? "bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600"
+          : "bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600"
+      }`}
+    >
+      {/* First-view illumination effects */}
+      {isFirstView && (
+        <>
+          {/* Animated glow overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+
+          {/* Pulsing border glow */}
+          <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(255,255,255,0.3)] animate-pulse" />
+
+          {/* Sparkle particles */}
+          <div className="absolute inset-0 pointer-events-none">
+            <Sparkles className="absolute top-2 left-[10%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "0ms", animationDuration: "1.5s" }} />
+            <Sparkles className="absolute top-3 left-[30%] w-3 h-3 text-white/50 animate-ping" style={{ animationDelay: "300ms", animationDuration: "2s" }} />
+            <Sparkles className="absolute bottom-2 left-[50%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "600ms", animationDuration: "1.8s" }} />
+            <Sparkles className="absolute top-2 right-[30%] w-3 h-3 text-white/50 animate-ping" style={{ animationDelay: "400ms", animationDuration: "1.6s" }} />
+            <Sparkles className="absolute bottom-3 right-[15%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "200ms", animationDuration: "2.2s" }} />
+          </div>
+
+          {/* Radial glow from center */}
+          <div className="absolute inset-0 bg-radial-glow opacity-50 animate-pulse" style={{ animationDuration: "2s" }} />
+        </>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 py-4 relative z-10">
         <div className="flex items-center justify-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/40">
-              <span className="text-xl font-bold tabular-nums">{assignment.tableNumber}</span>
+            <div
+              className={`w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center border-2 transition-all duration-500 ${
+                isFirstView
+                  ? "bg-white/30 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.5)] scale-110"
+                  : "bg-white/20 border-white/40"
+              }`}
+            >
+              <span className={`text-xl font-bold tabular-nums transition-all duration-500 ${isFirstView ? "scale-110" : ""}`}>
+                {assignment.tableNumber}
+              </span>
             </div>
             <div className="text-left">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-white/70 font-medium">
-                Your Table
+              <p className={`text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-500 ${
+                isFirstView ? "text-white/90" : "text-white/70"
+              }`}>
+                {isFirstView ? "You've Been Assigned!" : "Your Table"}
               </p>
-              <p className="text-lg font-medium tracking-tight">
+              <p className={`text-lg font-medium tracking-tight transition-all duration-500 ${
+                isFirstView ? "text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""
+              }`}>
                 Table {assignment.tableNumber}
               </p>
             </div>
           </div>
-          
+
           <div className="hidden sm:block w-px h-10 bg-white/30" />
-          
+
           <div className="hidden sm:flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-white/70" />
+            <MapPin className={`w-4 h-4 transition-colors duration-500 ${isFirstView ? "text-white" : "text-white/70"}`} />
             <span className="text-sm text-white/90">{assignment.groupName}</span>
           </div>
         </div>
@@ -159,3 +218,4 @@ export function useSeatLockout(event: Event) {
 
   return isLockoutActive;
 }
+

@@ -169,3 +169,49 @@ export async function undoCheckIn(registrationId: string, eventSlug?: string) {
   console.log("Successfully undid check-in for registration:", registrationId);
   return { success: true };
 }
+
+export async function deregister(registrationId: string, eventSlug?: string) {
+  const supabase = await createServiceClient();
+
+  // Get the registration first to find the user_id
+  const { data: registration, error: fetchError } = await supabase
+    .from("registrations")
+    .select("user_id, event_id")
+    .eq("id", registrationId)
+    .single();
+
+  if (fetchError || !registration) {
+    console.error("Deregister fetch error:", fetchError);
+    return { error: "Registration not found" };
+  }
+
+  // Delete the registration
+  const { error: deleteError } = await supabase
+    .from("registrations")
+    .delete()
+    .eq("id", registrationId);
+
+  if (deleteError) {
+    console.error("Deregister delete error:", deleteError);
+    return { error: deleteError.message || "Failed to deregister" };
+  }
+
+  // Check if user has any other registrations
+  const { data: otherRegs, error: otherRegsError } = await supabase
+    .from("registrations")
+    .select("id")
+    .eq("user_id", registration.user_id)
+    .limit(1);
+
+  // If user has no other registrations and is not an admin, optionally delete them
+  // For now, we'll keep the user record but remove the registration
+
+  // Revalidate the check-in page if eventSlug is provided
+  if (eventSlug) {
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath(`/staff/${eventSlug}/checkin`);
+  }
+
+  console.log("Successfully deregistered registration:", registrationId);
+  return { success: true };
+}
