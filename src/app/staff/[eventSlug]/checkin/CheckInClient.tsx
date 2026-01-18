@@ -288,7 +288,7 @@ export function CheckInClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 relative z-20">
                     {/* Deregister confirmation or button */}
                     {confirmDeregisterId === registration.id ? (
                       <div className="flex items-center gap-2 animate-fade-in">
@@ -348,6 +348,13 @@ export function CheckInClient({
           )}
         </div>
       </main>
+
+      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
+        <div className="flex items-center gap-6">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Check-In</p>
+        </div>
+      </footer>
     </div>
   );
 }
