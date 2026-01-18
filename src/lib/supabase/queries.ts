@@ -366,6 +366,19 @@ export async function getSlides(eventId: string): Promise<Slide[]> {
   return data;
 }
 
+export async function getLiveSlide(eventId: string): Promise<Slide | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("slides")
+    .select("*")
+    .eq("event_id", eventId)
+    .eq("is_live", true)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
 // Display page data
 export async function getDisplayPageData(eventId: string): Promise<DisplayPageData | null> {
   const supabase = await createClient();

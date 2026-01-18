@@ -4,9 +4,9 @@ import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { uploadSlide, deleteSlide, updateSlide, reorderSlides } from "@/lib/actions/slides";
+import { uploadSlide, deleteSlide, updateSlide, reorderSlides, toggleSlideLive } from "@/lib/actions/slides";
 import type { Event, Slide } from "@/types";
-import { ArrowLeft, Plus, Trash2, Edit2, GripVertical, Upload, X } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, GripVertical, Upload, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SlidesAdminClientProps {
@@ -113,6 +113,28 @@ export function SlidesAdminClient({
     });
   };
 
+  const handleToggleLive = async (slideId: string, isLive: boolean) => {
+    setError(null);
+    
+    // Optimistic update
+    setSlides((prev) =>
+      prev.map((s) => ({
+        ...s,
+        is_live: s.id === slideId ? isLive : false, // Turn off others when enabling
+      }))
+    );
+
+    startTransition(async () => {
+      const result = await toggleSlideLive(slideId, eventSlug, isLive);
+      if (result.error) {
+        setError(result.error);
+        router.refresh(); // Revert on error
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   const moveSlide = (index: number, direction: "up" | "down") => {
     const newSlides = [...slides];
     const newIndex = direction === "up" ? index - 1 : index + 1;
@@ -158,7 +180,7 @@ export function SlidesAdminClient({
         {/* Info */}
         <div className="glass rounded-[32px] p-6 bg-blue-500/10 border border-blue-500/20">
           <p className="text-sm text-blue-400">
-            Slides will be displayed on the main screen with pagination. Upload images (JPG, PNG, WebP) up to 10MB.
+            Slides will be displayed to attendees when marked as "Live". Click the eye icon to toggle visibility. Only one slide can be live at a time.
           </p>
         </div>
 
@@ -196,12 +218,37 @@ export function SlidesAdminClient({
                     ) : (
                       <p className="text-xs text-gray-600">Slide {index + 1}</p>
                     )}
-                    <p className="text-[9px] text-gray-700 mt-1">
-                      Position {index + 1} of {slides.length}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-[9px] text-gray-700">
+                        Position {index + 1} of {slides.length}
+                      </p>
+                      {slide.is_live && (
+                        <span className="text-[9px] uppercase tracking-wider text-green-400 font-medium flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                          Live
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleLive(slide.id, !slide.is_live)}
+                      disabled={isPending}
+                      className={cn(
+                        "w-8 h-8 rounded-lg border transition-all flex items-center justify-center",
+                        slide.is_live
+                          ? "bg-green-500/20 border-green-500/30 text-green-400"
+                          : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                      )}
+                      title={slide.is_live ? "Hide from attendees" : "Show to attendees"}
+                    >
+                      {slide.is_live ? (
+                        <Eye className="w-3.5 h-3.5" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      )}
+                    </button>
                     <button
                       onClick={() => moveSlide(index, "up")}
                       disabled={index === 0 || isPending}

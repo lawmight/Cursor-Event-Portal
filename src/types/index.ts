@@ -226,6 +226,7 @@ export interface Slide {
   title: string | null;
   image_url: string;
   sort_order: number;
+  is_live: boolean;
   created_at: string;
 }
 

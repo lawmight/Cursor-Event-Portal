@@ -524,10 +524,10 @@ export function AttendeeCheckinForm({
               </div>
               <div>
                 <h3 className="text-lg font-light text-white tracking-tight">
-                  Help Us Optimize Seating
+                  Help Us Optimize Your Seating
                 </h3>
                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-0.5">
-                  Optional · 30 seconds
+                  Optional · 10 seconds
                 </p>
               </div>
             </div>

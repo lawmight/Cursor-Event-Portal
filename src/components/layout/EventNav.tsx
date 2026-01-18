@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar, MessageCircle, FolderOpen, ClipboardCheck, BarChart3 } from "lucide-react";
+import { Calendar, MessageCircle, FolderOpen, BarChart3 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface EventNavProps {
@@ -16,7 +16,6 @@ const navItems = [
   { href: "qa", label: "Q&A", icon: MessageCircle },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "resources", label: "Resources", icon: FolderOpen },
-  { href: "feedback", label: "Feedback", icon: ClipboardCheck },
 ];
 
 export function EventNav({ eventSlug }: EventNavProps) {

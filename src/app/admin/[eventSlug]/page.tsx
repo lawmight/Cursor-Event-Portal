@@ -331,6 +331,48 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
               </div>
             </div>
           </Link>
+
+          <Link href={`/admin/${eventSlug}/surveys`}>
+            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                    <ClipboardCheck className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Surveys
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                      Feedback Collection
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
+
+          <Link href={`/admin/${eventSlug}/slides`}>
+            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 transition-all group cursor-pointer relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                    <Upload className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Slides
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                      Presentation Control
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* View Event */}

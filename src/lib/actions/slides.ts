@@ -67,6 +67,7 @@ export async function updateSlide(
   data: Partial<{
     title: string;
     sort_order: number;
+    is_live: boolean;
   }>
 ) {
   const session = await getSession();
@@ -99,6 +100,62 @@ export async function updateSlide(
 
   revalidatePath(`/admin/${eventSlug}/slides`);
   revalidatePath(`/${eventSlug}/display`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  return { success: true };
+}
+
+export async function toggleSlideLive(
+  slideId: string,
+  eventSlug: string,
+  isLive: boolean
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Verify user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // If setting to live, turn off all other slides first
+  if (isLive) {
+    const { data: slide } = await supabase
+      .from("slides")
+      .select("event_id")
+      .eq("id", slideId)
+      .single();
+
+    if (slide) {
+      await supabase
+        .from("slides")
+        .update({ is_live: false })
+        .eq("event_id", slide.event_id);
+    }
+  }
+
+  const { error } = await supabase
+    .from("slides")
+    .update({ is_live: isLive })
+    .eq("id", slideId);
+
+  if (error) {
+    console.error("Failed to toggle slide:", error);
+    return { error: "Failed to toggle slide" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}/slides`);
+  revalidatePath(`/${eventSlug}/display`);
+  revalidatePath(`/${eventSlug}/agenda`);
   return { success: true };
 }
 
