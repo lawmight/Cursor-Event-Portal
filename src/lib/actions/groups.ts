@@ -211,28 +211,53 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   }>;
   try {
     console.log("[generateGroups] Calling OpenAI to generate groups...");
+    console.log("[generateGroups] Number of intakes:", intakes.length);
+    console.log("[generateGroups] OpenAI API key present:", !!process.env.OPENAI_API_KEY);
     
-    // Set a timeout for the OpenAI call (5 minutes max)
+    // Set a timeout for the OpenAI call (2 minutes max to avoid Next.js server action timeout)
+    // Note: Next.js server actions typically timeout at 10-60 seconds on hosting platforms
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Group generation timed out after 5 minutes")), 5 * 60 * 1000);
+      setTimeout(() => reject(new Error("Group generation timed out after 2 minutes")), 2 * 60 * 1000);
     });
     
+    const startTime = Date.now();
     groups = await Promise.race([
       generateGroupSuggestions(intakes),
       timeoutPromise
     ]);
+    const duration = Date.now() - startTime;
     
-    console.log("[generateGroups] Generated groups:", groups?.length || 0);
+    console.log("[generateGroups] Generated groups:", groups?.length || 0, `(took ${duration}ms)`);
   } catch (error) {
     console.error("[generateGroups] Failed to generate groups:", error);
+    console.error("[generateGroups] Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
     const errorMessage = error instanceof Error ? error.message : "Failed to generate group suggestions";
     
-    // If it's a timeout, still try to save any partial results
-    if (errorMessage.includes("timed out")) {
-      return { error: "Group generation is taking longer than expected. Please wait a moment and refresh the page to check if groups were created." };
+    // Check for specific error types
+    if (errorMessage.includes("timed out") || errorMessage.includes("timeout") || errorMessage.includes("aborted")) {
+      return { error: "Group generation timed out. This can happen if the AI response takes too long. Please try again or contact support if the issue persists." };
     }
     
-    return { error: errorMessage };
+    if (errorMessage.includes("API key") || errorMessage.includes("authentication") || errorMessage.includes("401") || errorMessage.includes("403")) {
+      return { error: "OpenAI API authentication failed. Please check server configuration." };
+    }
+    
+    if (errorMessage.includes("rate limit") || errorMessage.includes("429")) {
+      return { error: "OpenAI API rate limit exceeded. Please wait a moment and try again." };
+    }
+    
+    // Return detailed error in development, generic in production
+    const isDevelopment = process.env.NODE_ENV === "development";
+    return { 
+      error: isDevelopment 
+        ? `Failed to generate groups: ${errorMessage}` 
+        : "Failed to generate group suggestions. Please try again or contact support if the issue persists."
+    };
   }
 
   if (!groups || !Array.isArray(groups) || groups.length === 0) {
@@ -308,7 +333,7 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     }
   }
 
-  console.log("[generateGroups] Saved", savedCount, "out of", groups.length, "groups");
+    console.log("[generateGroups] Saved", savedCount, "out of", groups.length, "groups");
   if (errors.length > 0) {
     console.warn("[generateGroups] Errors encountered:", errors);
   }
@@ -316,25 +341,31 @@ export async function generateGroups(eventId: string, eventSlug: string) {
   // Revalidate the path to show new groups
   try {
     revalidatePath(`/admin/${eventSlug}/groups`);
+    console.log("[generateGroups] Path revalidated successfully");
   } catch (error) {
     console.error("[generateGroups] Error revalidating path:", error);
   }
 
   if (savedCount === 0) {
-    return { 
-      error: `Failed to save any groups. ${errors.length > 0 ? errors.join("; ") : "Please try again."}` 
-    };
+    const errorMsg = errors.length > 0 
+      ? `Failed to save any groups. ${errors.slice(0, 3).join("; ")}${errors.length > 3 ? "..." : ""}` 
+      : "Failed to save any groups. Please check the server logs for details.";
+    console.error("[generateGroups] No groups saved:", errorMsg);
+    return { error: errorMsg };
   }
 
   if (errors.length > 0 && savedCount < groups.length) {
     // Partial success
+    const warning = `Saved ${savedCount} of ${groups.length} groups. Some errors occurred: ${errors.slice(0, 3).join("; ")}${errors.length > 3 ? "..." : ""}`;
+    console.warn("[generateGroups] Partial success:", warning);
     return { 
       success: true, 
       groupCount: savedCount,
-      warning: `Saved ${savedCount} of ${groups.length} groups. Some errors occurred: ${errors.slice(0, 3).join("; ")}${errors.length > 3 ? "..." : ""}`
+      warning
     };
   }
 
+  console.log("[generateGroups] Successfully completed. Generated", savedCount, "groups");
   return { success: true, groupCount: savedCount };
 }
 

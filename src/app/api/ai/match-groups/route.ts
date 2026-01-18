@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { AttendeeIntake } from "@/types";
 
+// Increase timeout for this route (Next.js 14+)
+export const maxDuration = 300; // 5 minutes
+
 // Lazy initialization to avoid build-time errors
 function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
   return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey,
   });
 }
 

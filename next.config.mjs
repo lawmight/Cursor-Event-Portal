@@ -9,6 +9,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "2mb",
+      allowedOrigins: ["localhost:3000", "cursor-popup-portal.onrender.com"],
     },
   },
   webpack: (config) => {
