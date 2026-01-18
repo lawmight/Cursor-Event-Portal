@@ -6,8 +6,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { uploadSlide, deleteSlide, updateSlide, reorderSlides, toggleSlideLive } from "@/lib/actions/slides";
 import type { Event, Slide } from "@/types";
-import { ArrowLeft, Plus, Trash2, Edit2, GripVertical, Upload, X, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, GripVertical, Upload, X, Eye, EyeOff, FileText, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import * as pdfjsLib from "pdfjs-dist";
 
 interface SlidesAdminClientProps {
   event: Event;
@@ -28,6 +29,60 @@ export function SlidesAdminClient({
   const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
+
+  // Configure PDF.js worker
+  const configurePdfWorker = () => {
+    if (typeof window !== "undefined") {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
+  };
+
+  // Extract slides from PDF using client-side rendering
+  const extractPdfSlides = async (file: File): Promise<Blob[]> => {
+    configurePdfWorker();
+    
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+    const blobs: Blob[] = [];
+
+    for (let i = 1; i <= numPages; i++) {
+      setUploadProgress(`Processing page ${i} of ${numPages}...`);
+      
+      const page = await pdf.getPage(i);
+      const scale = 2; // Higher scale for better quality
+      const viewport = page.getViewport({ scale });
+
+      // Create canvas
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d")!;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      // Render page to canvas
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+      }).promise;
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("Failed to convert page to image"));
+          },
+          "image/png",
+          0.95
+        );
+      });
+
+      blobs.push(blob);
+    }
+
+    return blobs;
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,65 +90,121 @@ export function SlidesAdminClient({
 
     setError(null);
     setUploading(true);
+    setUploadProgress("Starting...");
+
+    const fileName = file.name.toLowerCase();
+    const isPdf = file.type === "application/pdf" || fileName.endsWith(".pdf");
+    const isPpt = fileName.endsWith(".ppt") || fileName.endsWith(".pptx") || fileName.endsWith(".ppsx");
 
     try {
-      // Upload slide deck to server
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("eventId", event.id);
-
-      const uploadResponse = await fetch("/api/admin/upload-slide", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || "Failed to upload slide deck");
+      if (isPpt) {
+        // PPT files need to be converted to PDF first
+        setError("PowerPoint files must be saved as PDF first. In PowerPoint: File → Save As → PDF");
+        setUploading(false);
+        return;
       }
 
-      const { slides, count } = await uploadResponse.json();
+      if (isPdf) {
+        // Process PDF client-side
+        setUploadProgress("Loading PDF...");
+        const pageBlobs = await extractPdfSlides(file);
+        
+        if (pageBlobs.length === 0) {
+          throw new Error("No pages found in PDF");
+        }
 
-      if (!slides || slides.length === 0) {
-        throw new Error("No slides were extracted from the file");
-      }
+        setUploadProgress(`Uploading ${pageBlobs.length} slides...`);
 
-      // Create slide records for each extracted slide
-      startTransition(async () => {
+        // Upload each page as a slide
         let successCount = 0;
         let errorCount = 0;
 
-        for (const slide of slides) {
-          const result = await uploadSlide(
-            event.id,
-            eventSlug,
-            slide.url,
-            `Slide ${slide.pageNumber}`
-          );
-          if (result.success) {
-            successCount++;
+        for (let i = 0; i < pageBlobs.length; i++) {
+          setUploadProgress(`Uploading slide ${i + 1} of ${pageBlobs.length}...`);
+          
+          const formData = new FormData();
+          formData.append("file", pageBlobs[i], `slide-${i + 1}.png`);
+          formData.append("eventId", event.id);
+
+          const uploadResponse = await fetch("/api/admin/upload-slide", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (uploadResponse.ok) {
+            const { slides } = await uploadResponse.json();
+            if (slides && slides.length > 0) {
+              const result = await uploadSlide(
+                event.id,
+                eventSlug,
+                slides[0].url,
+                `Slide ${i + 1}`
+              );
+              if (result.success) {
+                successCount++;
+              } else {
+                errorCount++;
+              }
+            }
           } else {
             errorCount++;
           }
         }
 
         if (errorCount > 0) {
-          setError(
-            `Uploaded ${successCount} of ${slides.length} slides. ${errorCount} failed.`
-          );
+          setError(`Uploaded ${successCount} of ${pageBlobs.length} slides. ${errorCount} failed.`);
         } else {
           router.refresh();
           setShowUploadModal(false);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
         }
-        setUploading(false);
-      });
+      } else {
+        // Regular image upload
+        setUploadProgress("Uploading image...");
+        
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("eventId", event.id);
+
+        const uploadResponse = await fetch("/api/admin/upload-slide", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || "Failed to upload slide");
+        }
+
+        const { slides } = await uploadResponse.json();
+
+        if (!slides || slides.length === 0) {
+          throw new Error("Failed to process the image");
+        }
+
+        const result = await uploadSlide(
+          event.id,
+          eventSlug,
+          slides[0].url,
+          file.name.replace(/\.[^/.]+$/, "") // Use filename without extension as title
+        );
+
+        if (result.success) {
+          router.refresh();
+          setShowUploadModal(false);
+        } else {
+          throw new Error(result.error || "Failed to save slide");
+        }
+      }
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to upload slide deck";
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload";
       setError(errorMessage);
+    } finally {
       setUploading(false);
+      setUploadProgress("");
     }
   };
 
@@ -202,7 +313,7 @@ export function SlidesAdminClient({
         {/* Info */}
         <div className="glass rounded-[32px] p-6 bg-blue-500/10 border border-blue-500/20">
           <p className="text-sm text-blue-400">
-            Upload slide images (PNG, JPG) one at a time. <span className="text-blue-300">To export from PowerPoint: File → Export → Change File Type → PNG</span>. Slides will be displayed to attendees when marked as "Live" (eye icon). Only one slide can be live at a time.
+            Upload <span className="text-blue-300 font-medium">PDF files</span> or individual images (PNG, JPG). Each PDF page becomes a slide. <span className="text-blue-300">For PowerPoint: Save As → PDF</span>. Slides display to attendees when marked "Live" (eye icon).
           </p>
         </div>
 
@@ -344,13 +455,13 @@ export function SlidesAdminClient({
             <div className="space-y-6">
                 <div>
                 <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-3">
-                  Select Slide Image
+                  Select Slide Deck or Image
                 </label>
                 <div className="relative">
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
+                    accept="application/pdf,.pdf,image/png,image/jpeg,image/jpg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
                     onChange={handleFileSelect}
                     disabled={uploading}
                     className="hidden"
@@ -359,22 +470,39 @@ export function SlidesAdminClient({
                   <label
                     htmlFor="slide-upload"
                     className={cn(
-                      "flex flex-col items-center justify-center w-full h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all",
+                      "flex flex-col items-center justify-center w-full h-56 rounded-2xl border-2 border-dashed cursor-pointer transition-all",
                       uploading
                         ? "border-white/10 bg-white/5 cursor-not-allowed"
                         : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
                     )}
                   >
-                    <Upload className={cn("w-8 h-8 mb-3", uploading ? "text-gray-700" : "text-gray-500")} />
-                    <p className="text-sm text-gray-400">
-                      {uploading ? "Uploading..." : "Click to select slide image"}
-                    </p>
-                    <p className="text-[9px] text-gray-700 mt-1">
-                      PNG, JPG, WebP up to 50MB
-                    </p>
-                    <p className="text-[8px] text-gray-800 mt-2 text-center max-w-xs">
-                      Export slides from PowerPoint as images
-                    </p>
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-8 h-8 mb-3 text-blue-400 animate-spin" />
+                        <p className="text-sm text-blue-400 font-medium">
+                          {uploadProgress || "Processing..."}
+                        </p>
+                        <p className="text-[9px] text-gray-600 mt-2">
+                          Please wait while slides are being extracted
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3 mb-3">
+                          <FileText className="w-7 h-7 text-red-400" />
+                          <Upload className="w-7 h-7 text-gray-500" />
+                        </div>
+                        <p className="text-sm text-gray-400">
+                          Click to select PDF or image
+                        </p>
+                        <p className="text-[9px] text-gray-600 mt-1">
+                          <span className="text-red-400 font-medium">PDF</span> (all pages become slides) or PNG, JPG
+                        </p>
+                        <p className="text-[8px] text-gray-700 mt-3 text-center max-w-xs">
+                          For PowerPoint: File → Save As → PDF
+                        </p>
+                      </>
+                    )}
                   </label>
                 </div>
               </div>
