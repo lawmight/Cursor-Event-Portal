@@ -91,6 +91,7 @@ async function extractPdfSlides(
         
         // Render the page to canvas
         await page.render({
+          canvas: null,
           canvasContext: context as unknown as CanvasRenderingContext2D,
           viewport: viewport,
         }).promise;
