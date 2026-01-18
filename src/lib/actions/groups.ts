@@ -78,7 +78,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
       messages: [
         {
           role: "system",
-          content: "You are an expert networking facilitator specializing in creating high-value connections at tech events. Your expertise is in identifying complementary skills, goals, and offers to maximize mutual benefit opportunities."
+          content: "You are an expert networking facilitator specializing in creating high-value connections at tech events. Your expertise is in identifying complementary skills, goals, and offers to maximize mutual benefit opportunities. Always respond with valid JSON only."
         },
         {
           role: "user",
@@ -87,7 +87,6 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
       ],
       temperature: 0.8, // Slightly higher for more creative matching
       max_tokens: 3000, // Increased for more detailed explanations
-      response_format: { type: "json_object" }, // Force JSON output
     });
 
     console.log("[generateGroupSuggestions] OpenAI API call successful");
