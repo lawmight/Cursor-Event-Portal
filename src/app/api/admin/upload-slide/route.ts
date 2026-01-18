@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[upload-slide] Starting slide deck processing, file size:", file.size, "type:", file.type);
 
-    // Check if storage bucket exists and is accessible
+    // Ensure storage bucket exists and is public
     const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
     if (bucketError) {
       console.error("[upload-slide] Error listing buckets:", bucketError);
@@ -90,13 +90,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const slidesBucket = buckets?.find(b => b.name === "slides");
+    const slidesBucket = buckets?.find((bucket) => bucket.name === "slides");
     if (!slidesBucket) {
-      console.error("[upload-slide] Slides bucket not found. Available buckets:", buckets?.map(b => b.name));
-      return NextResponse.json(
-        { error: "Storage bucket 'slides' not found. Please create it in Supabase dashboard." },
-        { status: 500 }
-      );
+      const { error: createError } = await supabase.storage.createBucket("slides", { public: true });
+      if (createError) {
+        console.error("[upload-slide] Failed to create slides bucket:", createError);
+        return NextResponse.json(
+          { error: "Storage bucket 'slides' not found and could not be created. Please create it in Supabase dashboard." },
+          { status: 500 }
+        );
+      }
+    } else if (!slidesBucket.public) {
+      const { error: updateError } = await supabase.storage.updateBucket("slides", { public: true });
+      if (updateError) {
+        console.warn("[upload-slide] Failed to set slides bucket public:", updateError);
+      }
     }
 
     // Process the slide deck and extract slides
