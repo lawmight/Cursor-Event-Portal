@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { RealtimeChannelState } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 type PostgresEvent = "INSERT" | "UPDATE" | "DELETE" | "*";
@@ -72,7 +73,7 @@ export function useRealtimeSubscription({
       );
     });
 
-    channel.subscribe((status) => {
+    channel.subscribe((status: RealtimeChannelState) => {
       if (status === "SUBSCRIBED") {
         console.log(`[Realtime] Subscribed to ${name}`);
       } else if (status === "CHANNEL_ERROR") {
