@@ -19,7 +19,8 @@ import {
   Vote,
   Calendar,
 } from "lucide-react";
-import { SeatLockoutControl } from "@/components/admin/SeatLockoutControl";
+import { SimulateStartButton } from "@/components/admin/SimulateStartButton";
+import { checkAndUnlockAtStartTime } from "@/lib/actions/seating";
 
 interface AdminDashboardProps {
   params: Promise<{ eventSlug: string }>;
@@ -62,6 +63,9 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
     const responses = await getSurveyResponses(survey.id);
     surveyResponses = responses.length;
   }
+
+  // Check and auto-unlock at event start time
+  await checkAndUnlockAtStartTime(event.id, eventSlug);
 
   return (
     <div className="min-h-screen bg-black-gradient text-white flex flex-col relative overflow-hidden">
@@ -163,8 +167,10 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* Seat Lockout Control - Critical for event start */}
-        <SeatLockoutControl event={event} eventSlug={eventSlug} />
+        {/* Simulate Start Button - For Testing */}
+        {event.seat_lockout_active && (
+          <SimulateStartButton event={event} eventSlug={eventSlug} />
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6">

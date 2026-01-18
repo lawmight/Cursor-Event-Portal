@@ -8,16 +8,24 @@ import type { Event, Announcement } from "@/types";
 import { cn } from "@/lib/utils";
 import { EventTimer } from "@/components/timer/EventTimer";
 import { createClient } from "@/lib/supabase/client";
+import { MapPin } from "lucide-react";
 
 interface EventHeaderProps {
   event: Event;
   announcement?: Announcement | null;
   showTimer?: boolean;
+  userId?: string;
 }
 
-export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true }: EventHeaderProps) {
+interface TableAssignment {
+  tableNumber: number;
+  groupName: string;
+}
+
+export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true, userId }: EventHeaderProps) {
   const router = useRouter();
   const [announcement, setAnnouncement] = useState<Announcement | null>(initialAnnouncement || null);
+  const [tableAssignment, setTableAssignment] = useState<TableAssignment | null>(null);
 
   // Auto-refresh every 60 seconds to catch any updates
   useEffect(() => {
@@ -83,6 +91,62 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
     };
   }, [event.id]);
 
+  // Fetch table assignment if userId is provided
+  useEffect(() => {
+    if (!userId) return;
+
+    async function fetchTableAssignment() {
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from("suggested_group_members")
+        .select(`
+          group:suggested_groups(
+            id,
+            name,
+            table_number,
+            status
+          )
+        `)
+        .eq("user_id", userId)
+        .single();
+
+      if (!error && data?.group) {
+        const group = data.group as any;
+        if (group.status === "approved" && group.table_number) {
+          setTableAssignment({
+            tableNumber: group.table_number,
+            groupName: group.name,
+          });
+        }
+      }
+    }
+
+    fetchTableAssignment();
+
+    // Subscribe to group changes
+    const supabase = createClient();
+    const groupChannel = supabase
+      .channel(`group-assignment-header-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "suggested_groups",
+          filter: `event_id=eq.${event.id}`,
+        },
+        () => {
+          fetchTableAssignment();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(groupChannel);
+    };
+  }, [event.id, userId]);
+
   // Event starts at 5:00 PM MST on Jan 28, 2026 = 2026-01-29T00:00:00Z (midnight UTC on Jan 29)
   // Red threshold at 8:30 PM = 3.5 hours = 210 minutes
   const eventStartTime = "2026-01-29T00:00:00Z";
@@ -123,6 +187,16 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               )}
             </div>
           </Link>
+
+          {/* Table Assignment */}
+          {tableAssignment && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20">
+              <MapPin className="w-3 h-3 text-white/70" />
+              <span className="text-xs font-medium text-white">
+                Table {tableAssignment.tableNumber}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </header>

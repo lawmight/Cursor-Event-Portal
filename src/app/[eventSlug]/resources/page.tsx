@@ -76,7 +76,7 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
-      <EventHeader event={event} announcement={latestAnnouncement} />
+      <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
         <div className="animate-fade-in space-y-2">

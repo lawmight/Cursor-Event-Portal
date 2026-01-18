@@ -288,6 +288,17 @@ export async function updateGroupStatus(
     return { error: "Not authorized" };
   }
 
+  // Get the group to find event_id
+  const { data: group } = await supabase
+    .from("suggested_groups")
+    .select("event_id")
+    .eq("id", groupId)
+    .single();
+
+  if (!group) {
+    return { error: "Group not found" };
+  }
+
   const { error } = await supabase
     .from("suggested_groups")
     .update({ status })
@@ -295,7 +306,27 @@ export async function updateGroupStatus(
 
   if (error) return { error: "Failed to update group status" };
 
+  // If group is approved, activate lockout for the event
+  if (status === "approved") {
+    // Check if there are any approved groups for this event
+    const { data: approvedGroups } = await supabase
+      .from("suggested_groups")
+      .select("id")
+      .eq("event_id", group.event_id)
+      .eq("status", "approved");
+
+    // If there are approved groups, activate lockout
+    if (approvedGroups && approvedGroups.length > 0) {
+      await supabase
+        .from("events")
+        .update({ seat_lockout_active: true })
+        .eq("id", group.event_id);
+    }
+  }
+
   revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  revalidatePath(`/${eventSlug}/`);
   return { success: true };
 }
 

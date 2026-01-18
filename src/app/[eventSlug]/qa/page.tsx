@@ -53,7 +53,7 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
-      <EventHeader event={event} announcement={latestAnnouncement} />
+      <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
         <div className="flex items-end justify-between animate-fade-in">
