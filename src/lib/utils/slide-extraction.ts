@@ -61,7 +61,6 @@ async function extractPdfSlides(
       data: new Uint8Array(arrayBuffer),
       useSystemFonts: true,
       // Disable worker for server-side
-      // @ts-expect-error - isEvalSupported is valid
       isEvalSupported: false,
     });
     
