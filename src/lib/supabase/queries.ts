@@ -436,6 +436,7 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
       )
     `)
     .eq("event_id", eventId)
+    .order("table_number", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
   if (error) {
