@@ -65,7 +65,6 @@ async function uploadSingleImage(
       console.error("[uploadSingleImage] Upload error:", uploadError);
       console.error("[uploadSingleImage] Error details:", {
         message: uploadError.message,
-        error: uploadError.error,
         name: uploadError.name,
       });
       
