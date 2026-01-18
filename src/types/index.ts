@@ -225,15 +225,15 @@ export interface SuggestedGroupMember {
   intake?: AttendeeIntake;
 }
 
-// Slide types
-export interface Slide {
+// Slide deck types
+export interface SlideDeck {
   id: string;
   event_id: string;
-  title: string | null;
-  image_url: string;
-  sort_order: number;
-  is_live: boolean;
+  pdf_url: string;
+  storage_path: string;
+  page_count: number | null;
   created_at: string;
+  updated_at: string;
 }
 
 // Display page types
@@ -243,7 +243,7 @@ export interface DisplayPageData {
   nextSession: AgendaItem | null;
   recentQuestions: Question[];
   announcements: Announcement[];
-  slides: Slide[];
+  slideDeck: SlideDeck | null;
 }
 
 // LLM matching types

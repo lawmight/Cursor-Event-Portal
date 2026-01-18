@@ -215,3 +215,93 @@ export async function deregister(registrationId: string, eventSlug?: string) {
   console.log("Successfully deregistered registration:", registrationId);
   return { success: true };
 }
+
+export async function addRegistrationByEmail(
+  eventId: string,
+  eventSlug: string,
+  email: string
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: staffUser } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!staffUser || !["staff", "admin"].includes(staffUser.role)) {
+    return { error: "Not authorized" };
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    return { error: "Please enter a valid email address" };
+  }
+
+  let userId: string;
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id, name")
+    .eq("email", normalizedEmail)
+    .single();
+
+  if (existingUser) {
+    userId = existingUser.id;
+  } else {
+    const fallbackName = normalizedEmail.split("@")[0] || "Attendee";
+    const { data: newUser, error: userError } = await supabase
+      .from("users")
+      .insert({
+        name: fallbackName,
+        email: normalizedEmail,
+        role: "attendee",
+      })
+      .select("id")
+      .single();
+
+    if (userError || !newUser) {
+      return { error: "Failed to create user" };
+    }
+    userId = newUser.id;
+  }
+
+  const { data: existingReg } = await supabase
+    .from("registrations")
+    .select("id")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!existingReg) {
+    const { error: regError } = await supabase.from("registrations").insert({
+      event_id: eventId,
+      user_id: userId,
+      source: "walk-in",
+    });
+
+    if (regError) {
+      return { error: "Failed to add registration" };
+    }
+  }
+
+  const { data: registration, error: fetchError } = await supabase
+    .from("registrations")
+    .select("*, user:users(*, intakes:attendee_intakes(*))")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .single();
+
+  if (fetchError || !registration) {
+    return { error: "Failed to load new registration" };
+  }
+
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath(`/staff/${eventSlug}/checkin`);
+
+  return { success: true, registration };
+}

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { DisplayPageData } from "@/types";
-import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { PdfDeckViewer } from "@/components/slides/PdfDeckViewer";
 
 interface EventDisplayProps {
   initialData: DisplayPageData;
@@ -21,8 +19,7 @@ export function EventDisplay({
   const [data, setData] = useState(initialData);
   const [countdown, setCountdown] = useState<string>("");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showSlides, setShowSlides] = useState(data.slides.length > 0);
+  const [showSlides, setShowSlides] = useState(!!data.slideDeck);
 
   // Subscribe to real-time announcement updates
   useEffect(() => {
@@ -69,8 +66,8 @@ export function EventDisplay({
         if (res.ok) {
           const newData = await res.json();
           setData(newData);
-          // If slides are available, show slides view
-          if (newData.slides && newData.slides.length > 0) {
+          // If slide deck is available, show slides view
+          if (newData.slideDeck) {
             setShowSlides(true);
           }
         }
@@ -82,17 +79,6 @@ export function EventDisplay({
     const interval = setInterval(fetchData, refreshInterval);
     return () => clearInterval(interval);
   }, [eventSlug, refreshInterval]);
-
-  // Auto-advance slides every 10 seconds
-  useEffect(() => {
-    if (!showSlides || data.slides.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentSlideIndex((prev) => (prev + 1) % data.slides.length);
-    }, 10000); // 10 seconds per slide
-
-    return () => clearInterval(interval);
-  }, [showSlides, data.slides.length]);
 
   // Update countdown and current time every second
   useEffect(() => {
@@ -142,68 +128,12 @@ export function EventDisplay({
     return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
   };
 
-  const nextSlide = () => {
-    setCurrentSlideIndex((prev) => (prev + 1) % data.slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlideIndex((prev) => (prev - 1 + data.slides.length) % data.slides.length);
-  };
-
   // Show slides in full screen if available
-  if (showSlides && data.slides.length > 0) {
-    const currentSlide = data.slides[currentSlideIndex];
-
+  if (showSlides && data.slideDeck) {
     return (
       <div className="min-h-screen bg-black text-white relative flex items-center justify-center">
-        {/* Slide Image */}
-        <div className="absolute inset-0 flex items-center justify-center p-8">
-          <Image
-            src={currentSlide.image_url}
-            alt={currentSlide.title || `Slide ${currentSlideIndex + 1}`}
-            fill
-            className="object-contain"
-            priority
-            sizes="100vw"
-          />
-        </div>
-
-        {/* Navigation Controls */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-8 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center group"
-        >
-          <ChevronLeft className="w-8 h-8 text-white/70 group-hover:text-white transition-colors" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute right-8 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full glass border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center group"
-        >
-          <ChevronRight className="w-8 h-8 text-white/70 group-hover:text-white transition-colors" />
-        </button>
-
-        {/* Slide Counter */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 glass rounded-full px-6 py-3 border border-white/20">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-light tabular-nums text-white/70">
-              {currentSlideIndex + 1} / {data.slides.length}
-            </span>
-            <div className="flex items-center gap-2">
-              {data.slides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlideIndex(index)}
-                  className={cn(
-                    "w-2 h-2 rounded-full transition-all",
-                    index === currentSlideIndex
-                      ? "bg-white w-8"
-                      : "bg-white/30 hover:bg-white/50"
-                  )}
-                />
-              ))}
-            </div>
-          </div>
+        <div className="absolute inset-0 p-10">
+          <PdfDeckViewer pdfUrl={data.slideDeck.pdf_url} className="w-full h-full" />
         </div>
 
         {/* Toggle to Dashboard View */}
@@ -249,12 +179,12 @@ export function EventDisplay({
       </header>
 
       {/* Toggle to Slides View */}
-      {data.slides.length > 0 && (
+      {data.slideDeck && (
         <button
           onClick={() => setShowSlides(true)}
           className="absolute top-8 right-8 z-50 glass rounded-2xl px-6 py-3 border border-white/20 hover:bg-white/10 transition-all text-sm text-white/70 hover:text-white"
         >
-          Show Slides ({data.slides.length})
+          Show Slides
         </button>
       )}
 

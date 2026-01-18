@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getAgendaItems, getAnnouncements, getLiveSlide } from "@/lib/supabase/queries";
+import { getEventBySlug, getAgendaItems, getAnnouncements } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { getSurveyConsentStatus } from "@/lib/actions/consent";
@@ -7,7 +7,6 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
 import { AgendaList } from "@/components/agenda/AgendaList";
-import { LiveSlideOverlay } from "@/components/slides/LiveSlideOverlay";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -44,10 +43,9 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
     .eq("id", session.userId)
     .single();
 
-  const [items, announcements, liveSlide] = await Promise.all([
+  const [items, announcements] = await Promise.all([
     getAgendaItems(event.id),
     getAnnouncements(event.id),
-    getLiveSlide(event.id),
   ]);
 
   const latestAnnouncement = announcements[0] || null;
@@ -72,8 +70,6 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
       </main>
 
       <EventNav eventSlug={eventSlug} event={event} />
-      
-      {liveSlide && <LiveSlideOverlay slide={liveSlide} eventId={event.id} />}
     </div>
   );
 }

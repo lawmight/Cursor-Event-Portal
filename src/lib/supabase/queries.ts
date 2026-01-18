@@ -16,7 +16,7 @@ import type {
   Poll,
   PollVote,
   PollWithVotes,
-  Slide,
+  SlideDeck,
 } from "@/types";
 
 // Event queries
@@ -448,26 +448,13 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
   return data;
 }
 
-// Slide queries
-export async function getSlides(eventId: string): Promise<Slide[]> {
+// Slide deck queries
+export async function getSlideDeck(eventId: string): Promise<SlideDeck | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("slides")
+    .from("slide_decks")
     .select("*")
     .eq("event_id", eventId)
-    .order("sort_order", { ascending: true });
-
-  if (error) return [];
-  return data;
-}
-
-export async function getLiveSlide(eventId: string): Promise<Slide | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("slides")
-    .select("*")
-    .eq("event_id", eventId)
-    .eq("is_live", true)
     .single();
 
   if (error) return null;
@@ -479,7 +466,7 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
   const supabase = await createClient();
   const now = new Date();
 
-  const [eventResult, agendaResult, questionsResult, announcementsResult, slidesResult] = await Promise.all([
+  const [eventResult, agendaResult, questionsResult, announcementsResult, deckResult] = await Promise.all([
     supabase.from("events").select("*").eq("id", eventId).single(),
     supabase.from("agenda_items").select("*").eq("event_id", eventId).order("sort_order"),
     supabase
@@ -498,10 +485,10 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
       .order("published_at", { ascending: false })
       .limit(3),
     supabase
-      .from("slides")
+      .from("slide_decks")
       .select("*")
       .eq("event_id", eventId)
-      .order("sort_order", { ascending: true }),
+      .single(),
   ]);
 
   if (eventResult.error || !eventResult.data) return null;
@@ -531,7 +518,7 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
     nextSession,
     recentQuestions: questionsResult.data || [],
     announcements: announcementsResult.data || [],
-    slides: slidesResult.data || [],
+    slideDeck: deckResult.data || null,
   };
 }
 

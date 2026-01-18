@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { checkIn, undoCheckIn, deregister } from "@/lib/actions/registration";
+import { checkIn, undoCheckIn, deregister, addRegistrationByEmail } from "@/lib/actions/registration";
 import type { Event, Registration } from "@/types";
 import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -46,6 +43,8 @@ export function CheckInClient({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeregisterId, setConfirmDeregisterId] = useState<string | null>(null);
+  const [addEmail, setAddEmail] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
 
   const filteredRegistrations = registrations.filter((reg) => {
     const query = searchQuery.toLowerCase();
@@ -140,6 +139,32 @@ export function CheckInClient({
     });
   };
 
+  const handleAddRegistration = async () => {
+    if (!addEmail.trim()) return;
+
+    setIsAdding(true);
+    setError(null);
+
+    try {
+      const result = await addRegistrationByEmail(event.id, event.slug, addEmail);
+      if (result.success && result.registration) {
+        setRegistrations((prev) => {
+          const exists = prev.some((r) => r.id === result.registration.id);
+          if (exists) return prev;
+          return [result.registration, ...prev];
+        });
+        setAddEmail("");
+      } else {
+        setError(result.error || "Failed to add registration");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setError(errorMessage);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
@@ -202,16 +227,36 @@ export function CheckInClient({
           </div>
         )}
 
-        {/* Search - Focusable Border */}
-        <div className="relative group">
-          <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800 group-focus-within:text-white transition-colors" />
-          <input
-            type="text"
-            placeholder="Search attendees"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-16 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-6 items-end">
+          {/* Search - Focusable Border */}
+          <div className="relative group">
+            <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800 group-focus-within:text-white transition-colors" />
+            <input
+              type="text"
+              placeholder="Search attendees"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-16 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
+            />
+          </div>
+
+          {/* Quick add */}
+          <div className="glass rounded-[28px] p-4 border border-white/5 flex items-center gap-3">
+            <input
+              type="email"
+              placeholder="Add attendee email"
+              value={addEmail}
+              onChange={(e) => setAddEmail(e.target.value)}
+              className="flex-1 bg-transparent border-b border-white/10 rounded-none px-0 h-12 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
+            />
+            <button
+              onClick={handleAddRegistration}
+              disabled={isAdding || !addEmail.trim()}
+              className="h-12 px-5 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-200 transition-all shadow-xl disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isAdding ? "..." : "Add"}
+            </button>
+          </div>
         </div>
 
         {/* Attendee List */}
