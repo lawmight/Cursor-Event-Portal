@@ -54,7 +54,7 @@ export function useRealtimeSubscription({
       const filter = config.filter || `event_id=eq.${eventId}`;
       
       channel = channel.on(
-        "postgres_changes",
+        "postgres_changes" as any,
         {
           event: config.event || "*",
           schema: "public",
