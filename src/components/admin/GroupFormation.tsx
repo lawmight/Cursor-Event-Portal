@@ -80,7 +80,7 @@ export function GroupFormation({
             </div>
             <div>
               <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Intake Pulses</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium mt-1">Intake Responses</p>
             </div>
           </div>
         </div>

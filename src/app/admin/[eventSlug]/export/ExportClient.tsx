@@ -183,7 +183,7 @@ export function ExportClient({
                 <ClipboardCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-2xl font-light tracking-tight text-white/90">Feedback Pulses</h3>
+                <h3 className="text-2xl font-light tracking-tight text-white/90">Feedback Surveys</h3>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
                   {surveyResponses.length} Received Inputs
                 </p>
