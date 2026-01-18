@@ -91,8 +91,13 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
 }
 
 export async function generateGroups(eventId: string, eventSlug: string) {
+  console.log("[generateGroups] Starting group generation for event:", eventId);
+  
   const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
+  if (!session) {
+    console.log("[generateGroups] Not authenticated");
+    return { error: "Not authenticated" };
+  }
 
   // Verify admin role
   const supabase = await createServiceClient();
@@ -103,38 +108,55 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     .single();
 
   if (!user || user.role !== "admin") {
+    console.log("[generateGroups] Not authorized");
     return { error: "Not authorized" };
   }
 
   // Get all intakes
   const intakes = await getEventIntakes(eventId);
+  console.log("[generateGroups] Found intakes:", intakes.length);
+  
   if (intakes.length < 2) {
     return { error: "Need at least 2 intake responses to form groups" };
+  }
+
+  // Check if OpenAI API key is set
+  if (!process.env.OPENAI_API_KEY) {
+    console.error("[generateGroups] OPENAI_API_KEY is not set");
+    return { error: "OpenAI API key is not configured. Please contact support." };
   }
 
   // Call LLM for matching directly
   let groups;
   try {
+    console.log("[generateGroups] Calling OpenAI to generate groups...");
     groups = await generateGroupSuggestions(intakes);
+    console.log("[generateGroups] Generated groups:", groups?.length || 0);
   } catch (error) {
-    console.error("Failed to generate groups:", error);
-    return { 
-      error: error instanceof Error ? error.message : "Failed to generate group suggestions" 
-    };
+    console.error("[generateGroups] Failed to generate groups:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to generate group suggestions";
+    return { error: errorMessage };
   }
 
-  if (!groups || !Array.isArray(groups)) {
-    return { error: "Invalid response from AI" };
+  if (!groups || !Array.isArray(groups) || groups.length === 0) {
+    console.error("[generateGroups] Invalid or empty groups response:", groups);
+    return { error: "Invalid response from AI or no groups generated" };
   }
 
   // Clear existing pending groups for this event
-  await supabase
+  console.log("[generateGroups] Clearing existing pending groups...");
+  const { error: deleteError } = await supabase
     .from("suggested_groups")
     .delete()
     .eq("event_id", eventId)
     .eq("status", "pending");
 
+  if (deleteError) {
+    console.error("[generateGroups] Error clearing existing groups:", deleteError);
+  }
+
   // Store suggested groups
+  let savedCount = 0;
   for (const group of groups) {
     const { data: newGroup, error: groupError } = await supabase
       .from("suggested_groups")
@@ -147,20 +169,35 @@ export async function generateGroups(eventId: string, eventSlug: string) {
       .select("id")
       .single();
 
-    if (groupError || !newGroup) continue;
+    if (groupError || !newGroup) {
+      console.error("[generateGroups] Error saving group:", groupError, group);
+      continue;
+    }
 
     // Insert group members
-    const members = group.memberIds.map((userId: string) => ({
-      group_id: newGroup.id,
-      user_id: userId,
-      match_reason: group.matchReasons?.[userId] || null,
-    }));
+    if (group.memberIds && Array.isArray(group.memberIds)) {
+      const members = group.memberIds.map((userId: string) => ({
+        group_id: newGroup.id,
+        user_id: userId,
+        match_reason: group.matchReasons?.[userId] || null,
+      }));
 
-    await supabase.from("suggested_group_members").insert(members);
+      const { error: membersError } = await supabase
+        .from("suggested_group_members")
+        .insert(members);
+
+      if (membersError) {
+        console.error("[generateGroups] Error saving group members:", membersError);
+      } else {
+        savedCount++;
+      }
+    }
   }
 
+  console.log("[generateGroups] Saved", savedCount, "out of", groups.length, "groups");
+
   revalidatePath(`/admin/${eventSlug}/groups`);
-  return { success: true, groupCount: groups.length };
+  return { success: true, groupCount: savedCount };
 }
 
 export async function updateGroupStatus(
