@@ -22,7 +22,8 @@ import type {
 export async function getEventBySlug(slug: string): Promise<Event | null> {
   console.log("[getEventBySlug] Looking for event with slug:", slug);
   console.log("[getEventBySlug] SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL || "MISSING");
-  console.log("[getEventBySlug] Has ANON_KEY:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  console.log("[getEventBySlug] ANON_KEY prefix:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) || "MISSING");
+  console.log("[getEventBySlug] ANON_KEY length:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0);
   try {
     const supabase = await createClient();
     console.log("[getEventBySlug] Supabase client created");
