@@ -169,7 +169,7 @@ export function GroupFormation({
                 alt="Proposals"
                 width={40}
                 height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity translate-y-[1px]"
               />
             </div>
             <div className="flex-1 flex flex-col justify-center min-h-[56px]">
@@ -207,7 +207,6 @@ export function GroupFormation({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-all" />
                     <span>Synthesize Groups</span>
                   </>
                 )}
