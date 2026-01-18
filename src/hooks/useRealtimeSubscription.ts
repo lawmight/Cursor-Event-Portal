@@ -48,13 +48,14 @@ export function useRealtimeSubscription({
     const supabase = createClient();
     const name = channelName || `realtime-${eventId}-${Date.now()}`;
 
-    let channel = supabase.channel(name);
+    let channel: ReturnType<typeof supabase.channel> = supabase.channel(name);
 
-    for (const config of subscriptions) {
+    subscriptions.forEach((config) => {
       const filter = config.filter || `event_id=eq.${eventId}`;
       
+      // @ts-expect-error - Supabase types are strict but runtime supports this
       channel = channel.on(
-        "postgres_changes" as any,
+        "postgres_changes",
         {
           event: config.event || "*",
           schema: "public",
@@ -70,7 +71,7 @@ export function useRealtimeSubscription({
           }
         }
       );
-    }
+    });
 
     channel.subscribe((status) => {
       if (status === "SUBSCRIBED") {
