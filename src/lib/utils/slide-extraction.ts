@@ -1,8 +1,38 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// Note: PDF extraction requires additional setup
-// For production, consider using a service like CloudConvert API or similar
-// This is a placeholder implementation
+// Dynamic imports to handle serverless environments
+let pdfjsLib: any;
+let createCanvas: any;
+
+async function loadPdfJs() {
+  if (!pdfjsLib) {
+    try {
+      pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      // Configure pdfjs to work in Node.js
+      if (typeof window === "undefined" && pdfjsLib.GlobalWorkerOptions) {
+        // @ts-ignore
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      }
+    } catch (e) {
+      console.error("Failed to load pdfjs-dist:", e);
+      throw new Error("PDF processing library not available");
+    }
+  }
+  return pdfjsLib;
+}
+
+async function loadCanvas() {
+  if (!createCanvas) {
+    try {
+      const canvasModule = await import("canvas");
+      createCanvas = canvasModule.createCanvas;
+    } catch (e) {
+      console.warn("Canvas module not available:", e);
+      return null;
+    }
+  }
+  return createCanvas;
+}
 
 interface SlideExtractionResult {
   slides: Array<{ url: string; path: string; pageNumber: number }>;
@@ -39,52 +69,95 @@ async function extractSlidesFromPDF(
   supabase: SupabaseClient
 ): Promise<SlideExtractionResult> {
   try {
-    // For now, we'll use a service-based approach or convert PDF to images server-side
-    // This requires either:
-    // 1. A service like CloudConvert, PDF.co, or similar
-    // 2. A server with system dependencies (poppler-utils, imagemagick, etc.)
-    // 3. A library that works in serverless (like pdf-poppler with proper setup)
+    console.log("[extractSlidesFromPDF] Starting PDF extraction");
     
-    // Temporary solution: Upload the PDF and return it as a single "slide"
-    // In production, you should integrate with a PDF conversion service
+    // Load required libraries
+    const pdfjs = await loadPdfJs();
+    const createCanvasFn = await loadCanvas();
     
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(7);
-    const fileName = `${timestamp}-${randomId}.pdf`;
-    const filePath = `${eventId}/${fileName}`;
-
-    // Upload PDF to storage
-    const arrayBuffer = await file.arrayBuffer();
-    const { error: uploadError } = await supabase.storage
-      .from("slides")
-      .upload(filePath, arrayBuffer, {
-        contentType: "application/pdf",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error("Failed to upload PDF:", uploadError);
+    if (!createCanvasFn) {
       return {
         slides: [],
-        error: "Failed to upload PDF file",
+        error: "PDF extraction requires the canvas library which is not available in this environment. Please convert your PDF to individual images (PNG/JPG) and upload them separately, or contact support to enable PDF extraction.",
       };
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("slides")
-      .getPublicUrl(filePath);
+    const arrayBuffer = await file.arrayBuffer();
+    console.log("[extractSlidesFromPDF] PDF loaded, size:", arrayBuffer.byteLength);
+    
+    // Load PDF document
+    const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    const numPages = pdf.numPages;
 
-    // For now, return the PDF as a single slide
-    // TODO: Implement proper PDF page extraction using a service or library
-    return {
-      slides: [{
-        url: urlData.publicUrl,
-        path: filePath,
-        pageNumber: 1,
-      }],
-      error: "PDF extraction not yet fully implemented. The PDF has been uploaded but individual slide extraction requires additional setup. Please use a PDF-to-image conversion service or convert your PDF to individual images first.",
-    };
+    console.log(`[extractSlidesFromPDF] Processing PDF with ${numPages} pages`);
+
+    const slides: Array<{ url: string; path: string; pageNumber: number }> = [];
+
+    // Extract each page as an image
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      try {
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
+
+        // Create canvas
+        const pageCanvas = createCanvasFn(viewport.width, viewport.height);
+        const context = pageCanvas.getContext("2d");
+
+        // Render PDF page to canvas
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
+        await page.render(renderContext).promise;
+
+        // Convert canvas to buffer
+        const imageBuffer = pageCanvas.toBuffer("image/png");
+
+        // Upload image to Supabase storage
+        const timestamp = Date.now();
+        const fileName = `slide-${timestamp}-${pageNum}.png`;
+        const filePath = `${eventId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("slides")
+          .upload(filePath, imageBuffer, {
+            contentType: "image/png",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(`Failed to upload slide ${pageNum}:`, uploadError);
+          continue;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("slides")
+          .getPublicUrl(filePath);
+
+        slides.push({
+          url: urlData.publicUrl,
+          path: filePath,
+          pageNumber: pageNum,
+        });
+
+        console.log(`[extractSlidesFromPDF] Extracted slide ${pageNum}/${numPages}`);
+      } catch (pageError) {
+        console.error(`Error processing page ${pageNum}:`, pageError);
+        // Continue with other pages
+      }
+    }
+
+    if (slides.length === 0) {
+      return {
+        slides: [],
+        error: "Failed to extract any slides from the PDF",
+      };
+    }
+
+    console.log(`[extractSlidesFromPDF] Successfully extracted ${slides.length} slides`);
+    return { slides };
   } catch (error) {
     console.error("PDF extraction error:", error);
     return {

@@ -66,25 +66,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("[upload-slide] Starting slide deck processing, file size:", file.size, "type:", file.type);
+
     // Process the slide deck and extract slides
     const result = await uploadSlideDeck(file, eventId, supabase);
 
+    console.log("[upload-slide] Extraction result:", {
+      slideCount: result.slides?.length || 0,
+      hasError: !!result.error,
+      error: result.error,
+    });
+
     if (result.error) {
+      console.error("[upload-slide] Extraction error:", result.error);
       return NextResponse.json(
         { error: result.error },
         { status: 500 }
       );
     }
 
+    if (!result.slides || result.slides.length === 0) {
+      console.error("[upload-slide] No slides extracted");
+      return NextResponse.json(
+        { error: "No slides were extracted from the file" },
+        { status: 500 }
+      );
+    }
+
+    console.log("[upload-slide] Successfully extracted", result.slides.length, "slides");
     return NextResponse.json({
       success: true,
       slides: result.slides,
       count: result.slides.length,
     });
   } catch (error) {
-    console.error("Upload slide deck error:", error);
+    console.error("[upload-slide] Exception:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
