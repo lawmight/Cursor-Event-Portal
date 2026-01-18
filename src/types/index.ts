@@ -58,6 +58,7 @@ export interface Announcement {
   content: string;
   priority: number;
   published_at: string | null;
+  expires_at: string | null;
   created_at: string;
 }
 

@@ -169,11 +169,14 @@ export async function getAgendaItems(eventId: string): Promise<AgendaItem[]> {
 // Announcement queries
 export async function getAnnouncements(eventId: string): Promise<Announcement[]> {
   const supabase = await createClient();
+  const now = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from("announcements")
     .select("*")
     .eq("event_id", eventId)
     .not("published_at", "is", null)
+    .or(`expires_at.is.null,expires_at.gt.${now}`) // Only get announcements that haven't expired
     .order("priority", { ascending: false })
     .order("published_at", { ascending: false });
 
@@ -342,6 +345,7 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
       .select("*")
       .eq("event_id", eventId)
       .not("published_at", "is", null)
+      .or(`expires_at.is.null,expires_at.gt.${now.toISOString()}`) // Only get announcements that haven't expired
       .order("published_at", { ascending: false })
       .limit(3),
     supabase

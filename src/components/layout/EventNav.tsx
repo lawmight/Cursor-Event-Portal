@@ -108,8 +108,8 @@ export function EventNav({ eventSlug }: EventNavProps) {
                   </div>
                   <span
                     className={cn(
-                      "text-[8px] font-bold uppercase tracking-[0.15em] transition-all absolute -bottom-1 whitespace-nowrap",
-                      isActive ? "opacity-40 translate-y-0" : "opacity-0 translate-y-1"
+                      "text-[8px] font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap mt-1",
+                      isActive ? "opacity-40 translate-y-0" : "opacity-0 absolute translate-y-1"
                     )}
                   >
                     {item.label}

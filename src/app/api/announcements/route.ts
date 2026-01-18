@@ -55,14 +55,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Create announcement with published_at set to now
+    // Create announcement with published_at set to now and expires in 2 minutes
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes from now
+    
     const { data: announcement, error: insertError } = await supabase
       .from("announcements")
       .insert({
         event_id: eventId,
         content: content.trim(),
         priority: 0,
-        published_at: new Date().toISOString(),
+        published_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
       })
       .select()
       .single();
