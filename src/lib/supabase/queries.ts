@@ -329,6 +329,7 @@ export async function getSlides(eventId: string): Promise<Slide[]> {
 // Display page data
 export async function getDisplayPageData(eventId: string): Promise<DisplayPageData | null> {
   const supabase = await createClient();
+  const now = new Date();
 
   const [eventResult, agendaResult, questionsResult, announcementsResult, slidesResult] = await Promise.all([
     supabase.from("events").select("*").eq("id", eventId).single(),
