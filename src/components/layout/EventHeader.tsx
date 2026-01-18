@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Event, Announcement } from "@/types";
@@ -15,7 +16,17 @@ interface EventHeaderProps {
 }
 
 export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true }: EventHeaderProps) {
+  const router = useRouter();
   const [announcement, setAnnouncement] = useState<Announcement | null>(initialAnnouncement || null);
+
+  // Auto-refresh every 60 seconds to catch any updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [router]);
 
   // Subscribe to real-time announcement updates
   useEffect(() => {
