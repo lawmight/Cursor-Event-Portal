@@ -140,7 +140,14 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
 
           {/* Meta */}
           <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">
-            <span className="text-gray-500">{question.user?.name || "Anonymous"}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500">{question.user?.name || "Anonymous"}</span>
+              {question.user?.role === "admin" && (
+                <div className="w-4 h-4 rounded-full bg-blue-500 border border-black flex items-center justify-center" title="Admin">
+                  <span className="text-[8px] font-bold text-white">A</span>
+                </div>
+              )}
+            </div>
             <span className="opacity-20">/</span>
             <span>{timeAgo(question.created_at)}</span>
           </div>
@@ -161,9 +168,16 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
                     {answer.content}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">
-                      {answer.user?.name || "Expert"} · {timeAgo(answer.created_at)}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">
+                        {answer.user?.name || "Expert"} · {timeAgo(answer.created_at)}
+                      </span>
+                      {answer.user?.role === "admin" && (
+                        <div className="w-4 h-4 rounded-full bg-blue-500 border border-black flex items-center justify-center" title="Admin">
+                          <span className="text-[8px] font-bold text-white">A</span>
+                        </div>
+                      )}
+                    </div>
                     {isModerator && !answer.is_accepted && (
                       <button
                         onClick={() => handleAcceptAnswer(answer.id)}

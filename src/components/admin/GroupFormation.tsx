@@ -234,7 +234,14 @@ export function GroupFormation({
             {intakes.map((intake) => (
               <div key={intake.id} className="p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
                 <div className="flex items-center justify-between mb-6">
-                  <p className="text-xl font-light tracking-tight text-white/90">{intake.user?.name || "Unknown Identity"}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xl font-light tracking-tight text-white/90">{intake.user?.name || "Unknown Identity"}</p>
+                    {intake.user?.role === "admin" && (
+                      <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center" title="Admin">
+                        <span className="text-[10px] font-bold text-white">A</span>
+                      </div>
+                    )}
+                  </div>
                   <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white/40 transition-colors shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -364,13 +371,20 @@ function GroupCard({ group, eventSlug, onStatusChange }: GroupCardProps) {
       {/* Members */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
         {group.members?.map((member) => (
-          <div
-            key={member.id}
-            className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all"
-          >
-            <span className="text-lg font-light tracking-tight text-white/90">{member.user?.name || "Unknown"}</span>
-            <span className="text-[10px] uppercase tracking-[0.1em] text-gray-800 font-medium">{member.match_reason}</span>
-          </div>
+            <div
+              key={member.id}
+              className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-light tracking-tight text-white/90">{member.user?.name || "Unknown"}</span>
+                {member.user?.role === "admin" && (
+                  <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center" title="Admin">
+                    <span className="text-[10px] font-bold text-white">A</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.1em] text-gray-800 font-medium">{member.match_reason}</span>
+            </div>
         ))}
       </div>
 

@@ -235,15 +235,22 @@ export function CheckInClient({
                   )}
 
                   <div className="flex items-center gap-5 min-w-0">
-                    <div
-                      className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-light shrink-0 transition-all border",
-                        isCheckedIn
-                          ? "bg-white border-white text-black"
-                          : "bg-white/[0.02] border-white/5 text-gray-600"
+                    <div className="relative shrink-0">
+                      <div
+                        className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-light transition-all border",
+                          isCheckedIn
+                            ? "bg-white border-white text-black"
+                            : "bg-white/[0.02] border-white/5 text-gray-600"
+                        )}
+                      >
+                        {registration.user?.name.charAt(0).toUpperCase()}
+                      </div>
+                      {registration.user?.role === "admin" && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-white">A</span>
+                        </div>
                       )}
-                    >
-                      {registration.user?.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-lg font-light text-white truncate tracking-tight">

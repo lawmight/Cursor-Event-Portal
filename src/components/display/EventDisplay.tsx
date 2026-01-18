@@ -362,9 +362,16 @@ export function EventDisplay({
                       </div>
                       <div className="flex-1 space-y-4">
                         <p className="text-2xl font-light tracking-tight leading-relaxed">{question.content}</p>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">
-                          {question.user?.name || "Anonymous"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">
+                            {question.user?.name || "Anonymous"}
+                          </p>
+                          {question.user?.role === "admin" && (
+                            <div className="w-4 h-4 rounded-full bg-blue-500 border border-black flex items-center justify-center" title="Admin">
+                              <span className="text-[8px] font-bold text-white">A</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
