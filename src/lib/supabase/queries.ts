@@ -20,15 +20,26 @@ import type {
 
 // Event queries
 export async function getEventBySlug(slug: string): Promise<Event | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("events")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  console.log("[getEventBySlug] Looking for event with slug:", slug);
+  try {
+    const supabase = await createClient();
+    console.log("[getEventBySlug] Supabase client created");
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("slug", slug)
+      .single();
 
-  if (error) return null;
-  return data;
+    if (error) {
+      console.error("[getEventBySlug] Query error:", error.message, error.code);
+      return null;
+    }
+    console.log("[getEventBySlug] Found event:", data?.id);
+    return data;
+  } catch (err) {
+    console.error("[getEventBySlug] Exception:", err);
+    return null;
+  }
 }
 
 export async function getEventStats(eventId: string) {
