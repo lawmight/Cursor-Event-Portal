@@ -153,11 +153,16 @@ export async function undoCheckIn(registrationId: string, eventSlug?: string) {
     .from("registrations")
     .update({ checked_in_at: null })
     .eq("id", registrationId)
-    .select();
+    .select("user_id, event_id");
 
   if (error) {
     console.error("Undo check-in error:", error);
     return { error: error.message || "Failed to undo check-in" };
+  }
+
+  const registration = data?.[0];
+  if (registration) {
+    await cleanupAttendeeData(supabase, registration.event_id, registration.user_id);
   }
 
   // Revalidate the check-in page if eventSlug is provided
@@ -196,6 +201,8 @@ export async function deregister(registrationId: string, eventSlug?: string) {
     return { error: deleteError.message || "Failed to deregister" };
   }
 
+  await cleanupAttendeeData(supabase, registration.event_id, registration.user_id);
+
   // Check if user has any other registrations
   const { data: otherRegs, error: otherRegsError } = await supabase
     .from("registrations")
@@ -214,6 +221,44 @@ export async function deregister(registrationId: string, eventSlug?: string) {
 
   console.log("Successfully deregistered registration:", registrationId);
   return { success: true };
+}
+
+async function cleanupAttendeeData(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  userId: string
+) {
+  await supabase
+    .from("attendee_intakes")
+    .delete()
+    .eq("event_id", eventId)
+    .eq("user_id", userId);
+
+  const { data: groupIds } = await supabase
+    .from("suggested_groups")
+    .select("id")
+    .eq("event_id", eventId);
+
+  const ids = (groupIds || []).map((group) => group.id);
+  if (ids.length > 0) {
+    await supabase
+      .from("suggested_group_members")
+      .delete()
+      .eq("user_id", userId)
+      .in("group_id", ids);
+
+    const { data: remainingMembers } = await supabase
+      .from("suggested_group_members")
+      .select("group_id")
+      .in("group_id", ids);
+
+    const remainingGroupIds = new Set((remainingMembers || []).map((m) => m.group_id));
+    const emptyGroupIds = ids.filter((id) => !remainingGroupIds.has(id));
+
+    if (emptyGroupIds.length > 0) {
+      await supabase.from("suggested_groups").delete().in("id", emptyGroupIds);
+    }
+  }
 }
 
 export async function addRegistrationByEmail(

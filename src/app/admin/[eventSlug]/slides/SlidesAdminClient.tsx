@@ -39,8 +39,10 @@ export function SlidesAdminClient({ event, eventSlug, initialDeck }: SlidesAdmin
         throw new Error("Please upload a PDF slide deck.");
       }
 
+      const buffer = await file.arrayBuffer();
+      const stableFile = new File([buffer], file.name, { type: "application/pdf" });
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", stableFile);
       formData.append("eventId", event.id);
 
       const uploadResponse = await fetch("/api/admin/upload-deck", {

@@ -409,8 +409,10 @@ export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("attendee_intakes")
-    .select("*, user:users(*)")
+    .select("*, user:users(*), registrations!inner(checked_in_at)")
     .eq("event_id", eventId)
+    .eq("registrations.event_id", eventId)
+    .not("registrations.checked_in_at", "is", null)
     .eq("skipped", false)
     .order("created_at", { ascending: false });
 
@@ -423,6 +425,14 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
   // Use service client to bypass RLS since groups are created by service client
   const supabase = await createServiceClient();
   console.log("[getSuggestedGroups] Fetching groups for event:", eventId);
+
+  const { data: checkedInRegs } = await supabase
+    .from("registrations")
+    .select("user_id")
+    .eq("event_id", eventId)
+    .not("checked_in_at", "is", null);
+
+  const checkedInUserIds = new Set((checkedInRegs || []).map((reg) => reg.user_id));
   
   // Note: suggested_group_members has user_id FK to users, but NOT to attendee_intakes
   // So we only join users here
@@ -444,8 +454,17 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
     return [];
   }
   
-  console.log("[getSuggestedGroups] Found groups:", data?.length || 0);
-  return data;
+  const filteredGroups = (data || [])
+    .map((group: SuggestedGroup) => ({
+      ...group,
+      members: (group.members || []).filter((member) =>
+        checkedInUserIds.has(member.user_id)
+      ),
+    }))
+    .filter((group: SuggestedGroup) => (group.members || []).length > 0);
+
+  console.log("[getSuggestedGroups] Found groups:", filteredGroups.length || 0);
+  return filteredGroups;
 }
 
 // Slide deck queries
