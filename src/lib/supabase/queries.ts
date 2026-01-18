@@ -1,4 +1,5 @@
 import { createClient } from "./server";
+import { createClient as createDirectClient } from "@supabase/supabase-js";
 import type {
   Event,
   User,
@@ -21,14 +22,37 @@ import type {
 // Event queries
 export async function getEventBySlug(slug: string): Promise<Event | null> {
   console.log("[getEventBySlug] Looking for event with slug:", slug);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  console.log("[getEventBySlug] SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL || "MISSING");
+  console.log("[getEventBySlug] SUPABASE_URL:", url);
   console.log("[getEventBySlug] ANON_KEY prefix:", anonKey.substring(0, 25));
   console.log("[getEventBySlug] ANON_KEY length:", anonKey.length);
-  console.log("[getEventBySlug] ANON_KEY trimmed length:", anonKey.trim().length);
+
+  // Try direct client to bypass @supabase/ssr
   try {
+    console.log("[getEventBySlug] Trying DIRECT client...");
+    const directSupabase = createDirectClient(url, anonKey);
+    const { data: directData, error: directError } = await directSupabase
+      .from("events")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (directError) {
+      console.error("[getEventBySlug] DIRECT client error:", directError.message, directError.code);
+    } else {
+      console.log("[getEventBySlug] DIRECT client SUCCESS! Event:", directData?.id);
+      return directData;
+    }
+  } catch (err) {
+    console.error("[getEventBySlug] DIRECT client exception:", err);
+  }
+
+  // Fallback to SSR client
+  try {
+    console.log("[getEventBySlug] Trying SSR client...");
     const supabase = await createClient();
-    console.log("[getEventBySlug] Supabase client created");
+    console.log("[getEventBySlug] SSR client created");
     const { data, error } = await supabase
       .from("events")
       .select("*")
@@ -36,13 +60,13 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
       .single();
 
     if (error) {
-      console.error("[getEventBySlug] Query error:", error.message, error.code);
+      console.error("[getEventBySlug] SSR client error:", error.message, error.code);
       return null;
     }
-    console.log("[getEventBySlug] Found event:", data?.id);
+    console.log("[getEventBySlug] SSR client found event:", data?.id);
     return data;
   } catch (err) {
-    console.error("[getEventBySlug] Exception:", err);
+    console.error("[getEventBySlug] SSR client exception:", err);
     return null;
   }
 }
