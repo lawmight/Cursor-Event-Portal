@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
+// Health check for debugging
+export async function GET() {
+  return NextResponse.json({ status: "ok", route: "admin/login" });
+}
+
 // Admin login API route
 export async function POST(request: NextRequest) {
   try {
