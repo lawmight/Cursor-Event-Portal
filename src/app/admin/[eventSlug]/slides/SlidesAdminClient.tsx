@@ -33,17 +33,22 @@ export function SlidesAdminClient({
 
   // Configure PDF.js worker
   const configurePdfWorker = () => {
-    if (typeof window !== "undefined") {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      // Use jsdelivr CDN which is more reliable
+      // For pdfjs-dist 5.x, use .mjs extension
+      const version = pdfjsLib.version || "5.4.530";
+      // Try the .mjs version first (for v5+), fallback to .js if needed
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
     }
   };
 
   // Extract slides from PDF using client-side rendering
   const extractPdfSlides = async (file: File): Promise<Blob[]> => {
-    configurePdfWorker();
-    
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    try {
+      configurePdfWorker();
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages;
     const blobs: Blob[] = [];
 
@@ -82,6 +87,13 @@ export function SlidesAdminClient({
     }
 
     return blobs;
+    } catch (err: any) {
+      // Catch PDF.js specific errors
+      if (err?.message?.includes("worker") || err?.message?.includes("Failed to fetch")) {
+        throw new Error("Failed to load PDF processor. Please try refreshing the page or use image files instead.");
+      }
+      throw err;
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
