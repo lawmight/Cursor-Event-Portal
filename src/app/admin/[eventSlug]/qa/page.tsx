@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getQuestions } from "@/lib/supabase/queries";
+import { getEventBySlug, getQuestionsForAdmin } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
 import { AdminQAClient } from "./AdminQAClient";
@@ -38,8 +38,8 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
   const sortBy = sort === "new" ? "new" : "trending";
   const statusFilter = status === "answered" ? "answered" : status === "hidden" ? "hidden" : status === "pinned" ? "pinned" : status === "open" ? "open" : "all";
 
-  // Get all questions (including hidden ones for admin)
-  const allQuestions = await getQuestions(event.id, sortBy, true);
+  // Get all questions (including hidden ones for admin) - using service client to bypass RLS
+  const allQuestions = await getQuestionsForAdmin(event.id, sortBy, true);
   
   // Filter by status if needed
   let questions = allQuestions;

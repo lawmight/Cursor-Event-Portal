@@ -1,4 +1,4 @@
-import { createClient } from "./server";
+import { createClient, createServiceClient } from "./server";
 import { createClient as createDirectClient } from "@supabase/supabase-js";
 import type {
   Event,
@@ -247,8 +247,43 @@ export async function getQuestions(
   }
 
   const { data, error } = await query;
-  if (error) return [];
+  if (error) {
+    console.error("[getQuestions] Error fetching questions:", error);
+    return [];
+  }
   return data;
+}
+
+// Admin version that bypasses RLS to see all questions
+export async function getQuestionsForAdmin(
+  eventId: string,
+  sort: "trending" | "new" = "trending",
+  includeHidden: boolean = true
+): Promise<Question[]> {
+  console.log("[getQuestionsForAdmin] Fetching questions for admin, eventId:", eventId);
+  const supabase = await createServiceClient();
+  const query = supabase
+    .from("questions")
+    .select("*, user:users(*), answers(*, user:users(*))")
+    .eq("event_id", eventId);
+
+  if (!includeHidden) {
+    query.neq("status", "hidden");
+  }
+
+  if (sort === "trending") {
+    query.order("upvotes", { ascending: false });
+  } else {
+    query.order("created_at", { ascending: false });
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("[getQuestionsForAdmin] Error fetching questions:", error);
+    return [];
+  }
+  console.log("[getQuestionsForAdmin] Found", data?.length || 0, "questions");
+  return data || [];
 }
 
 export async function getQuestionById(id: string): Promise<Question | null> {

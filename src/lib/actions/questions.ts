@@ -10,25 +10,34 @@ export async function createQuestion(
   eventSlug: string,
   formData: QuestionFormData
 ) {
+  console.log("[createQuestion] Starting question creation for event:", eventId);
   const session = await getSession();
   if (!session) {
+    console.log("[createQuestion] Not authenticated");
     return { error: "Not authenticated" };
   }
 
   try {
     const supabase = await createServiceClient();
 
-    const { error } = await supabase.from("questions").insert({
+    console.log("[createQuestion] Inserting question:", {
+      event_id: eventId,
+      user_id: session.userId,
+      content_length: formData.content?.length || 0,
+      tags: formData.tags,
+    });
+
+    const { data, error } = await supabase.from("questions").insert({
       event_id: eventId,
       user_id: session.userId,
       content: formData.content,
       tags: formData.tags,
       status: "open",
       upvotes: 0,
-    });
+    }).select();
 
     if (error) {
-      console.error("Failed to create question:", error);
+      console.error("[createQuestion] Failed to create question:", error);
       // Check if it's an API key error
       if (error.message?.includes("Invalid API key") || error.message?.includes("JWT")) {
         return { error: "Server configuration error. Please contact support." };
@@ -36,11 +45,13 @@ export async function createQuestion(
       return { error: `Failed to create question: ${error.message}` };
     }
 
+    console.log("[createQuestion] Question created successfully:", data?.[0]?.id);
+
     revalidatePath(`/${eventSlug}/qa`);
     revalidatePath(`/admin/${eventSlug}/qa`);
     return { success: true };
   } catch (error) {
-    console.error("Exception creating question:", error);
+    console.error("[createQuestion] Exception creating question:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     // Check if it's an environment variable error
     if (errorMessage.includes("Missing") || errorMessage.includes("environment")) {
