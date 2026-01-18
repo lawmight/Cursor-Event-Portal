@@ -232,6 +232,7 @@ CREATE TABLE IF NOT EXISTS suggested_groups (
   name TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'modified', 'rejected')),
+  table_number INTEGER,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -262,6 +263,7 @@ ALTER TABLE registrations ADD COLUMN IF NOT EXISTS intake_completed_at TIMESTAMP
 CREATE INDEX IF NOT EXISTS idx_attendee_intakes_event_id ON attendee_intakes(event_id);
 CREATE INDEX IF NOT EXISTS idx_attendee_intakes_user_id ON attendee_intakes(user_id);
 CREATE INDEX IF NOT EXISTS idx_suggested_groups_event_id ON suggested_groups(event_id);
+CREATE INDEX IF NOT EXISTS idx_suggested_groups_table_number ON suggested_groups(event_id, table_number) WHERE table_number IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_suggested_group_members_group_id ON suggested_group_members(group_id);
 
 -- RLS for new tables
