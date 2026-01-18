@@ -140,11 +140,15 @@ export async function getEventRegistrations(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("registrations")
-    .select("*, user:users(*)")
+    .select("*, user:users(*, intakes:attendee_intakes(*))")
     .eq("event_id", eventId)
+    .eq("user.intakes.event_id", eventId)
     .order("created_at", { ascending: false });
 
-  if (error) return [];
+  if (error) {
+    console.error("[getEventRegistrations] Error:", error);
+    return [];
+  }
   return data;
 }
 
@@ -155,8 +159,9 @@ export async function searchRegistrations(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("registrations")
-    .select("*, user:users(*)")
+    .select("*, user:users(*, intakes:attendee_intakes(*))")
     .eq("event_id", eventId)
+    .eq("user.intakes.event_id", eventId)
     .or(`user.name.ilike.%${query}%,user.email.ilike.%${query}%`);
 
   if (error) return [];

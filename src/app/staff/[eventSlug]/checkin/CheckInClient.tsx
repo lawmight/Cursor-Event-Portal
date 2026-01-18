@@ -17,6 +17,24 @@ interface CheckInClientProps {
   stats: { registered: number; checkedIn: number };
 }
 
+// Helper to get human-readable labels for signals
+const SIGNAL_LABELS: Record<string, string> = {
+  "learn-ai": "Learn AI/ML",
+  "learn-coding": "Coding",
+  "networking": "Networking",
+  "find-cofounders": "Co-founders",
+  "hire-talent": "Hire",
+  "find-job": "Job Search",
+  "explore-tools": "Tools",
+  "ai-expertise": "AI/ML",
+  "software-dev": "Dev",
+  "design": "Design",
+  "business-strategy": "Strategy",
+  "funding-investment": "Funding",
+  "mentorship": "Mentor",
+  "collaboration": "Collab",
+};
+
 export function CheckInClient({
   event,
   initialRegistrations,
@@ -187,11 +205,35 @@ export function CheckInClient({
                 <div
                   key={registration.id}
                   className={cn(
-                    "glass rounded-[32px] p-6 transition-all duration-500 animate-slide-up flex items-center justify-between gap-6 group",
+                    "glass rounded-[32px] p-6 transition-all duration-500 animate-slide-up flex items-center justify-between gap-6 group relative overflow-hidden",
                     isCheckedIn ? "bg-white/[0.04] border-white/20" : "bg-white/[0.01] border-white/5"
                   )}
                   style={{ animationDelay: `${index * 30}ms` }}
                 >
+                  {/* Intake Signals Hover Overlay */}
+                  {registration.user?.intakes?.[0] && !registration.user.intakes[0].skipped && (
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center px-8 z-10 pointer-events-none">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mr-2 w-full mb-1">Attendee Signals</span>
+                        {registration.user.intakes[0].goals?.filter(g => g !== 'other').map((goal) => (
+                          <Badge key={goal} variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full">
+                            {SIGNAL_LABELS[goal] || goal}
+                          </Badge>
+                        ))}
+                        {registration.user.intakes[0].offers?.filter(o => o !== 'other').map((offer) => (
+                          <Badge key={offer} variant="outline" className="bg-white/20 border-white/30 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full font-bold">
+                            {SIGNAL_LABELS[offer] || offer}
+                          </Badge>
+                        ))}
+                        {(registration.user.intakes[0].goals_other || registration.user.intakes[0].offers_other) && (
+                          <Badge variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full italic">
+                            Other Interests
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-5 min-w-0">
                     <div
                       className={cn(

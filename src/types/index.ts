@@ -34,9 +34,12 @@ export interface Registration {
   consent_at: string | null;
   source: RegistrationSource;
   checked_in_at: string | null;
+  intake_completed_at?: string | null;
   created_at: string;
   // Joined fields
-  user?: User;
+  user?: User & {
+    intakes?: AttendeeIntake[];
+  };
 }
 
 export interface AgendaItem {
