@@ -154,11 +154,20 @@ export function SlidesAdminClient({
               );
               if (result.success) {
                 successCount++;
+                if (result.slide) {
+                  setSlides((prev) =>
+                    [...prev, result.slide].sort((a, b) => a.sort_order - b.sort_order)
+                  );
+                }
               } else {
                 errorCount++;
               }
             }
           } else {
+            const errorData = await uploadResponse.json().catch(() => ({}));
+            if (errorData?.error) {
+              setError(errorData.error);
+            }
             errorCount++;
           }
         }
@@ -201,6 +210,11 @@ export function SlidesAdminClient({
         );
 
         if (result.success) {
+          if (result.slide) {
+            setSlides((prev) =>
+              [...prev, result.slide].sort((a, b) => a.sort_order - b.sort_order)
+            );
+          }
           router.refresh();
           setShowUploadModal(false);
         } else {

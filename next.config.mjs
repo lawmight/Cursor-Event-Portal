@@ -12,6 +12,15 @@ const nextConfig = {
       allowedOrigins: ["localhost:3000", "cursor-popup-portal.onrender.com"],
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
