@@ -73,6 +73,7 @@ export function PdfDeckViewer({
         const page = await pdfDoc.getPage(pageNumber);
         const viewport = page.getViewport({ scale: 1.5 });
         const canvas = canvasRef.current;
+        if (!canvas) return;
         const context = canvas.getContext("2d");
         if (!context) return;
 
