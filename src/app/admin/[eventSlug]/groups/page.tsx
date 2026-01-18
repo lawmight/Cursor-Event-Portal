@@ -6,6 +6,7 @@ import { GroupFormation } from "@/components/admin/GroupFormation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 
 interface AdminGroupsPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -49,24 +50,25 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
 
       <header className="z-10 py-12">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center justify-between mb-8">
-            <Link href={`/admin/${eventSlug}`}>
-              <div className="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all text-sm font-medium flex items-center gap-2 group">
-                <span className="group-hover:-translate-x-1 transition-transform">←</span>
-                Back to Dashboard
-              </div>
-            </Link>
-          </div>
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+            <Link 
+              href={`/admin/${eventSlug}`}
+              className="text-white/40 hover:text-white transition-colors group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            </Link>
+            <Link 
+              href={`/admin/${eventSlug}`}
+              className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:bg-white/10 transition-all cursor-pointer group"
+            >
               <Image
                 src="/cursor-icon.png"
                 alt="Cursor"
                 width={48}
                 height={48}
-                className="object-contain"
+                className="object-contain group-hover:scale-105 transition-transform"
               />
-            </div>
+            </Link>
             <div className="space-y-1">
               <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
               <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">Group Formation Engine</p>

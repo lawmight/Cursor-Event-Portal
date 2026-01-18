@@ -42,7 +42,8 @@ export function EventNav({ eventSlug }: EventNavProps) {
 
         if (data && data.length > 0) {
           const seenIds = getSeenPollIds();
-          const newSeenIds = [...new Set([...seenIds, ...data.map((p) => p.id)])];
+          const allIds = [...seenIds, ...data.map((p) => p.id)];
+          const newSeenIds = Array.from(new Set(allIds));
           localStorage.setItem(`polls-seen-${eventSlug}`, JSON.stringify(newSeenIds));
           setPollAlertVisible(false);
         }
