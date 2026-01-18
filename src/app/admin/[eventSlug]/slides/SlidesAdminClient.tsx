@@ -208,12 +208,16 @@ export function SlidesAdminClient({
 
         {/* Slides Grid */}
         {slides.length === 0 ? (
-          <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
-            <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+          <div
+            onClick={() => setShowUploadModal(true)}
+            className="text-center py-24 glass rounded-[40px] border-dashed border-white/10 cursor-pointer hover:border-white/20 hover:bg-white/5 transition-all group"
+          >
+            <Upload className="w-12 h-12 mx-auto mb-4 text-gray-600 group-hover:text-white transition-colors" />
+            <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600 group-hover:text-white transition-colors">
               No slides yet
             </p>
-            <p className="text-[9px] text-gray-800 mt-2">
-              Click the + button to upload your first slide
+            <p className="text-[9px] text-gray-800 group-hover:text-gray-400 mt-2 transition-colors">
+              Click here or the + button to upload your first slide
             </p>
           </div>
         ) : (
