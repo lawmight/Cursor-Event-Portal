@@ -65,17 +65,18 @@ export async function POST(request: NextRequest) {
       eventSlug = (eventData as { slug: string; admin_code: string }).slug;
       adminCode = (eventData as { slug: string; admin_code: string }).admin_code;
     } else {
-      // Find any published event
+      // Find any event (published, active, or draft - admins can access all)
       const { data: anyEvent } = await supabase
         .from("events")
         .select("id, slug, admin_code")
-        .eq("status", "published")
+        .in("status", ["published", "active", "draft"])
+        .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!anyEvent) {
         return NextResponse.json(
-          { error: "No active events found" },
+          { error: "No events found. Please create an event first." },
           { status: 404 }
         );
       }
