@@ -137,7 +137,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
           return (
             <div
               key={item.id}
-              className={`w-full text-left glass rounded-[32px] p-8 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
+              className={`w-full text-left glass rounded-[40px] p-10 md:p-12 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
                 isCurrentlyNow
                   ? "border-white/20 bg-white/[0.06] shadow-glow"
                   : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:shadow-glow-lg hover:border-white/10"
@@ -145,18 +145,18 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {isCurrentlyNow && (
-                <div className="absolute top-0 right-0 p-5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/70 font-medium">Live</span>
-                    <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
+                <div className="absolute top-0 right-0 p-6 md:p-7">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/70 font-medium">Live</span>
+                    <div className="w-3 h-3 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
                   </div>
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-5 md:space-y-6">
                 {/* Time and Duration Row */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className={`text-[12px] font-semibold uppercase tracking-[0.2em] ${
+                <div className="flex items-center gap-5 md:gap-6 flex-wrap">
+                  <div className={`text-[13px] md:text-[14px] font-semibold uppercase tracking-[0.2em] ${
                     isCurrentlyNow
                       ? "text-white"
                       : isUpNext
@@ -166,7 +166,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                     {isCurrentlyNow ? "Happening Now" : isUpNext ? "Up Next" : formatTime(item.start_time || "", eventTimezone)}
                   </div>
                   {item.start_time && item.end_time && !isCurrentlyNow && (
-                    <div className="text-[11px] text-gray-600 font-medium px-2 py-0.5 rounded-full bg-white/5">
+                    <div className="text-[12px] text-gray-600 font-medium px-3 py-1 rounded-full bg-white/5">
                       {formatDuration(item.start_time, item.end_time)}
                     </div>
                   )}
@@ -176,31 +176,31 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 </div>
 
                 {/* Title - Larger */}
-                <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight leading-tight">
+                <h3 className="text-3xl md:text-4xl font-light text-white tracking-tight leading-tight">
                   {item.title}
                 </h3>
 
                 {/* Description - Always visible */}
                 {parsed.summary && (
-                  <p className="text-sm md:text-base text-gray-400 font-light leading-relaxed">
+                  <p className="text-base md:text-lg text-gray-400 font-light leading-relaxed">
                     {parsed.summary}
                   </p>
                 )}
 
                 {/* Speaker and Location Row */}
-                <div className="flex items-center gap-4 flex-wrap pt-2">
+                <div className="flex items-center gap-5 md:gap-6 flex-wrap pt-3">
                   {item.speaker && (
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.1em]">
+                    <div className="flex items-center gap-2.5">
+                      <User className="w-5 h-5 text-gray-600" />
+                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-[0.1em]">
                         {item.speaker}
                       </span>
                     </div>
                   )}
                   {item.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-600" />
-                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.1em]">
+                    <div className="flex items-center gap-2.5">
+                      <MapPin className="w-5 h-5 text-gray-600" />
+                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-[0.1em]">
                         {item.location}
                       </span>
                     </div>
@@ -211,10 +211,10 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 {(parsed.details || parsed.tips) && (
                   <button
                     onClick={() => setSelectedItem(item)}
-                    className="mt-2 inline-flex items-center gap-2 text-[11px] font-medium text-gray-500 hover:text-white uppercase tracking-[0.15em] transition-colors group/btn"
+                    className="mt-3 md:mt-4 inline-flex items-center gap-2.5 text-[12px] md:text-[13px] font-medium text-gray-500 hover:text-white uppercase tracking-[0.15em] transition-colors group/btn"
                   >
                     <span>View Details</span>
-                    <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 )}
               </div>
