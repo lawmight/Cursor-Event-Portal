@@ -204,6 +204,11 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
               <Icon className="w-5 h-5 stroke-[1.5px]" />
               <Lock className="w-2.5 h-2.5 absolute -bottom-0.5 -right-0.5 text-gray-600" />
             </div>
+            <span
+              className="text-[8px] font-bold uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap mt-1 opacity-0 group-hover:opacity-40 translate-y-1 group-hover:translate-y-0"
+            >
+              {item.label}
+            </span>
           </div>
         );
       }
@@ -220,7 +225,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
             </div>
             <span
               className={cn(
-                "text-[8px] font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap mt-1 opacity-0 absolute translate-y-1"
+                "text-[8px] font-bold uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap mt-1 opacity-0 group-hover:opacity-40 translate-y-1 group-hover:translate-y-0"
               )}
             >
               {item.label}
@@ -261,8 +266,8 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
           </div>
           <span
             className={cn(
-              "text-[8px] font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap mt-1",
-              isActive ? "opacity-40 translate-y-0" : "opacity-0 absolute translate-y-1"
+              "text-[8px] font-bold uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap mt-1",
+              isActive ? "opacity-100 translate-y-0" : "opacity-0 group-hover:opacity-60 translate-y-1 group-hover:translate-y-0"
             )}
           >
             {item.label}
