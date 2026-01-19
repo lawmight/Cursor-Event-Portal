@@ -76,10 +76,10 @@ export default async function IntakePage({ params }: IntakePageProps) {
               Welcome to the Portal
             </p>
             <h1 className="text-4xl font-light text-white tracking-tight text-shadow-glow">
-              Share Your Signals
+              Share Your Goals for This Event!
             </h1>
             <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed pt-2">
-              Help us enhance your networking experience by sharing what you're looking for and what you can offer. This is completely optional—you can skip and still access all features.
+              Tell us what you're hoping to get out of this event. This is completely optional—you can skip and still access all features.
             </p>
           </div>
         </div>
