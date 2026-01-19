@@ -16,7 +16,7 @@ interface EventNavProps {
 
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
-  { href: "slides", label: "Slides", icon: FileText, requiresLiveSlide: true },
+  { href: "slides", label: "Slides", icon: FileText },
   { href: "qa", label: "Q&A", icon: MessageCircle },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "resources", label: "Resources", icon: FolderOpen },
@@ -28,7 +28,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   const [hasActivePolls, setHasActivePolls] = useState(false);
   const [pollAlertVisible, setPollAlertVisible] = useState(false);
   const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
-  const [hasLiveSlide, setHasLiveSlide] = useState(false);
+  const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Subscribe to lockout status changes
@@ -58,37 +58,37 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
     };
   }, [event]);
 
-  // Check for live slides and subscribe to changes
+  // Check for live slide deck and subscribe to changes
   useEffect(() => {
     if (!event) return;
 
-    const checkLiveSlide = async () => {
+    const checkLiveSlideDeck = async () => {
       const supabase = createClient();
       const { data } = await supabase
-        .from("slides")
+        .from("slide_decks")
         .select("id")
         .eq("event_id", event.id)
         .eq("is_live", true)
         .limit(1);
 
-      setHasLiveSlide((data?.length || 0) > 0);
+      setHasLiveSlideDeck((data?.length || 0) > 0);
     };
 
-    checkLiveSlide();
+    checkLiveSlideDeck();
 
     const supabase = createClient();
     const channel = supabase
-      .channel(`slides-nav-${event.id}`)
+      .channel(`slide-decks-nav-${event.id}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "slides",
+          table: "slide_decks",
           filter: `event_id=eq.${event.id}`,
         },
         () => {
-          checkLiveSlide();
+          checkLiveSlideDeck();
         }
       )
       .subscribe();
@@ -188,13 +188,10 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
       const showPollAlert =
         item.hasAlert && hasActivePolls && pollAlertVisible && !isActive;
 
-      // Hide slides tab if no live slide
-      if (item.requiresLiveSlide && !hasLiveSlide) {
-        return null;
-      }
-
       // During lockout, only Agenda is accessible
       const isDisabled = isLockoutActive && item.href !== "agenda";
+      // Slides tab is always visible but grayed out when deck isn't live
+      const isSlideDeckNotLive = item.href === "slides" && !hasLiveSlideDeck;
 
       if (isDisabled) {
         return (
@@ -219,12 +216,15 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
             "flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group",
             isActive
               ? "text-white"
+              : isSlideDeckNotLive
+              ? "text-gray-800 cursor-pointer"
               : "text-gray-600 hover:text-white"
           )}
         >
           <div className={cn(
             "transition-all duration-300 relative",
-            isActive && "scale-110"
+            isActive && "scale-110",
+            isSlideDeckNotLive && "opacity-40"
           )}>
             <Icon className={cn("w-5 h-5", isActive ? "stroke-[2.5px]" : "stroke-[1.5px]")} />
 

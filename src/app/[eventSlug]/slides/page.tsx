@@ -1,10 +1,9 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getAnnouncements } from "@/lib/supabase/queries";
+import { getEventBySlug, getAnnouncements, getSlideDeck } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
-import { getSlides, hasLiveSlide } from "@/lib/actions/slides";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNav } from "@/components/layout/EventNav";
-import { SlideViewer } from "@/components/slides/SlideViewer";
+import { PdfDeckViewer } from "@/components/slides/PdfDeckViewer";
 
 interface SlidesPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -23,14 +22,8 @@ export default async function SlidesPage({ params }: SlidesPageProps) {
     redirect(`/${eventSlug}`);
   }
 
-  // Check if slides are live - redirect to agenda if not
-  const isLive = await hasLiveSlide(event.id);
-  if (!isLive) {
-    redirect(`/${eventSlug}/agenda`);
-  }
-
-  const [slides, announcements] = await Promise.all([
-    getSlides(event.id),
+  const [slideDeck, announcements] = await Promise.all([
+    getSlideDeck(event.id),
     getAnnouncements(event.id),
   ]);
 
@@ -46,17 +39,33 @@ export default async function SlidesPage({ params }: SlidesPageProps) {
             Presentation
           </p>
           <h1 className="text-4xl font-light text-white tracking-tight">
-            Event Slides
+            Slide Deck
           </h1>
         </div>
 
-        {slides.length > 0 ? (
-          <SlideViewer slides={slides} eventId={event.id} />
-        ) : (
+        {!slideDeck ? (
           <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
             <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-              No slides available
+              No slide deck uploaded
             </p>
+            <p className="text-[9px] text-gray-700 mt-2">
+              The slide deck will appear here once it's been uploaded by the event organizer.
+            </p>
+          </div>
+        ) : !slideDeck.is_live ? (
+          <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-60">
+            <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+              Slide deck not yet available
+            </p>
+            <p className="text-[9px] text-gray-700 mt-2">
+              The slide deck will be made available shortly. Please check back soon.
+            </p>
+          </div>
+        ) : (
+          <div className="glass rounded-[40px] p-6 border border-white/10">
+            <div className="aspect-video rounded-2xl overflow-hidden bg-white/5">
+              <PdfDeckViewer pdfUrl={slideDeck.pdf_url} className="w-full h-full" />
+            </div>
           </div>
         )}
       </main>
