@@ -192,7 +192,7 @@ export function GroupFormation({
               <button
                 onClick={handleGenerate}
                 disabled={generating || intakes.length < 2}
-                className={`w-full py-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${
+                className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${
                   generating || intakes.length < 2
                     ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
                     : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
