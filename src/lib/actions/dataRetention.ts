@@ -40,12 +40,19 @@ export async function cleanupExpiredIntakeData() {
         continue;
       }
 
+      // Get count before deletion
+      const { count: countResult } = await supabase
+        .from("attendee_intakes")
+        .select("*", { count: "exact", head: true })
+        .eq("event_id", event.id);
+      
       // Delete intake data for this event
-      const { error: deleteError, count } = await supabase
+      const { error: deleteError } = await supabase
         .from("attendee_intakes")
         .delete()
-        .eq("event_id", event.id)
-        .select("*", { count: "exact" });
+        .eq("event_id", event.id);
+      
+      const count = countResult || 0;
 
       if (deleteError) {
         console.error(`[cleanupExpiredIntakeData] Error deleting intakes for event ${event.id}:`, deleteError);

@@ -120,7 +120,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
               </p>
             </div>
             <div className="text-4xl font-light tracking-tight text-white/50 tabular-nums">
-              {Math.round((stats.registered / event.capacity) * 100)}%
+              {Math.round((stats.checkedIn / event.capacity) * 100)}%
             </div>
           </div>
           <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
