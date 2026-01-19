@@ -39,8 +39,8 @@ function parseDescription(description: string | null): AgendaItemDetails {
 function getAgendaImage(title: string): { url: string; caption: string } | null {
   const titleLower = title.toLowerCase();
 
-  if (titleLower.includes("arrival") || titleLower.includes("mingle") || titleLower.includes("check-in") || titleLower.includes("checkin")) {
-    return { url: "/mingling.png", caption: "Connect with fellow attendees" };
+  if (titleLower.includes("arrival") || titleLower.includes("mingle") || titleLower.includes("mingling") || titleLower.includes("check-in") || titleLower.includes("checkin")) {
+    return { url: "/agenda-mingling.png", caption: "Connect with fellow attendees" };
   }
   if (titleLower.includes("intro") || titleLower.includes("welcome") || titleLower.includes("opening")) {
     return { url: "/agenda-intro.png", caption: "Setting the stage" };
@@ -55,7 +55,7 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
     return { url: "/agenda-build.png", caption: "Create something amazing" };
   }
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
-    return { url: "/blitz2.png", caption: "Quick-fire rounds" };
+    return { url: "/agenda-blitz.png", caption: "Quick-fire rounds" };
   }
 
   return null;
@@ -219,12 +219,12 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
 
               {/* Hover Image Preview */}
               {(() => {
-                // For blitz items, always use blitz2 image
+                // For blitz items, always use agenda-blitz image
                 const titleLower = item.title.toLowerCase();
                 const isBlitz = titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid");
                 
                 const agendaImage = isBlitz
-                  ? { url: "/blitz2.png", caption: "Quick-fire rounds" }
+                  ? { url: "/agenda-blitz.png", caption: "Quick-fire rounds" }
                   : item.image_url
                   ? { url: item.image_url, caption: "" }
                   : getAgendaImage(item.title);
