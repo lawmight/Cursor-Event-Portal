@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import { QuestionCard } from "@/components/qa/QuestionCard";
 import type { Event, Question } from "@/types";
 import { ArrowLeft, MessageCircle, Filter, CheckCircle, EyeOff, Pin, List } from "lucide-react";
@@ -40,6 +41,84 @@ export function AdminQAClient({
       router.refresh();
     });
   };
+
+  // Subscribe to real-time question updates
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`admin-questions-${event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "questions",
+          filter: `event_id=eq.${event.id}`,
+        },
+        async (payload) => {
+          // Fetch the new question with relations
+          const { data: newQuestion } = await supabase
+            .from("questions")
+            .select("*, user:users(*), answers(*, user:users(*))")
+            .eq("id", payload.new.id)
+            .single();
+
+          if (newQuestion) {
+            setQuestions((prev) => {
+              if (prev.some((q) => q.id === newQuestion.id)) return prev;
+              return [newQuestion, ...prev];
+            });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "questions",
+          filter: `event_id=eq.${event.id}`,
+        },
+        async (payload) => {
+          // Fetch updated question with relations
+          const { data: updatedQuestion } = await supabase
+            .from("questions")
+            .select("*, user:users(*), answers(*, user:users(*))")
+            .eq("id", payload.new.id)
+            .single();
+
+          if (updatedQuestion) {
+            setQuestions((prev) => {
+              const index = prev.findIndex((q) => q.id === updatedQuestion.id);
+              if (index >= 0) {
+                const updated = [...prev];
+                updated[index] = updatedQuestion;
+                return updated;
+              }
+              return prev;
+            });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "questions",
+          filter: `event_id=eq.${event.id}`,
+        },
+        (payload) => {
+          setQuestions((prev) => prev.filter((q) => q.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event.id]);
 
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
