@@ -55,7 +55,7 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
     return { url: "/agenda-build.png", caption: "Create something amazing" };
   }
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
-    return { url: "/agenda-blitz.png", caption: "Quick-fire rounds" };
+    return { url: "/agenda-blitz2.png", caption: "Quick-fire rounds" };
   }
 
   return null;
