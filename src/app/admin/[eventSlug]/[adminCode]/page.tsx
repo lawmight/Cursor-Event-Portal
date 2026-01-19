@@ -1,6 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,22 +36,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
   // Validate admin code and get event
   const event = await validateAdminCode(eventSlug, adminCode);
 
-  // Check if admin
-  const session = await getSession();
-  if (!session) {
-    redirect(`/${eventSlug}`);
-  }
-
+  // Session check disabled temporarily
   const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
-  }
 
   const [stats, questions] = await Promise.all([
     getEventStats(event.id),
