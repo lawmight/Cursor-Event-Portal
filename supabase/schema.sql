@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS events (
   name TEXT NOT NULL,
   venue TEXT,
   address TEXT,
-  capacity INTEGER NOT NULL DEFAULT 50,
+  capacity INTEGER NOT NULL DEFAULT 65,
   start_time TIMESTAMPTZ,
   end_time TIMESTAMPTZ,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'active', 'completed')),

@@ -78,6 +78,24 @@ export async function registerForEvent(
     return { success: true, alreadyRegistered: true };
   }
 
+  // Check capacity before allowing registration
+  const { data: event } = await supabase
+    .from("events")
+    .select("capacity")
+    .eq("id", eventId)
+    .single();
+
+  if (event) {
+    const { count: registeredCount } = await supabase
+      .from("registrations")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
+    if (registeredCount !== null && registeredCount >= event.capacity) {
+      return { error: `Event is at full capacity (${event.capacity} attendees). Registration is closed.` };
+    }
+  }
+
   // Create registration
   const { error: regError } = await supabase.from("registrations").insert({
     event_id: eventId,
@@ -323,6 +341,24 @@ export async function addRegistrationByEmail(
     .single();
 
   if (!existingReg) {
+    // Check capacity before allowing registration
+    const { data: event } = await supabase
+      .from("events")
+      .select("capacity")
+      .eq("id", eventId)
+      .single();
+
+    if (event) {
+      const { count: registeredCount } = await supabase
+        .from("registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId);
+
+      if (registeredCount !== null && registeredCount >= event.capacity) {
+        return { error: `Event is at full capacity (${event.capacity} attendees). Cannot add more registrations.` };
+      }
+    }
+
     const { error: regError } = await supabase.from("registrations").insert({
       event_id: eventId,
       user_id: userId,
