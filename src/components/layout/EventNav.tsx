@@ -213,9 +213,9 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         return (
           <div
             key={item.href}
-            className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-500 cursor-default"
+            className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-600 cursor-default"
           >
-            <div className="transition-all duration-300 relative opacity-60">
+            <div className="transition-all duration-300 relative opacity-40">
               <Icon className="w-5 h-5 stroke-[1.5px]" />
             </div>
             <span
