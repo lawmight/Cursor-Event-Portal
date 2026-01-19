@@ -234,6 +234,7 @@ export interface SlideDeck {
   page_count: number | null;
   is_live: boolean;
   popup_visible: boolean;
+  current_page: number;
   created_at: string;
   updated_at: string;
 }

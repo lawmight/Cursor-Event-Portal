@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { removeSlideDeck, toggleSlideDeckLive, toggleSlideDeckPopup } from "@/lib/actions/slideDecks";
+import { removeSlideDeck, toggleSlideDeckLive, toggleSlideDeckPopup, updateSlideCurrentPage } from "@/lib/actions/slideDecks";
+import { PdfDeckViewer } from "@/components/slides/PdfDeckViewer";
 import { getSlideDeck } from "@/lib/supabase/queries";
 import type { Event, SlideDeck } from "@/types";
 import { ArrowLeft, Upload, X, Trash2, FileText, Loader2, Eye, EyeOff, PanelRight } from "lucide-react";
@@ -286,14 +287,26 @@ export function SlideDeckAdminClient({
             </div>
 
             <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 mb-2">Preview</p>
-              <div className="aspect-video rounded-xl overflow-hidden bg-white/5 flex items-center justify-center">
-                <iframe
-                  src={deck.pdf_url}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600">Live Control</p>
+                <p className="text-[9px] text-blue-400">
+                  Attendees see what you see
+                </p>
+              </div>
+              <div className="aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/5">
+                <PdfDeckViewer
+                  pdfUrl={deck.pdf_url}
                   className="w-full h-full"
-                  title="Slide deck preview"
+                  showControls={true}
+                  initialPage={deck.current_page || 1}
+                  onPageChange={(page) => {
+                    updateSlideCurrentPage(event.id, page);
+                  }}
                 />
               </div>
+              <p className="text-[9px] text-gray-600 mt-2 text-center">
+                Use arrows to navigate • Changes sync to all attendees in real-time
+              </p>
             </div>
           </div>
         )}

@@ -121,3 +121,38 @@ export async function toggleSlideDeckPopup(
   revalidatePath(`/${eventSlug}`);
   return { success: true };
 }
+
+export async function updateSlideCurrentPage(
+  eventId: string,
+  pageNumber: number
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("slide_decks")
+    .update({ current_page: pageNumber })
+    .eq("event_id", eventId);
+
+  if (error) {
+    console.error("Failed to update current page:", error);
+    return { error: "Failed to update current page" };
+  }
+
+  // No revalidation needed - realtime handles updates
+  return { success: true };
+}

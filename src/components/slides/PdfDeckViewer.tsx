@@ -11,6 +11,8 @@ interface PdfDeckViewerProps {
   initialPage?: number;
   showControls?: boolean;
   onPageCount?: (count: number) => void;
+  onPageChange?: (page: number) => void;
+  syncedPage?: number; // When provided, viewer syncs to this page (for attendees)
 }
 
 export function PdfDeckViewer({
@@ -19,6 +21,8 @@ export function PdfDeckViewer({
   initialPage = 1,
   showControls = true,
   onPageCount,
+  onPageChange,
+  syncedPage,
 }: PdfDeckViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -93,12 +97,23 @@ export function PdfDeckViewer({
     renderPage();
   }, [pdfDoc, pageNumber]);
 
+  // Sync to external page control (for attendees following admin)
+  useEffect(() => {
+    if (syncedPage !== undefined && syncedPage !== pageNumber && syncedPage >= 1 && syncedPage <= pageCount) {
+      setPageNumber(syncedPage);
+    }
+  }, [syncedPage, pageCount]);
+
   const handlePrev = () => {
-    setPageNumber((prev) => Math.max(prev - 1, 1));
+    const newPage = Math.max(pageNumber - 1, 1);
+    setPageNumber(newPage);
+    onPageChange?.(newPage);
   };
 
   const handleNext = () => {
-    setPageNumber((prev) => Math.min(prev + 1, pageCount));
+    const newPage = Math.min(pageNumber + 1, pageCount);
+    setPageNumber(newPage);
+    onPageChange?.(newPage);
   };
 
   if (loadError) {

@@ -50,7 +50,33 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "UPDATE",
+          schema: "public",
+          table: "slide_decks",
+          filter: `event_id=eq.${eventId}`,
+        },
+        (payload) => {
+          // Directly update state from payload for efficiency
+          const updated = payload.new as SlideDeck;
+          setSlideDeck((prev) => prev ? { ...prev, ...updated } : null);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "slide_decks",
+          filter: `event_id=eq.${eventId}`,
+        },
+        () => {
+          setSlideDeck(null);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
           schema: "public",
           table: "slide_decks",
           filter: `event_id=eq.${eventId}`,
@@ -131,10 +157,11 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
       {/* Slide Deck Content */}
       <div className="p-4">
         <div className="relative aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/5">
-          <PdfDeckViewer 
-            pdfUrl={slideDeck.pdf_url} 
+          <PdfDeckViewer
+            pdfUrl={slideDeck.pdf_url}
             className="w-full h-full"
-            showControls={true}
+            showControls={false}
+            syncedPage={slideDeck.current_page || 1}
           />
         </div>
 
