@@ -1,4 +1,4 @@
-import { getEventStats } from "@/lib/supabase/queries";
+import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -6,6 +6,7 @@ import {
   Users,
   UserCheck,
   MessageCircle,
+  ClipboardCheck,
   ArrowRight,
   Upload,
   Calendar,
@@ -29,7 +30,18 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
   // Session check disabled temporarily
   const supabase = await createClient();
 
-  const stats = await getEventStats(event.id);
+  const [stats, questions] = await Promise.all([
+    getEventStats(event.id),
+    getQuestions(event.id),
+  ]);
+
+  const openQuestions = questions.filter((q) => q.status === "open").length;
+  const survey = await getPublishedSurvey(event.id);
+  let surveyResponses = 0;
+  if (survey) {
+    const responses = await getSurveyResponses(survey.id);
+    surveyResponses = responses.length;
+  }
 
   // Check and auto-unlock at event start time
   await checkAndUnlockAtStartTime(event.id, eventSlug);
@@ -263,26 +275,15 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
               </div>
             </div>
           </Link>
+
         </div>
 
-        {/* View Event */}
-        <div className="mt-12 animate-slide-up" style={{ animationDelay: "1600ms" }}>
+        {/* Enter Portal - Bottom Right */}
+        <div className="flex justify-end mt-8 animate-slide-up" style={{ animationDelay: "1600ms" }}>
           <Link href={`/${eventSlug}/agenda`}>
-            <div className="glass rounded-[40px] p-10 border-white/20 hover:bg-white/10 transition-all group cursor-pointer mb-8">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-light tracking-tight text-white/90">
-                    Enter Portal
-                  </h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                    View Attendee Perspective
-                  </p>
-                </div>
-                <div className="px-8 py-3 bg-white text-black rounded-full font-medium text-sm group-hover:scale-105 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                  Launch Portal
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
+            <div className="glass rounded-full px-6 py-3 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-400/30 transition-all group cursor-pointer flex items-center gap-3">
+              <span className="text-sm font-medium text-blue-400 group-hover:text-blue-300">Enter Portal</span>
+              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-300 group-hover:translate-x-1 transition-all" />
             </div>
           </Link>
         </div>
