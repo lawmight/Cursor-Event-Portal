@@ -104,63 +104,110 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
           );
           const hasDetails = item.description || item.speaker || item.location;
 
+          const parsed = parseDescription(item.description);
+
           return (
-            <button
+            <div
               key={item.id}
-              onClick={() => hasDetails && setSelectedItem(item)}
-              className={`w-full text-left glass rounded-[24px] p-6 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
+              className={`w-full text-left glass rounded-[32px] p-8 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
                 isCurrentlyNow
                   ? "border-white/20 bg-white/[0.06] shadow-glow"
                   : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:shadow-glow-lg hover:border-white/10"
-              } ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
+              }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {isCurrentlyNow && (
-                <div className="absolute top-0 right-0 p-4">
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
+                <div className="absolute top-0 right-0 p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/70 font-medium">Live</span>
+                    <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
+                  </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <div className={`text-[11px] font-medium uppercase tracking-[0.2em] ${
-                      isCurrentlyNow
-                        ? "text-white"
-                        : isUpNext
-                          ? "text-gray-400"
-                          : "text-gray-600"
-                    }`}>
-                      {isCurrentlyNow ? "Now" : isUpNext ? "Next" : formatTime(item.start_time || "")}
-                    </div>
-                    {item.start_time && item.end_time && !isCurrentlyNow && (
-                      <div className="text-[10px] text-gray-700 font-medium">
-                        {formatDuration(item.start_time, item.end_time)}
-                      </div>
-                    )}
-                    {item.start_time && item.end_time && (
-                      <AgendaItemTimer startTime={item.start_time} endTime={item.end_time} />
-                    )}
+              <div className="space-y-4">
+                {/* Time and Duration Row */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className={`text-[12px] font-semibold uppercase tracking-[0.2em] ${
+                    isCurrentlyNow
+                      ? "text-white"
+                      : isUpNext
+                        ? "text-gray-300"
+                        : "text-gray-500"
+                  }`}>
+                    {isCurrentlyNow ? "Happening Now" : isUpNext ? "Up Next" : formatTime(item.start_time || "")}
                   </div>
+                  {item.start_time && item.end_time && !isCurrentlyNow && (
+                    <div className="text-[11px] text-gray-600 font-medium px-2 py-0.5 rounded-full bg-white/5">
+                      {formatDuration(item.start_time, item.end_time)}
+                    </div>
+                  )}
+                  {item.start_time && item.end_time && (
+                    <AgendaItemTimer startTime={item.start_time} endTime={item.end_time} />
+                  )}
+                </div>
 
-                  <h3 className="text-xl font-light text-white tracking-tight">
-                    {item.title}
-                  </h3>
+                {/* Title - Larger */}
+                <h3 className="text-2xl md:text-3xl font-light text-white tracking-tight leading-tight">
+                  {item.title}
+                </h3>
 
+                {/* Description - Always visible */}
+                {parsed.summary && (
+                  <p className="text-sm md:text-base text-gray-400 font-light leading-relaxed">
+                    {parsed.summary}
+                  </p>
+                )}
+
+                {/* Speaker and Location Row */}
+                <div className="flex items-center gap-4 flex-wrap pt-2">
                   {item.speaker && (
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.15em]">
+                      <User className="w-4 h-4 text-gray-600" />
+                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.1em]">
                         {item.speaker}
+                      </span>
+                    </div>
+                  )}
+                  {item.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-600" />
+                      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.1em]">
+                        {item.location}
                       </span>
                     </div>
                   )}
                 </div>
 
-                {hasDetails && (
-                  <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                {/* View Details Button - only if there are additional details */}
+                {(parsed.details || parsed.tips) && (
+                  <button
+                    onClick={() => setSelectedItem(item)}
+                    className="mt-2 inline-flex items-center gap-2 text-[11px] font-medium text-gray-500 hover:text-white uppercase tracking-[0.15em] transition-colors group/btn"
+                  >
+                    <span>View Details</span>
+                    <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
                 )}
               </div>
-            </button>
+
+              {/* Hover Image Preview */}
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-40 h-28 rounded-2xl overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl pointer-events-none scale-95 group-hover:scale-100 border border-white/10">
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-white/10 via-white/5 to-transparent flex items-center justify-center">
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">
+                      Preview
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>

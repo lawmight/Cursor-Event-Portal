@@ -54,6 +54,7 @@ export interface AgendaItem {
   start_time: string | null;
   end_time: string | null;
   sort_order: number;
+  image_url: string | null;
   created_at: string;
 }
 

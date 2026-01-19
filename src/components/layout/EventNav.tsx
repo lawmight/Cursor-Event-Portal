@@ -17,8 +17,8 @@ interface EventNavProps {
 
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
-  { href: "slides", label: "Slides", icon: FileText },
   { href: "qa", label: "Q&A", icon: MessageCircle },
+  { href: "slides", label: "Slides", icon: FileText },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "resources", label: "Resources", icon: FolderOpen },
 ];
