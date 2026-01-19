@@ -71,7 +71,7 @@ export function PdfDeckViewer({
       try {
         setIsRendering(true);
         const page = await pdfDoc.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: 1.5 });
+        const viewport = page.getViewport({ scale: 1.875 }); // 1.5 * 1.25 = 1.875 (25% larger)
         const canvas = canvasRef.current;
         if (!canvas) return;
         const context = canvas.getContext("2d");
