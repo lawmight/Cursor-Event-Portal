@@ -29,7 +29,7 @@ export function SyncedSlideViewer({ slideDeck, className }: SyncedSlideViewerPro
         },
         (payload) => {
           const updated = payload.new as SlideDeck;
-          if (updated.current_page && updated.current_page !== currentPage) {
+          if (updated.current_page) {
             setCurrentPage(updated.current_page);
           }
         }
@@ -39,7 +39,7 @@ export function SyncedSlideViewer({ slideDeck, className }: SyncedSlideViewerPro
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [slideDeck.id, currentPage]);
+  }, [slideDeck.id]);
 
   return (
     <PdfDeckViewer
