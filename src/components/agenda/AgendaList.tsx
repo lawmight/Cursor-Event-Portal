@@ -35,6 +35,32 @@ function parseDescription(description: string | null): AgendaItemDetails {
   return { summary: description };
 }
 
+// Map agenda item titles to images and captions
+function getAgendaImage(title: string): { url: string; caption: string } | null {
+  const titleLower = title.toLowerCase();
+
+  if (titleLower.includes("arrival") || titleLower.includes("mingle") || titleLower.includes("check-in") || titleLower.includes("checkin")) {
+    return { url: "/agenda-mingling.png", caption: "Connect with fellow attendees" };
+  }
+  if (titleLower.includes("intro") || titleLower.includes("welcome") || titleLower.includes("opening")) {
+    return { url: "/agenda-intro.png", caption: "Setting the stage" };
+  }
+  if (titleLower.includes("demo") || titleLower.includes("showcase") || titleLower.includes("present")) {
+    return { url: "/agenda-demos.png", caption: "Live demonstrations" };
+  }
+  if (titleLower.includes("network") || titleLower.includes("group") || titleLower.includes("connect")) {
+    return { url: "/agenda-networking.png", caption: "Build meaningful connections" };
+  }
+  if (titleLower.includes("build") || titleLower.includes("workshop") || titleLower.includes("hands-on")) {
+    return { url: "/agenda-build.png", caption: "Create something amazing" };
+  }
+  if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
+    return { url: "/agenda-blitz.png", caption: "Quick-fire rounds" };
+  }
+
+  return null;
+}
+
 export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
   const router = useRouter();
   const [items, setItems] = useState<AgendaItem[]>(initialItems);
@@ -192,21 +218,32 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
               </div>
 
               {/* Hover Image Preview */}
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 w-40 h-28 rounded-2xl overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl pointer-events-none scale-95 group-hover:scale-100 border border-white/10">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-white/10 via-white/5 to-transparent flex items-center justify-center">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">
-                      Preview
+              {(() => {
+                const agendaImage = item.image_url
+                  ? { url: item.image_url, caption: "" }
+                  : getAgendaImage(item.title);
+
+                if (!agendaImage) return null;
+
+                return (
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-85 transition-all duration-300 pointer-events-none scale-95 group-hover:scale-100">
+                    <div className="w-48 rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black/60 backdrop-blur-sm">
+                      <img
+                        src={agendaImage.url}
+                        alt={item.title}
+                        className="w-full h-32 object-cover"
+                      />
+                      {agendaImage.caption && (
+                        <div className="px-3 py-2">
+                          <p className="text-[10px] text-gray-300 text-center font-light">
+                            {agendaImage.caption}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
+                );
+              })()}
             </div>
           );
         })}
