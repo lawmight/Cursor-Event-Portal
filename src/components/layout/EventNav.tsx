@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
+import { SlideDeckPopup } from "@/components/slides/SlideDeckPopup";
 import type { Event } from "@/types";
 
 interface EventNavProps {
@@ -257,6 +258,8 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
     <>
       {/* Live Slide Popup - shows on right side when slides are live */}
       {event && <LiveSlidePopup eventId={event.id} eventSlug={eventSlug} />}
+      {/* Slide Deck Popup - shows on right side when popup is enabled */}
+      {event && <SlideDeckPopup eventId={event.id} eventSlug={eventSlug} />}
 
       {/* Desktop Nav - hidden on mobile */}
       <nav className="hidden md:block fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">

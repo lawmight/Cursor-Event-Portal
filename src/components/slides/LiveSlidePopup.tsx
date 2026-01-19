@@ -102,6 +102,7 @@ export function LiveSlidePopup({ eventId, eventSlug }: LiveSlidePopupProps) {
               alt="Slide preview"
               fill
               className="object-cover"
+              unoptimized
             />
           </div>
           <div className="text-left">
@@ -161,6 +162,7 @@ export function LiveSlidePopup({ eventId, eventSlug }: LiveSlidePopupProps) {
             className="object-contain"
             sizes="320px"
             priority
+            unoptimized
           />
         </div>
 

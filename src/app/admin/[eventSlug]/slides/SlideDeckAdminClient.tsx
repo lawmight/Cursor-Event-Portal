@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { removeSlideDeck, toggleSlideDeckLive } from "@/lib/actions/slideDecks";
+import { removeSlideDeck, toggleSlideDeckLive, toggleSlideDeckPopup } from "@/lib/actions/slideDecks";
 import { getSlideDeck } from "@/lib/supabase/queries";
 import type { Event, SlideDeck } from "@/types";
-import { ArrowLeft, Upload, X, Trash2, FileText, Loader2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Upload, X, Trash2, FileText, Loader2, Eye, EyeOff, PanelRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SlideDeckAdminClientProps {
@@ -136,6 +136,25 @@ export function SlideDeckAdminClient({
     });
   };
 
+  const handleTogglePopup = async (popupVisible: boolean) => {
+    if (!deck) return;
+
+    setError(null);
+    
+    // Optimistic update
+    setDeck((prev) => prev ? { ...prev, popup_visible: popupVisible } : null);
+
+    startTransition(async () => {
+      const result = await toggleSlideDeckPopup(event.id, eventSlug, popupVisible);
+      if (result.error) {
+        setError(result.error);
+        router.refresh(); // Revert on error
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
@@ -210,6 +229,12 @@ export function SlideDeckAdminClient({
                           Live
                         </span>
                       )}
+                      {deck.popup_visible && (
+                        <span className="text-[9px] uppercase tracking-wider text-blue-400 font-medium flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                          Popup
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -228,13 +253,26 @@ export function SlideDeckAdminClient({
                       ? "bg-green-500/20 border-green-500/30 text-green-400"
                       : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
                   )}
-                  title={deck.is_live ? "Hide from attendees" : "Show to attendees"}
+                  title={deck.is_live ? "Hide from attendees tab" : "Show in attendees tab"}
                 >
                   {deck.is_live ? (
                     <Eye className="w-4 h-4" />
                   ) : (
                     <EyeOff className="w-4 h-4" />
                   )}
+                </button>
+                <button
+                  onClick={() => handleTogglePopup(!deck.popup_visible)}
+                  disabled={isPending}
+                  className={cn(
+                    "w-10 h-10 rounded-lg border transition-all flex items-center justify-center",
+                    deck.popup_visible
+                      ? "bg-blue-500/20 border-blue-500/30 text-blue-400"
+                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                  )}
+                  title={deck.popup_visible ? "Hide right-center popup" : "Show right-center popup"}
+                >
+                  <PanelRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleDelete}

@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
           pdf_url: urlData.publicUrl,
           storage_path: filePath,
           is_live: false, // Default to not live - admin must toggle it on
+          popup_visible: false, // Default to not showing popup - admin must toggle it on
           updated_at: new Date().toISOString(),
         },
         { onConflict: "event_id" }

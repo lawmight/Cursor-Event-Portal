@@ -101,6 +101,7 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
           className="object-contain"
           sizes="(max-width: 1280px) 100vw, 1280px"
           priority
+          unoptimized
         />
 
         {/* Navigation arrows */}
