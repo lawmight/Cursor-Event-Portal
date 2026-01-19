@@ -3,6 +3,7 @@ import { getEventBySlug, getEventIntakes, getSuggestedGroups } from "@/lib/supab
 import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
 import { GroupFormation } from "@/components/admin/GroupFormation";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -48,34 +49,10 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
 
-      <header className="z-10 py-12">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-6">
-            <Link 
-              href={`/admin/${eventSlug}`}
-              className="text-white/40 hover:text-white transition-colors group"
-            >
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            </Link>
-            <Link 
-              href={`/admin/${eventSlug}`}
-              className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:bg-white/10 transition-all cursor-pointer group"
-            >
-              <Image
-                src="/cursor-icon.png"
-                alt="Cursor"
-                width={48}
-                height={48}
-                className="object-contain group-hover:scale-105 transition-transform"
-              />
-            </Link>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">Group Formation Engine</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Group Formation Engine" 
+      />
 
       <main className="max-w-4xl mx-auto px-6 py-8 w-full z-10 flex-1">
         <GroupFormation

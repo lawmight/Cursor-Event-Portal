@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createPoll, updatePoll, deletePoll, togglePollActive } from "@/lib/actions/polls";
 import { cn } from "@/lib/utils";
 import {
@@ -96,37 +97,19 @@ export function PollsAdminClient({
 
   return (
     <div className="min-h-screen bg-black-gradient text-white">
-      {/* Header */}
-      <header className="py-8 px-6 border-b border-white/5">
-        <div className="max-w-4xl mx-auto">
-          <Link
-            href={`/admin/${eventSlug}`}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition-colors mb-6"
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Engagement Control"
+        rightElement={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-medium text-sm hover:bg-gray-200 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Back to Dashboard
-            </span>
-          </Link>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-light tracking-tight">Live Polls</h1>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-gray-500 font-medium">
-                Engagement Control
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-medium text-sm hover:bg-gray-200 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              New Poll
-            </button>
-          </div>
-        </div>
-      </header>
+            <Plus className="w-4 h-4" />
+            New Poll
+          </button>
+        }
+      />
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Event, Announcement } from "@/types";
 import { ArrowLeft, Megaphone, Trash2, Send } from "lucide-react";
 import Link from "next/link";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 interface AnnouncementsClientProps {
   event: Event;
@@ -91,22 +92,10 @@ export function AnnouncementsClient({
 
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
-        <div className="max-w-2xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link
-            href={`/admin/${event.slug}`}
-            className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
-          </Link>
-          <h1 className="text-sm font-bold uppercase tracking-[0.4em]">
-            Announcements
-          </h1>
-          <div className="w-12" />
-        </div>
-      </header>
+      <AdminHeader 
+        eventSlug={event.slug} 
+        subtitle="Announcements" 
+      />
 
       <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
         {/* Error Message */}

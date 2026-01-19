@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { removeSlideDeck, toggleSlideDeckLive, toggleSlideDeckPopup, updateSlideCurrentPage } from "@/lib/actions/slideDecks";
 import { PdfDeckViewer } from "@/components/slides/PdfDeckViewer";
 import { getSlideDeck } from "@/lib/supabase/queries";
@@ -158,19 +159,10 @@ export function SlideDeckAdminClient({
 
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
-        <div className="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link
-            href={`/admin/${eventSlug}`}
-            className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
-          </Link>
-          <h1 className="text-sm font-bold uppercase tracking-[0.4em]">
-            Slide Deck Management
-          </h1>
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Slide Deck Management"
+        rightElement={
           <button
             onClick={() => setShowUploadModal(true)}
             disabled={isPending}
@@ -178,8 +170,8 @@ export function SlideDeckAdminClient({
           >
             <Upload className="w-5 h-5" />
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
         {/* Error Message */}

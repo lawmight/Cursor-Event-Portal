@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createSurvey, publishSurvey, unpublishSurvey, deleteSurvey, createDefaultSurvey } from "@/lib/actions/survey";
 import type { Event, Survey, SurveyField } from "@/types";
 import { ArrowLeft, Plus, Eye, EyeOff, Trash2, CheckCircle, ClipboardCheck } from "lucide-react";
@@ -107,27 +108,18 @@ export function SurveysAdminClient({
 
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
-        <div className="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link
-            href={`/admin/${eventSlug}`}
-            className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Exit</span>
-          </Link>
-          <h1 className="text-sm font-bold uppercase tracking-[0.4em]">
-            Survey Management
-          </h1>
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Survey Management"
+        rightElement={
           <button
             onClick={() => setShowCreateModal(true)}
             className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-all shadow-xl"
           >
             <Plus className="w-5 h-5" />
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
         {/* Error Message */}

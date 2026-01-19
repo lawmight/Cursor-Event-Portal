@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { ArrowLeft, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { ExportClient } from "./ExportClient";
 
@@ -55,34 +56,10 @@ export default async function ExportPage({ params }: ExportPageProps) {
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* Header */}
-      <header className="z-10 py-12">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center justify-between mb-8">
-            <Link href={`/admin/${eventSlug}`}>
-              <div className="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition-all text-sm font-medium flex items-center gap-2 group">
-                <span className="group-hover:-translate-x-1 transition-transform">←</span>
-                Back to Dashboard
-              </div>
-            </Link>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-              <Image
-                src="/cursor-icon.png"
-                alt="Cursor"
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">Data Extraction Protocol</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Data Extraction Protocol" 
+      />
 
       <main className="max-w-4xl mx-auto px-6 py-8 w-full z-10 flex-1 space-y-12">
         <ExportClient

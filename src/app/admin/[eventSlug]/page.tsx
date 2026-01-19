@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   Users,
   UserCheck,
@@ -73,53 +74,37 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
 
-      {/* Header */}
-      <header className="z-10 py-12">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-6 mb-12">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-              <Image
-                src="/cursor-icon.png"
-                alt="Cursor"
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-light tracking-tight">{event.name}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-medium">Admin Console</p>
-            </div>
-          </div>
+      <AdminHeader 
+        eventSlug={eventSlug} 
+        subtitle="Admin Dashboard"
+        showBackArrow={false}
+      />
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "100ms" }}>
-              <Users className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
-              <p className="text-4xl font-light tracking-tight tabular-nums">{stats.registered}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Registered</p>
-            </div>
-            <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "200ms" }}>
-              <UserCheck className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
-              <p className="text-4xl font-light tracking-tight tabular-nums">{stats.checkedIn}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Checked In</p>
-            </div>
-            <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "300ms" }}>
-              <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
-              <p className="text-4xl font-light tracking-tight tabular-nums">{openQuestions}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Open Q&A</p>
-            </div>
-            <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "400ms" }}>
-              <ClipboardCheck className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
-              <p className="text-4xl font-light tracking-tight tabular-nums">{surveyResponses}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Surveys</p>
-            </div>
+      <main className="max-w-4xl mx-auto px-6 py-8 pb-16 w-full space-y-8 z-10 flex-1">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "100ms" }}>
+            <Users className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
+            <p className="text-4xl font-light tracking-tight tabular-nums">{stats.registered}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Registered</p>
+          </div>
+          <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "200ms" }}>
+            <UserCheck className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
+            <p className="text-4xl font-light tracking-tight tabular-nums">{stats.checkedIn}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Checked In</p>
+          </div>
+          <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "300ms" }}>
+            <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
+            <p className="text-4xl font-light tracking-tight tabular-nums">{openQuestions}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Open Q&A</p>
+          </div>
+          <div className="glass rounded-3xl p-6 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group animate-slide-up shadow-sm" style={{ animationDelay: "400ms" }}>
+            <ClipboardCheck className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors mb-3" />
+            <p className="text-4xl font-light tracking-tight tabular-nums">{surveyResponses}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Surveys</p>
           </div>
         </div>
-      </header>
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8 pb-16 w-full space-y-8 z-10 flex-1">
         {/* Capacity Progress */}
         <div className="glass rounded-[40px] p-10 border-white/20 animate-slide-up shadow-lg" style={{ animationDelay: "500ms" }}>
           <div className="flex items-center justify-between mb-8">
