@@ -276,14 +276,24 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-        </div>
-
-        {/* Enter Portal - Bottom Right */}
-        <div className="flex justify-end mt-8 animate-slide-up" style={{ animationDelay: "1600ms" }}>
-          <Link href={`/${eventSlug}/agenda`}>
-            <div className="glass rounded-full px-6 py-3 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-400/30 transition-all group cursor-pointer flex items-center gap-3">
-              <span className="text-sm font-medium text-blue-400 group-hover:text-blue-300">Enter Portal</span>
-              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-300 group-hover:translate-x-1 transition-all" />
+          <Link href={`/${eventSlug}/agenda`} className="animate-slide-up" style={{ animationDelay: "1600ms" }}>
+            <div className="glass rounded-[40px] p-8 border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-400/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all group cursor-pointer relative overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center group-hover:scale-105 transition-all">
+                    <ArrowRight className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-light tracking-tight text-white/90">
+                      Enter Portal
+                    </h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-blue-400/60 font-medium">
+                      Attendee View
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-blue-400/50 group-hover:text-blue-300 group-hover:translate-x-1 transition-all" />
+              </div>
             </div>
           </Link>
         </div>
