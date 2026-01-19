@@ -291,8 +291,8 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
       </nav>
 
       {/* Mobile Nav - collapsible bubble in bottom left */}
-      <div 
-        className="md:hidden mobile-nav-container z-50" 
+      <div
+        className="md:hidden fixed left-4 bottom-4 z-50"
       >
         {/* Expanded menu */}
         <div
