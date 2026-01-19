@@ -73,14 +73,14 @@ export function SurveyConsentModal({
               Data Consent
             </h2>
             <p className="text-xs text-gray-400">
-              Required to share your signals
+              Required to share your goals
             </p>
           </div>
 
           {/* Concise Consent Text */}
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By sharing your signals, you agree that <strong className="text-white">Cursor Calgary community organizers</strong> may use your survey responses and feedback to:
+              By sharing your goals, you agree that <strong className="text-white">Cursor Calgary community organizers</strong> may use your survey responses and feedback to:
             </p>
 
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs">

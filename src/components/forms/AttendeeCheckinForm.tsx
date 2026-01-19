@@ -550,7 +550,7 @@ export function AttendeeCheckinForm({
           <div className="glass rounded-3xl p-6 bg-white/[0.02] border-white/5 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white/60" />
+                <Clock className="w-5 h-5 text-white/60" />
               </div>
               <div>
                 <h3 className="text-lg font-light text-white tracking-tight">
@@ -573,7 +573,7 @@ export function AttendeeCheckinForm({
               className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               <span className="text-sm font-bold uppercase tracking-[0.2em]">
-                Share My Signals
+                Share My Goals
               </span>
             </button>
 
@@ -607,13 +607,13 @@ export function AttendeeCheckinForm({
               Quick Consent
             </h2>
             <p className="text-xs text-gray-400">
-              Before sharing your signals
+              Before sharing your goals
             </p>
           </div>
 
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By sharing your signals, you agree that your responses may be used to:
+              By sharing your goals, you agree that your responses may be used to:
             </p>
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs text-gray-400">
               <li>Facilitate networking at this event</li>

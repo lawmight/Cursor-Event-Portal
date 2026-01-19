@@ -57,7 +57,7 @@ export function IntakeOptInBanner({ eventSlug, onDismiss }: IntakeOptInBannerPro
               href={`/${eventSlug}/intake`}
               className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl"
             >
-              Share Signals
+              Share Goals
             </Link>
             <button
               onClick={handleDismiss}
