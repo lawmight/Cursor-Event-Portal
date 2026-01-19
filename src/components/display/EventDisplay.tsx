@@ -19,7 +19,7 @@ export function EventDisplay({
   const [data, setData] = useState(initialData);
   const [countdown, setCountdown] = useState<string>("");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showSlides, setShowSlides] = useState(!!data.slideDeck);
+  const [showSlides, setShowSlides] = useState(!!data.slideDeck && data.slideDeck.is_live);
 
   // Subscribe to real-time announcement updates
   useEffect(() => {
@@ -66,9 +66,11 @@ export function EventDisplay({
         if (res.ok) {
           const newData = await res.json();
           setData(newData);
-          // If slide deck is available, show slides view
-          if (newData.slideDeck) {
+          // If slide deck is available and live, show slides view
+          if (newData.slideDeck && newData.slideDeck.is_live) {
             setShowSlides(true);
+          } else if (!newData.slideDeck || !newData.slideDeck.is_live) {
+            setShowSlides(false);
           }
         }
       } catch (error) {

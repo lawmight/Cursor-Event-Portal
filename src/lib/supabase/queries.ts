@@ -573,6 +573,7 @@ export async function getDisplayPageData(eventId: string): Promise<DisplayPageDa
       .from("slide_decks")
       .select("*")
       .eq("event_id", eventId)
+      .eq("is_live", true)
       .single(),
   ]);
 

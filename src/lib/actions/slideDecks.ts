@@ -46,3 +46,41 @@ export async function removeSlideDeck(eventId: string, eventSlug: string) {
   revalidatePath(`/${eventSlug}/display`);
   return { success: true };
 }
+
+export async function toggleSlideDeckLive(
+  eventId: string,
+  eventSlug: string,
+  isLive: boolean
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("slide_decks")
+    .update({ is_live: isLive })
+    .eq("event_id", eventId);
+
+  if (error) {
+    console.error("Failed to toggle slide deck live status:", error);
+    return { error: "Failed to update slide deck" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}/slides`);
+  revalidatePath(`/${eventSlug}/display`);
+  revalidatePath(`/${eventSlug}`);
+  return { success: true };
+}

@@ -232,6 +232,7 @@ export interface SlideDeck {
   pdf_url: string;
   storage_path: string;
   page_count: number | null;
+  is_live: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { removeSlideDeck } from "@/lib/actions/slideDecks";
+import { removeSlideDeck, toggleSlideDeckLive } from "@/lib/actions/slideDecks";
 import { getSlideDeck } from "@/lib/supabase/queries";
 import type { Event, SlideDeck } from "@/types";
-import { ArrowLeft, Upload, X, Trash2, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, X, Trash2, FileText, Loader2, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SlideDeckAdminClientProps {
@@ -117,6 +117,25 @@ export function SlideDeckAdminClient({
     });
   };
 
+  const handleToggleLive = async (isLive: boolean) => {
+    if (!deck) return;
+
+    setError(null);
+    
+    // Optimistic update
+    setDeck((prev) => prev ? { ...prev, is_live: isLive } : null);
+
+    startTransition(async () => {
+      const result = await toggleSlideDeckLive(event.id, eventSlug, isLive);
+      if (result.error) {
+        setError(result.error);
+        router.refresh(); // Revert on error
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
@@ -179,11 +198,19 @@ export function SlideDeckAdminClient({
                   <FileText className="w-6 h-6 text-red-400" />
                   <div>
                     <p className="text-sm font-light text-white/90">Slide Deck</p>
-                    {deck.page_count && (
-                      <p className="text-[9px] text-gray-600 mt-1">
-                        {deck.page_count} {deck.page_count === 1 ? "page" : "pages"}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      {deck.page_count && (
+                        <p className="text-[9px] text-gray-600">
+                          {deck.page_count} {deck.page_count === 1 ? "page" : "pages"}
+                        </p>
+                      )}
+                      {deck.is_live && (
+                        <span className="text-[9px] uppercase tracking-wider text-green-400 font-medium flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                          Live
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className="text-[9px] text-gray-700 mt-2">
@@ -191,14 +218,33 @@ export function SlideDeckAdminClient({
                 </p>
               </div>
               
-              <button
-                onClick={handleDelete}
-                disabled={isPending}
-                className="w-10 h-10 rounded-lg bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center disabled:opacity-30"
-                title="Delete slide deck"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleLive(!deck.is_live)}
+                  disabled={isPending}
+                  className={cn(
+                    "w-10 h-10 rounded-lg border transition-all flex items-center justify-center",
+                    deck.is_live
+                      ? "bg-green-500/20 border-green-500/30 text-green-400"
+                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                  )}
+                  title={deck.is_live ? "Hide from attendees" : "Show to attendees"}
+                >
+                  {deck.is_live ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isPending}
+                  className="w-10 h-10 rounded-lg bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center disabled:opacity-30"
+                  title="Delete slide deck"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">

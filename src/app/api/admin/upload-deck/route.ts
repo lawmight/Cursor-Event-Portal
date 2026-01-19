@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
           event_id: eventId,
           pdf_url: urlData.publicUrl,
           storage_path: filePath,
+          is_live: false, // Default to not live - admin must toggle it on
           updated_at: new Date().toISOString(),
         },
         { onConflict: "event_id" }
