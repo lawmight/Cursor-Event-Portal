@@ -84,14 +84,14 @@ export function AdminQAClient({
         {/* Filters */}
         <div className="flex items-center gap-4">
           {/* Sort Toggle */}
-          <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 rounded-full p-1 backdrop-blur-md">
+          <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1 backdrop-blur-sm">
             <a
               href={`/admin/${eventSlug}/qa?sort=trending&status=${statusFilter}`}
               className={cn(
-                "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
+                "relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10",
                 sortBy === "trending"
-                  ? "bg-white text-black shadow-lg"
-                  : "text-gray-600 hover:text-gray-400"
+                  ? "bg-white text-black shadow-glow"
+                  : "text-gray-400 hover:text-white"
               )}
             >
               Hot
@@ -99,10 +99,10 @@ export function AdminQAClient({
             <a
               href={`/admin/${eventSlug}/qa?sort=new&status=${statusFilter}`}
               className={cn(
-                "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
+                "relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10",
                 sortBy === "new"
-                  ? "bg-white text-black shadow-lg"
-                  : "text-gray-600 hover:text-gray-400"
+                  ? "bg-white text-black shadow-glow"
+                  : "text-gray-400 hover:text-white"
               )}
             >
               New

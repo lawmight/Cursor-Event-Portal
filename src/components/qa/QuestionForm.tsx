@@ -68,7 +68,7 @@ export function QuestionForm({ eventId, eventSlug }: QuestionFormProps) {
   return (
     <div className="glass rounded-[40px] p-10 space-y-8 animate-slide-up relative overflow-hidden">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.4em]">
           New Inquiry
         </p>
         <div className="w-1.5 h-1.5 rounded-full bg-white/20 animate-pulse" />
@@ -82,12 +82,12 @@ export function QuestionForm({ eventId, eventSlug }: QuestionFormProps) {
             placeholder="What would you like to know?"
             rows={3}
             disabled={loading}
-            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
           />
         </div>
 
         <div className="space-y-4">
-          <p className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium px-1">Tags</p>
+          <p className="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-medium px-1">Tags</p>
           <div className="flex flex-wrap gap-3">
             {TAGS.map((tag) => (
               <button

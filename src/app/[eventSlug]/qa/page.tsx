@@ -52,7 +52,7 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-black-gradient flex flex-col pb-40 relative overflow-hidden">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-56 relative overflow-hidden">
       {/* Subtle Depth Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
@@ -70,24 +70,24 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
             </h1>
           </div>
 
-          {/* Sort Toggle - Sleek */}
-          <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 rounded-full p-1 backdrop-blur-md">
+          {/* Sort Toggle - Premium */}
+          <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1 backdrop-blur-sm">
             <a
               href={`/${eventSlug}/qa?sort=trending`}
-              className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all ${
+              className={`relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10 ${
                 sortBy === "trending"
-                  ? "bg-white text-black shadow-lg"
-                  : "text-gray-600 hover:text-gray-400"
+                  ? "bg-white text-black shadow-glow"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               Hot
             </a>
             <a
               href={`/${eventSlug}/qa?sort=new`}
-              className={`px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all ${
+              className={`relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10 ${
                 sortBy === "new"
-                  ? "bg-white text-black shadow-lg"
-                  : "text-gray-600 hover:text-gray-400"
+                  ? "bg-white text-black shadow-glow"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               New

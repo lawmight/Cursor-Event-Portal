@@ -51,7 +51,7 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-black-gradient flex flex-col pb-40 relative overflow-hidden">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-56 relative overflow-hidden">
       {/* Subtle Depth Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
