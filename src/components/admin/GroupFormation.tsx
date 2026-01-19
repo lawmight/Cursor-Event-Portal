@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateGroups, updateGroupStatus, updateGroupTableNumber, removeGroupMember, cancelGroup } from "@/lib/actions/groups";
-import { X, Sparkles } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
 
@@ -204,10 +204,7 @@ export function GroupFormation({
                     <span className="animate-pulse">{progressMessage ? "Generating..." : "Processing..."}</span>
                   </>
                 ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-white/50 group-hover:text-white group-hover:scale-110 transition-all" />
-                    <span>Synthesize Groups</span>
-                  </>
+                  <span>Synthesize Groups</span>
                 )}
                 
                 {/* Subtle shimmer effect on hover */}
