@@ -149,8 +149,61 @@ Remember: Use actual names from the attendees list in matchReasons, NOT user IDs
     });
     
     console.log("[generateGroupSuggestions] Processed match reasons to use names instead of IDs");
-    
-    return groups;
+
+    // Validate and fix duplicate user assignments
+    // Each user should only appear in exactly one group
+    const assignedUsers = new Set<string>();
+    const duplicatesRemoved: string[] = [];
+
+    groups = groups.map((group: any) => {
+      if (!group.memberIds || !Array.isArray(group.memberIds)) {
+        return group;
+      }
+
+      // Filter out users who are already assigned to a previous group
+      const uniqueMembers = group.memberIds.filter((userId: string) => {
+        if (assignedUsers.has(userId)) {
+          const userName = userIdToName.get(userId) || userId;
+          duplicatesRemoved.push(`${userName} (removed from "${group.name}")`);
+          return false; // Remove this user from this group
+        }
+        assignedUsers.add(userId);
+        return true;
+      });
+
+      // Also clean up matchReasons for removed users
+      const cleanedMatchReasons: Record<string, string> = {};
+      if (group.matchReasons) {
+        uniqueMembers.forEach((userId: string) => {
+          if (group.matchReasons[userId]) {
+            cleanedMatchReasons[userId] = group.matchReasons[userId];
+          }
+        });
+      }
+
+      return {
+        ...group,
+        memberIds: uniqueMembers,
+        matchReasons: cleanedMatchReasons,
+      };
+    });
+
+    // Filter out any groups that now have fewer than 2 members
+    const validGroups = groups.filter((group: any) =>
+      group.memberIds && group.memberIds.length >= 2
+    );
+
+    if (duplicatesRemoved.length > 0) {
+      console.warn("[generateGroupSuggestions] Removed duplicate user assignments:", duplicatesRemoved);
+    }
+
+    if (validGroups.length < groups.length) {
+      console.warn("[generateGroupSuggestions] Filtered out", groups.length - validGroups.length, "groups with fewer than 2 members after deduplication");
+    }
+
+    console.log("[generateGroupSuggestions] Final group count after deduplication:", validGroups.length);
+
+    return validGroups;
   } catch (error) {
     console.error("[generateGroupSuggestions] OpenAI API error:", error);
     if (error instanceof Error) {
