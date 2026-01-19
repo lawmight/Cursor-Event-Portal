@@ -208,14 +208,14 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         );
       }
 
-      // If slide deck is not live, render as non-clickable div
+      // If slide deck is not live, render as non-clickable div with tooltip
       if (isSlideDeckNotLive) {
         return (
           <div
             key={item.href}
-            className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-800 cursor-not-allowed pointer-events-none"
+            className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-500 cursor-default"
           >
-            <div className="transition-all duration-300 relative opacity-40">
+            <div className="transition-all duration-300 relative opacity-60">
               <Icon className="w-5 h-5 stroke-[1.5px]" />
             </div>
             <span
@@ -225,6 +225,10 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
             >
               {item.label}
             </span>
+            {/* Tooltip on hover */}
+            <div className="absolute left-full ml-3 px-2 py-1 bg-black/90 border border-white/10 rounded-lg text-[9px] text-gray-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              Available at Event Start
+            </div>
           </div>
         );
       }
