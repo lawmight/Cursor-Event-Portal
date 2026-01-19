@@ -3,7 +3,7 @@ import { getEventBySlug, getActivePollsWithVotes, getAnnouncements } from "@/lib
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
-import { EventNav } from "@/components/layout/EventNav";
+import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { PollsList } from "@/components/polls/PollsList";
 
 interface PollsPageProps {
@@ -69,7 +69,7 @@ export default async function PollsPage({ params }: PollsPageProps) {
         </div>
       </main>
 
-      <EventNav eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} />
     </div>
   );
 }

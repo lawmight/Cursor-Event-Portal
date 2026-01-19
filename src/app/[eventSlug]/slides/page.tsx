@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getEventBySlug, getAnnouncements, getSlideDeck } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { EventHeader } from "@/components/layout/EventHeader";
-import { EventNav } from "@/components/layout/EventNav";
+import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { PdfDeckViewer } from "@/components/slides/PdfDeckViewer";
 
 interface SlidesPageProps {
@@ -74,7 +74,7 @@ export default async function SlidesPage({ params }: SlidesPageProps) {
         )}
       </main>
 
-      <EventNav eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} />
     </div>
   );
 }

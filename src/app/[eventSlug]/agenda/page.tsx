@@ -5,7 +5,7 @@ import { getIntakeStatus } from "@/lib/actions/intake";
 import { getSurveyConsentStatus } from "@/lib/actions/consent";
 import { createServiceClient } from "@/lib/supabase/server";
 import { EventHeader } from "@/components/layout/EventHeader";
-import { EventNav } from "@/components/layout/EventNav";
+import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { AgendaList } from "@/components/agenda/AgendaList";
 
 interface AgendaPageProps {
@@ -73,7 +73,7 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
         </div>
       </main>
 
-      <EventNav eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} />
     </div>
   );
 }

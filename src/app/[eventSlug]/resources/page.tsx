@@ -3,7 +3,7 @@ import { getEventBySlug, getAnnouncements } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
-import { EventNav } from "@/components/layout/EventNav";
+import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, Download, Code, MessageSquare, Users } from "lucide-react";
 
@@ -137,7 +137,7 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
         ))}
       </main>
 
-      <EventNav eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} />
     </div>
   );
 }

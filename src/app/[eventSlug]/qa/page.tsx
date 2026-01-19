@@ -3,7 +3,7 @@ import { getEventBySlug, getQuestions, getAnnouncements } from "@/lib/supabase/q
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { EventHeader } from "@/components/layout/EventHeader";
-import { EventNav } from "@/components/layout/EventNav";
+import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { QuestionsList } from "@/components/qa/QuestionsList";
 import { QuestionForm } from "@/components/qa/QuestionForm";
 import { createClient } from "@/lib/supabase/server";
@@ -111,7 +111,7 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
         />
       </main>
 
-      <EventNav eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} />
     </div>
   );
 }
