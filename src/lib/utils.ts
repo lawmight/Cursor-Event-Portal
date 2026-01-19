@@ -5,13 +5,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatTime(date: string | Date): string {
+/**
+ * Format time in event's local timezone with timezone abbreviation
+ * e.g., "6:00 PM MT"
+ */
+export function formatTime(date: string | Date, timezone: string = "America/Edmonton"): string {
   const d = new Date(date);
-  return d.toLocaleTimeString("en-US", {
+  const formatter = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZone: timezone,
   });
+  
+  // Get timezone abbreviation
+  const tzFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZoneName: "short",
+    timeZone: timezone,
+  });
+  
+  const parts = tzFormatter.formatToParts(d);
+  const tzAbbr = parts.find((p) => p.type === "timeZoneName")?.value || "";
+  
+  return `${formatter.format(d)} ${tzAbbr}`;
 }
 
 export function formatDate(date: string | Date): string {
@@ -49,6 +65,40 @@ export function isNext(
 
   // Is this the next one?
   return futureItems[0]?.start_time === startTime;
+}
+
+/**
+ * Get human-readable timer state for an agenda item
+ * Returns: "Starts in 12m", "Live now", "Ended", or "Scheduled" (if event is in future)
+ */
+export function getTimerState(
+  startTime: string | null,
+  endTime: string | null,
+  eventStartTime: string | null
+): { state: "scheduled" | "starts-in" | "live" | "ended"; minutes?: number; text: string } | null {
+  if (!startTime || !endTime) return null;
+  
+  const now = new Date();
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  const eventStart = eventStartTime ? new Date(eventStartTime) : null;
+  
+  // If event hasn't started yet, show "Scheduled"
+  if (eventStart && now < eventStart) {
+    return { state: "scheduled", text: "Scheduled" };
+  }
+  
+  if (now < start) {
+    // Upcoming - show "Starts in Xm"
+    const minutes = Math.floor((start.getTime() - now.getTime()) / 1000 / 60);
+    return { state: "starts-in", minutes, text: `Starts in ${minutes}m` };
+  } else if (now >= start && now < end) {
+    // Live
+    return { state: "live", text: "Live now" };
+  } else {
+    // Ended
+    return { state: "ended", text: "Ended" };
+  }
 }
 
 export function generatePasscode(): string {

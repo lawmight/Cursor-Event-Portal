@@ -11,6 +11,8 @@ import { createClient } from "@/lib/supabase/client";
 interface AgendaListProps {
   items: AgendaItem[];
   eventId: string;
+  eventTimezone?: string;
+  eventStartTime?: string | null;
 }
 
 interface AgendaItemDetails {
@@ -55,13 +57,13 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
     return { url: "/agenda-build.png", caption: "Create something amazing" };
   }
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
-    return { url: "/blitz.png", caption: "Quick-fire rounds" };
+    return { url: "/blitz2.png", caption: "Quick-fire rounds" };
   }
 
   return null;
 }
 
-export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
+export function AgendaList({ items: initialItems, eventId, eventTimezone = "America/Edmonton", eventStartTime = null }: AgendaListProps) {
   const router = useRouter();
   const [items, setItems] = useState<AgendaItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<AgendaItem | null>(null);
@@ -161,7 +163,7 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
                         ? "text-gray-300"
                         : "text-gray-500"
                   }`}>
-                    {isCurrentlyNow ? "Happening Now" : isUpNext ? "Up Next" : formatTime(item.start_time || "")}
+                    {isCurrentlyNow ? "Happening Now" : isUpNext ? "Up Next" : formatTime(item.start_time || "", eventTimezone)}
                   </div>
                   {item.start_time && item.end_time && !isCurrentlyNow && (
                     <div className="text-[11px] text-gray-600 font-medium px-2 py-0.5 rounded-full bg-white/5">
@@ -169,7 +171,7 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
                     </div>
                   )}
                   {item.start_time && item.end_time && (
-                    <AgendaItemTimer startTime={item.start_time} endTime={item.end_time} />
+                    <AgendaItemTimer startTime={item.start_time} endTime={item.end_time} eventStartTime={eventStartTime} />
                   )}
                 </div>
 
@@ -224,7 +226,7 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
                 const isBlitz = titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid");
                 
                 const agendaImage = isBlitz
-                  ? { url: "/blitz.png", caption: "Quick-fire rounds" }
+                  ? { url: "/blitz2.png", caption: "Quick-fire rounds" }
                   : item.image_url
                   ? { url: item.image_url, caption: "" }
                   : getAgendaImage(item.title);
@@ -273,8 +275,8 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                   <Clock className="w-3 h-3 text-gray-500" />
                   <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.15em]">
-                    {formatTime(selectedItem.start_time || "")}
-                    {selectedItem.end_time && ` – ${formatTime(selectedItem.end_time)}`}
+                    {formatTime(selectedItem.start_time || "", eventTimezone)}
+                    {selectedItem.end_time && ` – ${formatTime(selectedItem.end_time, eventTimezone)}`}
                   </span>
                 </div>
                 {formatDuration(selectedItem.start_time, selectedItem.end_time) && (

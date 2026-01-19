@@ -3,15 +3,20 @@
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { checkIn, undoCheckIn, deregister, addRegistrationByEmail } from "@/lib/actions/registration";
-import type { Event, Registration } from "@/types";
+import type { Event, Registration, AgendaItem } from "@/types";
 import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { AttendeeDetailModal } from "@/components/admin/AttendeeDetailModal";
+import { EventStatusBar } from "@/components/staff/EventStatusBar";
+import { StaffQuickActions } from "@/components/staff/StaffQuickActions";
+import { RealtimeHealthWidget } from "@/components/staff/RealtimeHealthWidget";
 
 interface CheckInClientProps {
   event: Event;
   initialRegistrations: Registration[];
   stats: { registered: number; checkedIn: number };
+  initialAgendaItems: AgendaItem[];
 }
 
 // Helper to get human-readable labels for signals
@@ -36,6 +41,7 @@ export function CheckInClient({
   event,
   initialRegistrations,
   stats,
+  initialAgendaItems,
 }: CheckInClientProps) {
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +51,11 @@ export function CheckInClient({
   const [confirmDeregisterId, setConfirmDeregisterId] = useState<string | null>(null);
   const [addEmail, setAddEmail] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedAttendee, setSelectedAttendee] = useState<{
+    userId: string;
+    userName: string;
+    userEmail: string | null;
+  } | null>(null);
 
   const filteredRegistrations = registrations.filter((reg) => {
     const query = searchQuery.toLowerCase();
@@ -185,6 +196,35 @@ export function CheckInClient({
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
+        {/* Event Status Bar */}
+        <EventStatusBar 
+          event={event}
+          initialAgendaItems={initialAgendaItems}
+          eventId={event.id}
+        />
+
+        {/* Quick Actions & Health Widget */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StaffQuickActions
+            onCheckInByQR={() => {
+              // TODO: Implement QR scanner
+              alert("QR scanner coming soon");
+            }}
+            onCheckInByEmail={() => {
+              // Focus the email input
+              const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+              emailInput?.focus();
+            }}
+            onAddGuest={() => {
+              // Focus the add email input
+              const addInput = document.querySelector('input[placeholder*="Add attendee email"]') as HTMLInputElement;
+              addInput?.focus();
+            }}
+            onPrintBadge={undefined} // Not implemented yet
+          />
+          <RealtimeHealthWidget eventId={event.id} />
+        </div>
+
         {/* Stats - Floating Grid */}
         <div className="grid grid-cols-2 gap-6">
           <div className="glass rounded-[32px] p-8 space-y-4 relative overflow-hidden group">
@@ -247,6 +287,12 @@ export function CheckInClient({
               placeholder="Add attendee email"
               value={addEmail}
               onChange={(e) => setAddEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isAdding && addEmail.trim()) {
+                  e.preventDefault();
+                  handleAddRegistration();
+                }
+              }}
               className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-4 h-12 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
             />
             <button
@@ -280,6 +326,19 @@ export function CheckInClient({
                     isCheckedIn ? "bg-white/[0.04] border-white/20" : "bg-white/[0.01] border-white/5"
                   )}
                   style={{ animationDelay: `${index * 30}ms` }}
+                  onClick={(e) => {
+                    // Only open modal if clicking on the attendee info area, not action buttons
+                    const target = e.target as HTMLElement;
+                    if (!target.closest('button') && !target.closest('[data-action-area]')) {
+                      if (registration.user?.id) {
+                        setSelectedAttendee({
+                          userId: registration.user.id,
+                          userName: registration.user.name,
+                          userEmail: registration.user.email || null,
+                        });
+                      }
+                    }
+                  }}
                 >
                   {/* Intake Signals Hover Overlay */}
                   {registration.user?.intakes?.[0] && !registration.user.intakes[0].skipped && (
@@ -305,7 +364,7 @@ export function CheckInClient({
                     </div>
                   )}
 
-                  <div className="flex items-center gap-5 min-w-0">
+                  <div className="flex items-center gap-5 min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
                     <div className="relative shrink-0">
                       <div
                         className={cn(
@@ -333,7 +392,7 @@ export function CheckInClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 relative z-20">
+                  <div className="flex items-center gap-2 relative z-20" data-action-area>
                     {/* Deregister confirmation or button */}
                     {confirmDeregisterId === registration.id ? (
                       <div className="flex items-center gap-2 animate-fade-in">
@@ -393,6 +452,18 @@ export function CheckInClient({
           )}
         </div>
       </main>
+
+      {/* Attendee Detail Modal */}
+      {selectedAttendee && (
+        <AttendeeDetailModal
+          userId={selectedAttendee.userId}
+          eventId={event.id}
+          userName={selectedAttendee.userName}
+          userEmail={selectedAttendee.userEmail}
+          isOpen={!!selectedAttendee}
+          onClose={() => setSelectedAttendee(null)}
+        />
+      )}
 
       <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>

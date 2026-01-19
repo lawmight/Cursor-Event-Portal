@@ -34,8 +34,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Redirect to admin dashboard
-      router.push(`/admin/${data.eventSlug}`);
+      // Redirect to admin dashboard with admin code
+      router.push(`/admin/${data.eventSlug}/${data.adminCode}`);
       router.refresh();
     } catch (err) {
       setError("Network error. Please try again.");

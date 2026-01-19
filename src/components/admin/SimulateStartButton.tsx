@@ -10,9 +10,10 @@ import type { Event } from "@/types";
 interface SimulateStartButtonProps {
   event: Event;
   eventSlug: string;
+  adminCode: string;
 }
 
-export function SimulateStartButton({ event, eventSlug }: SimulateStartButtonProps) {
+export function SimulateStartButton({ event, eventSlug, adminCode }: SimulateStartButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 

@@ -69,7 +69,12 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
         </div>
 
         <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
-          <AgendaList items={items} eventId={event.id} />
+          <AgendaList 
+            items={items} 
+            eventId={event.id} 
+            eventTimezone={event.timezone || "America/Edmonton"}
+            eventStartTime={event.start_time}
+          />
         </div>
       </main>
 

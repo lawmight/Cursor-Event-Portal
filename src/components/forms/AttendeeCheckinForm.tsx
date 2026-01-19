@@ -547,7 +547,7 @@ export function AttendeeCheckinForm({
           </div>
 
           {/* Intake Invitation */}
-          <div className="glass rounded-3xl p-6 bg-white/[0.02] border-white/5 space-y-4">
+          <div className="glass rounded-3xl p-6 bg-white/[0.02] border border-white/10 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-white/60" />
@@ -562,7 +562,7 @@ export function AttendeeCheckinForm({
               </div>
             </div>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              Share what you're looking for and what you can offer. Our AI will
+              Share what you're looking for and what you can offer. We will
               use this to create meaningful table arrangements at 6:30 PM.
             </p>
           </div>
@@ -602,25 +602,16 @@ export function AttendeeCheckinForm({
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-light text-white tracking-tight">
-              Quick Consent
-            </h2>
-            <p className="text-xs text-gray-400">
-              Before sharing your goals
-            </p>
-          </div>
-
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By sharing your goals, you agree that your responses may be used to:
+              By selecting "continue" you agree that your responses may be used to:
             </p>
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs text-gray-400">
               <li>Facilitate networking at this event</li>
               <li>Improve future events</li>
             </ul>
             <p className="text-[11px] text-gray-500 pt-2 border-t border-white/10">
-              Your data is <strong className="text-white">not sold</strong> and is <strong className="text-white">not tied to your name publicly</strong>.
+              Your data is <strong className="text-white">not shared with third parties</strong> and is <strong className="text-white">not tied to your name within the platform or publicly</strong>.
             </p>
           </div>
 

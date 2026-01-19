@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey } from "@/lib/supabase/queries";
+import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,18 +23,17 @@ import {
 import { SimulateStartButton } from "@/components/admin/SimulateStartButton";
 import { checkAndUnlockAtStartTime } from "@/lib/actions/seating";
 import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient";
+import { validateAdminCode } from "@/lib/utils/admin";
 
 interface AdminDashboardProps {
-  params: Promise<{ eventSlug: string }>;
+  params: Promise<{ eventSlug: string; adminCode: string }>;
 }
 
 export default async function AdminDashboard({ params }: AdminDashboardProps) {
-  const { eventSlug } = await params;
+  const { eventSlug, adminCode } = await params;
 
-  const event = await getEventBySlug(eventSlug);
-  if (!event) {
-    notFound();
-  }
+  // Validate admin code and get event
+  const event = await validateAdminCode(eventSlug, adminCode);
 
   // Check if admin
   const session = await getSession();
@@ -76,7 +75,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
 
       <AdminHeader 
-        eventSlug={eventSlug} 
+        eventSlug={eventSlug}
+        adminCode={adminCode}
         subtitle="Admin Dashboard"
         showBackArrow={false}
       />
@@ -155,7 +155,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
 
         {/* Simulate Start Button - For Testing */}
         {event.seat_lockout_active && (
-          <SimulateStartButton event={event} eventSlug={eventSlug} />
+          <SimulateStartButton event={event} eventSlug={eventSlug} adminCode={adminCode} />
         )}
 
         {/* Quick Actions */}
@@ -181,7 +181,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/agenda`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/agenda`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -205,11 +205,12 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           <AdminDashboardClient
             event={event}
             eventSlug={eventSlug}
+            adminCode={adminCode}
             initialOpenQuestions={openQuestions}
             initialQuestions={questions}
           />
 
-          <Link href={`/admin/${eventSlug}/announcements`} className="animate-slide-up" style={{ animationDelay: "900ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/announcements`} className="animate-slide-up" style={{ animationDelay: "900ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -230,7 +231,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/polls`} className="animate-slide-up" style={{ animationDelay: "1000ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/polls`} className="animate-slide-up" style={{ animationDelay: "1000ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -251,7 +252,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/groups`} className="animate-slide-up" style={{ animationDelay: "1100ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/groups`} className="animate-slide-up" style={{ animationDelay: "1100ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -272,7 +273,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/surveys`} className="animate-slide-up" style={{ animationDelay: "1200ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/surveys`} className="animate-slide-up" style={{ animationDelay: "1200ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -293,7 +294,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/slides`} className="animate-slide-up" style={{ animationDelay: "1300ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/slides`} className="animate-slide-up" style={{ animationDelay: "1300ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -314,7 +315,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/registrations/import`} className="animate-slide-up" style={{ animationDelay: "1400ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/registrations/import`} className="animate-slide-up" style={{ animationDelay: "1400ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -335,7 +336,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/export`} className="animate-slide-up" style={{ animationDelay: "1500ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/export`} className="animate-slide-up" style={{ animationDelay: "1500ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">

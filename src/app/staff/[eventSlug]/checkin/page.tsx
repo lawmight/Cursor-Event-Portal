@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getEventRegistrations, getEventStats } from "@/lib/supabase/queries";
+import { getEventBySlug, getEventRegistrations, getEventStats, getAgendaItems } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
 import { CheckInClient } from "./CheckInClient";
@@ -33,9 +33,10 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
     redirect(`/${eventSlug}/agenda`);
   }
 
-  const [registrations, stats] = await Promise.all([
+  const [registrations, stats, agendaItems] = await Promise.all([
     getEventRegistrations(event.id),
     getEventStats(event.id),
+    getAgendaItems(event.id),
   ]);
 
   return (
@@ -43,6 +44,7 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
       event={event}
       initialRegistrations={registrations}
       stats={stats}
+      initialAgendaItems={agendaItems}
     />
   );
 }

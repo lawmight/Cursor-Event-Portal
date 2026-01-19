@@ -12,12 +12,14 @@ import { formatTime } from "@/lib/utils";
 interface AgendaAdminClientProps {
   event: Event;
   eventSlug: string;
+  adminCode: string;
   initialItems: AgendaItem[];
 }
 
 export function AgendaAdminClient({
   event,
   eventSlug,
+  adminCode,
   initialItems,
 }: AgendaAdminClientProps) {
   const router = useRouter();
@@ -148,8 +150,8 @@ export function AgendaAdminClient({
                       {item.start_time && (
                         <div className="flex items-center gap-2 text-[10px] text-gray-600 uppercase tracking-[0.2em]">
                           <Clock className="w-3 h-3" />
-                          {formatTime(item.start_time)}
-                          {item.end_time && ` – ${formatTime(item.end_time)}`}
+                          {formatTime(item.start_time, event.timezone || "America/Edmonton")}
+                          {item.end_time && ` – ${formatTime(item.end_time, event.timezone || "America/Edmonton")}`}
                         </div>
                       )}
                     </div>

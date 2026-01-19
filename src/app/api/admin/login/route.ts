@@ -47,13 +47,14 @@ export async function POST(request: NextRequest) {
     // Find an event they're registered for (or any active event)
     const { data: registration } = await supabase
       .from("registrations")
-      .select("event_id, events(slug)")
+      .select("event_id, events(slug, admin_code)")
       .eq("user_id", user.id)
       .limit(1)
       .single();
 
     let eventId: string;
     let eventSlug: string;
+    let adminCode: string;
 
     if (registration && registration.events) {
       eventId = registration.event_id;
@@ -61,12 +62,13 @@ export async function POST(request: NextRequest) {
       const eventData = Array.isArray(registration.events)
         ? registration.events[0]
         : registration.events;
-      eventSlug = (eventData as { slug: string }).slug;
+      eventSlug = (eventData as { slug: string; admin_code: string }).slug;
+      adminCode = (eventData as { slug: string; admin_code: string }).admin_code;
     } else {
       // Find any published event
       const { data: anyEvent } = await supabase
         .from("events")
-        .select("id, slug")
+        .select("id, slug, admin_code")
         .eq("status", "published")
         .limit(1)
         .single();
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
 
       eventId = anyEvent.id;
       eventSlug = anyEvent.slug;
+      adminCode = anyEvent.admin_code;
 
       // Create registration for admin (ignore if already exists)
       await supabase.from("registrations").upsert({
@@ -110,6 +113,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       eventSlug,
+      adminCode,
       user: {
         id: user.id,
         name: user.name,

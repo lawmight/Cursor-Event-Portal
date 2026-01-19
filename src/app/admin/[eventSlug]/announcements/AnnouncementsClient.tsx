@@ -10,14 +10,19 @@ import type { Event, Announcement } from "@/types";
 import { ArrowLeft, Megaphone, Trash2, Send } from "lucide-react";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { formatTime as formatTimeWithTZ } from "@/lib/utils";
 
 interface AnnouncementsClientProps {
   event: Event;
+  eventSlug: string;
+  adminCode: string;
   initialAnnouncements: Announcement[];
 }
 
 export function AnnouncementsClient({
   event,
+  eventSlug,
+  adminCode,
   initialAnnouncements,
 }: AnnouncementsClientProps) {
   const router = useRouter();
@@ -84,10 +89,7 @@ export function AnnouncementsClient({
   };
 
   const formatTime = (date: string) => {
-    return new Date(date).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    return formatTimeWithTZ(date, event.timezone || "America/Edmonton");
   };
 
   return (

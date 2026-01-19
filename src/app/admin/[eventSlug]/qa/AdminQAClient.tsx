@@ -14,6 +14,7 @@ interface AdminQAClientProps {
   event: Event;
   initialQuestions: Question[];
   eventSlug: string;
+  adminCode: string;
   userId: string;
   sortBy: "new" | "trending";
   statusFilter: "all" | "open" | "answered" | "pinned" | "hidden";
@@ -23,6 +24,7 @@ export function AdminQAClient({
   event,
   initialQuestions,
   eventSlug,
+  adminCode,
   userId,
   sortBy,
   statusFilter,
@@ -154,7 +156,7 @@ export function AdminQAClient({
           {/* Sort Toggle */}
           <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1 backdrop-blur-sm">
             <a
-              href={`/admin/${eventSlug}/qa?sort=trending&status=${statusFilter}`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=trending&status=${statusFilter}`}
               className={cn(
                 "relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10",
                 sortBy === "trending"
@@ -165,7 +167,7 @@ export function AdminQAClient({
               Hot
             </a>
             <a
-              href={`/admin/${eventSlug}/qa?sort=new&status=${statusFilter}`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=new&status=${statusFilter}`}
               className={cn(
                 "relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10",
                 sortBy === "new"
@@ -181,7 +183,7 @@ export function AdminQAClient({
           <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-full p-1 backdrop-blur-md">
             <Filter className="w-3 h-3 text-gray-600 ml-2" />
             <a
-              href={`/admin/${eventSlug}/qa?sort=${sortBy}&status=all`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=${sortBy}&status=all`}
               className={cn(
                 "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
                 statusFilter === "all"
@@ -192,7 +194,7 @@ export function AdminQAClient({
               All
             </a>
             <a
-              href={`/admin/${eventSlug}/qa?sort=${sortBy}&status=open`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=${sortBy}&status=open`}
               className={cn(
                 "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
                 statusFilter === "open"
@@ -203,7 +205,7 @@ export function AdminQAClient({
               Open
             </a>
             <a
-              href={`/admin/${eventSlug}/qa?sort=${sortBy}&status=answered`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=${sortBy}&status=answered`}
               className={cn(
                 "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
                 statusFilter === "answered"
@@ -215,7 +217,7 @@ export function AdminQAClient({
               Answered
             </a>
             <a
-              href={`/admin/${eventSlug}/qa?sort=${sortBy}&status=pinned`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=${sortBy}&status=pinned`}
               className={cn(
                 "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
                 statusFilter === "pinned"
@@ -227,7 +229,7 @@ export function AdminQAClient({
               Pinned
             </a>
             <a
-              href={`/admin/${eventSlug}/qa?sort=${sortBy}&status=hidden`}
+              href={`/admin/${eventSlug}/${adminCode}/qa?sort=${sortBy}&status=hidden`}
               className={cn(
                 "px-4 py-2 text-[9px] uppercase tracking-[0.2em] font-bold rounded-full transition-all",
                 statusFilter === "hidden"

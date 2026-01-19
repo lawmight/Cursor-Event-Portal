@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck } from "lucide-react";
 import type { Event, Registration, Question, Survey, SurveyResponse } from "@/types";
+import { getDetailedAttendeeData } from "@/lib/actions/export";
 
 interface ExportClientProps {
   event: Event;
@@ -100,6 +101,26 @@ export function ExportClient({
     setTimeout(() => setExporting(null), 1000);
   };
 
+  const exportDetailedAttendees = async () => {
+    setExporting("detailed");
+    try {
+      const result = await getDetailedAttendeeData(event.id);
+      if (result.error) {
+        alert(result.error);
+        setExporting(null);
+        return;
+      }
+      if (result.data) {
+        exportToCSV(result.data, `${event.slug}-detailed-attendees`);
+      }
+    } catch (err) {
+      alert("Failed to export detailed attendee data");
+      console.error(err);
+    } finally {
+      setTimeout(() => setExporting(null), 1000);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Registrations */}
@@ -165,6 +186,42 @@ export function ExportClient({
             }`}
           >
             {exporting === "questions" ? (
+              <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            Download CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Detailed Attendee Data */}
+      <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+        <div className="flex items-center justify-between gap-8">
+          <div className="flex items-center gap-6 flex-1">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+              <UserCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-light tracking-tight text-white/90">Attendee Profiles</h3>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
+                Complete Activity Data
+              </p>
+              <p className="text-[9px] text-gray-700 mt-2 tracking-tight">
+                Export comprehensive attendee data including intake, poll votes, Q&A history, and more
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={exportDetailedAttendees}
+            disabled={exporting !== null || registrations.length === 0}
+            className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
+              exporting !== null || registrations.length === 0
+                ? "bg-white/5 text-white/20 cursor-not-allowed"
+                : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            }`}
+          >
+            {exporting === "detailed" ? (
               <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
             ) : (
               <Download className="w-4 h-4" />

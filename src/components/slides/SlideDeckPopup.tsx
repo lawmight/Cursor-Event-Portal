@@ -22,29 +22,32 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
   // Don't show popup on the slides page itself
   const isOnSlidesPage = pathname?.includes("/slides");
 
-  // Fetch slide deck
+  // Fetch slide deck and subscribe to changes
   useEffect(() => {
+    const supabase = createClient();
+    
     const fetchSlideDeck = async () => {
-      const supabase = createClient();
       const { data } = await supabase
         .from("slide_decks")
         .select("*")
         .eq("event_id", eventId)
-        .eq("popup_visible", true)
         .single();
 
-      if (data) {
+      if (data && data.popup_visible) {
         setSlideDeck(data);
         setIsDismissed(false); // Show popup when enabled
+      } else if (data && !data.popup_visible) {
+        // If slide deck exists but popup_visible is false, still store it but don't show
+        setSlideDeck(data);
       } else {
         setSlideDeck(null);
       }
     };
 
+    // Initial fetch
     fetchSlideDeck();
 
     // Subscribe to slide deck changes
-    const supabase = createClient();
     const channel = supabase
       .channel(`slide-deck-popup-${eventId}`)
       .on(
@@ -55,10 +58,23 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
           table: "slide_decks",
           filter: `event_id=eq.${eventId}`,
         },
-        (payload) => {
-          // Directly update state from payload for efficiency
+        async (payload) => {
+          // Directly update state from payload for instant updates
           const updated = payload.new as SlideDeck;
-          setSlideDeck((prev) => prev ? { ...prev, ...updated } : null);
+          
+          // If popup_visible is now true, show the popup immediately
+          if (updated.popup_visible) {
+            setSlideDeck(updated);
+            setIsDismissed(false); // Reset dismissed state when popup becomes visible
+          } else {
+            // If popup_visible is false, update the deck but it won't show (due to the render check)
+            setSlideDeck((prev) => {
+              if (prev) {
+                return { ...prev, ...updated };
+              }
+              return updated;
+            });
+          }
         }
       )
       .on(
@@ -81,8 +97,9 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
           table: "slide_decks",
           filter: `event_id=eq.${eventId}`,
         },
-        () => {
-          fetchSlideDeck();
+        async () => {
+          // Fetch the new slide deck
+          await fetchSlideDeck();
         }
       )
       .subscribe();

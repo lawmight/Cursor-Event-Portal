@@ -22,12 +22,14 @@ import type { Event, Poll } from "@/types";
 interface PollsAdminClientProps {
   event: Event;
   eventSlug: string;
+  adminCode: string;
   initialPolls: Poll[];
 }
 
 export function PollsAdminClient({
   event,
   eventSlug,
+  adminCode,
   initialPolls,
 }: PollsAdminClientProps) {
   const router = useRouter();

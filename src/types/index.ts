@@ -17,6 +17,8 @@ export interface Event {
   end_time: string | null;
   status: EventStatus;
   seat_lockout_active: boolean;
+  timezone: string;
+  admin_code: string;
   created_at: string;
 }
 

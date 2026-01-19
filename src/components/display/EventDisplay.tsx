@@ -21,12 +21,12 @@ export function EventDisplay({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSlides, setShowSlides] = useState(!!data.slideDeck && data.slideDeck.is_live);
 
-  // Subscribe to real-time announcement updates
+  // Subscribe to real-time updates for announcements and slide decks
   useEffect(() => {
     const supabase = createClient();
     
     const channel = supabase
-      .channel(`announcements-display-${initialData.event.id}`)
+      .channel(`display-updates-${initialData.event.id}`)
       .on(
         "postgres_changes",
         {
@@ -48,6 +48,58 @@ export function EventDisplay({
             }
           } catch (error) {
             console.error("Failed to refresh announcements");
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "slide_decks",
+          filter: `event_id=eq.${initialData.event.id}`,
+        },
+        async (payload) => {
+          // Update slide deck instantly when it changes
+          const updated = payload.new as typeof initialData.slideDeck;
+          
+          setData((prev) => ({
+            ...prev,
+            slideDeck: updated,
+          }));
+          
+          // Automatically show/hide slides based on is_live status
+          if (updated && updated.is_live) {
+            setShowSlides(true);
+          } else {
+            setShowSlides(false);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "slide_decks",
+          filter: `event_id=eq.${initialData.event.id}`,
+        },
+        async () => {
+          // Fetch updated slide deck when a new one is inserted
+          try {
+            const res = await fetch(`/api/display/${eventSlug}`);
+            if (res.ok) {
+              const newData = await res.json();
+              setData((prev) => ({
+                ...prev,
+                slideDeck: newData.slideDeck,
+              }));
+              if (newData.slideDeck && newData.slideDeck.is_live) {
+                setShowSlides(true);
+              }
+            }
+          } catch (error) {
+            console.error("Failed to refresh slide deck");
           }
         }
       )
