@@ -55,7 +55,6 @@ const agendaItems = [
   {
     title: "Build Session",
     description: "Work with your pod to build something together. Walk around to get help and answer questions. Room is set up in collaboration pods.",
-    speaker: "Jia Ming Huang",
     start_time: "2026-01-29T00:50:00Z", // 5:50pm MST
     end_time: "2026-01-29T02:20:00Z", // 7:20pm MST
     sort_order: 3,
