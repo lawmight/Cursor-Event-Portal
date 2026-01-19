@@ -31,12 +31,6 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
   const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Ensure mobile nav is positioned correctly after mount
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Subscribe to lockout status changes
   useEffect(() => {
@@ -297,8 +291,9 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
       </nav>
 
       {/* Mobile Nav - collapsible bubble in bottom left */}
-      {isMounted && (
-        <div className="md:hidden fixed left-4 bottom-4 z-50" style={{ top: "auto", right: "auto", transform: "none" }}>
+      <div 
+        className="md:hidden mobile-nav-container z-50" 
+      >
         {/* Expanded menu */}
         <div
           className={cn(
@@ -346,8 +341,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
             </div>
           )}
         </button>
-        </div>
-      )}
+      </div>
     </>
   );
 }
