@@ -84,12 +84,65 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "announcements",
+          filter: `event_id=eq.${event.id}`,
+        },
+        (payload) => {
+          // Hide announcement when deleted
+          if (announcement?.id === payload.old.id) {
+            setAnnouncement(null);
+          }
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id]);
+  }, [event.id, announcement?.id]);
+
+  // Auto-hide announcement when it expires
+  useEffect(() => {
+    if (!announcement || !announcement.expires_at) {
+      return;
+    }
+
+    const expiresAt = new Date(announcement.expires_at).getTime();
+    const now = Date.now();
+
+    // If already expired, hide immediately
+    if (now >= expiresAt) {
+      setAnnouncement(null);
+      return;
+    }
+
+    // Calculate time until expiration
+    const timeUntilExpiry = expiresAt - now;
+
+    // Set a timer to hide the announcement when it expires
+    const timeoutId = setTimeout(() => {
+      setAnnouncement(null);
+    }, timeUntilExpiry);
+
+    // Also set up a periodic check (every second) to catch any clock drift
+    const intervalId = setInterval(() => {
+      const currentTime = Date.now();
+      if (currentTime >= expiresAt) {
+        setAnnouncement(null);
+        clearInterval(intervalId);
+      }
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [announcement]);
 
   // Fetch table assignment if userId is provided
   useEffect(() => {
