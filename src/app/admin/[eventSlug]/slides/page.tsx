@@ -1,15 +1,14 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug } from "@/lib/supabase/queries";
+import { getEventBySlug, getSlideDeck } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
-import { getSlides } from "@/lib/actions/slides";
 import { createClient } from "@/lib/supabase/server";
-import { SlidesAdminClient } from "./SlidesAdminClient";
+import { SlideDeckAdminClient } from "./SlideDeckAdminClient";
 
-interface AdminSlidesPageProps {
+interface AdminSlideDeckPageProps {
   params: Promise<{ eventSlug: string }>;
 }
 
-export default async function AdminSlidesPage({ params }: AdminSlidesPageProps) {
+export default async function AdminSlideDeckPage({ params }: AdminSlideDeckPageProps) {
   const { eventSlug } = await params;
 
   const event = await getEventBySlug(eventSlug);
@@ -34,8 +33,8 @@ export default async function AdminSlidesPage({ params }: AdminSlidesPageProps) 
     redirect(`/${eventSlug}/agenda`);
   }
 
-  const slides = await getSlides(event.id);
+  const slideDeck = await getSlideDeck(event.id);
 
-  return <SlidesAdminClient event={event} eventSlug={eventSlug} initialSlides={slides} />;
+  return <SlideDeckAdminClient event={event} eventSlug={eventSlug} initialDeck={slideDeck} />;
 }
 

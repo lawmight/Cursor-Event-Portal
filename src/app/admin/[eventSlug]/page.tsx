@@ -330,10 +330,10 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Slides
+                      Slide Deck
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Presentation Control
+                      PDF Upload
                     </p>
                   </div>
                 </div>

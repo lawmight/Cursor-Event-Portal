@@ -145,7 +145,16 @@ export function SlidesAdminClient({
             });
 
             if (uploadResponse.ok) {
-              const { slides } = await uploadResponse.json();
+              let slides;
+              try {
+                const responseData = await uploadResponse.json();
+                slides = responseData.slides;
+              } catch (jsonError) {
+                console.error(`[SlidesAdminClient] Invalid JSON response for slide ${i + 1}:`, jsonError);
+                errorCount++;
+                continue;
+              }
+              
               if (slides && slides.length > 0) {
                 const result = await uploadSlide(
                   event.id,
@@ -164,12 +173,27 @@ export function SlidesAdminClient({
                 errorCount++;
               }
             } else {
-              const errorData = await uploadResponse.json().catch(() => ({}));
-              console.error(`[SlidesAdminClient] Upload failed for slide ${i + 1}:`, errorData.error || uploadResponse.status);
+              // Handle server errors gracefully
+              let errorMessage = `Upload failed for slide ${i + 1}`;
+              try {
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                errorMessage = errorData.error || errorMessage;
+                console.error(`[SlidesAdminClient] Upload failed for slide ${i + 1}:`, errorMessage);
+              } catch {
+                // If JSON parsing fails, use status-based error message
+                if (uploadResponse.status === 502 || uploadResponse.status === 503) {
+                  errorMessage = "Server is temporarily unavailable. Please try again in a moment.";
+                } else if (uploadResponse.status >= 500) {
+                  errorMessage = "Server error. Please try again later.";
+                } else {
+                  errorMessage = `Upload failed (${uploadResponse.status}). Please try again.`;
+                }
+                console.error(`[SlidesAdminClient] Upload failed for slide ${i + 1}:`, errorMessage);
+              }
               errorCount++;
               // If first slide fails, show immediate error
-              if (i === 0 && errorData.error) {
-                setError(errorData.error);
+              if (i === 0) {
+                setError(errorMessage);
               }
             }
           } catch (fetchError) {
@@ -198,11 +222,31 @@ export function SlidesAdminClient({
         });
 
         if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json();
-          throw new Error(errorData.error || "Failed to upload slide");
+          // Handle server errors (502, 503, 500, etc.)
+          let errorMessage = "Failed to upload slide";
+          try {
+            const errorData = await uploadResponse.json().catch(() => ({}));
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            // If JSON parsing fails, use status-based error message
+            if (uploadResponse.status === 502 || uploadResponse.status === 503) {
+              errorMessage = "Server is temporarily unavailable. Please try again in a moment.";
+            } else if (uploadResponse.status >= 500) {
+              errorMessage = "Server error. Please try again later.";
+            } else {
+              errorMessage = `Upload failed (${uploadResponse.status}). Please try again.`;
+            }
+          }
+          throw new Error(errorMessage);
         }
 
-        const { slides } = await uploadResponse.json();
+        let slides;
+        try {
+          const responseData = await uploadResponse.json();
+          slides = responseData.slides;
+        } catch (jsonError) {
+          throw new Error("Server returned invalid response. Please try again.");
+        }
 
         if (!slides || slides.length === 0) {
           throw new Error("Failed to process the image");
