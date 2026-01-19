@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 
 // Health check for debugging
 export async function GET() {
@@ -94,24 +93,14 @@ export async function POST(request: NextRequest) {
       }, { onConflict: "event_id,user_id", ignoreDuplicates: true });
     }
 
-    // Set session cookie
+    // Set session cookie with exp field for getSession() compatibility
     const session = {
       eventId,
       userId: user.id,
-      userName: user.name,
-      userEmail: user.email,
+      exp: Date.now() + 7 * 24 * 60 * 60 * 1000, // 1 week
     };
 
-    const cookieStore = await cookies();
-    cookieStore.set("portal_session", JSON.stringify(session), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: "/",
-    });
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       eventSlug,
       adminCode,
@@ -122,6 +111,16 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
     });
+
+    response.cookies.set("portal_session", JSON.stringify(session), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Admin login error:", error);
     return NextResponse.json(
