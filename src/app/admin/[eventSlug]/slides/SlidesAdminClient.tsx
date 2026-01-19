@@ -138,27 +138,42 @@ export function SlidesAdminClient({
           formData.append("file", pageBlobs[i], `slide-${i + 1}.png`);
           formData.append("eventId", event.id);
 
-          const uploadResponse = await fetch("/api/admin/upload-slide", {
-            method: "POST",
-            body: formData,
-          });
+          try {
+            const uploadResponse = await fetch("/api/admin/upload-slide", {
+              method: "POST",
+              body: formData,
+            });
 
-          if (uploadResponse.ok) {
-            const { slides } = await uploadResponse.json();
-            if (slides && slides.length > 0) {
-              const result = await uploadSlide(
-                event.id,
-                eventSlug,
-                slides[0].url,
-                `Slide ${i + 1}`
-              );
-              if (result.success) {
-                successCount++;
+            if (uploadResponse.ok) {
+              const { slides } = await uploadResponse.json();
+              if (slides && slides.length > 0) {
+                const result = await uploadSlide(
+                  event.id,
+                  eventSlug,
+                  slides[0].url,
+                  `Slide ${i + 1}`
+                );
+                if (result.success) {
+                  successCount++;
+                } else {
+                  console.error(`[SlidesAdminClient] Failed to save slide ${i + 1}:`, result.error);
+                  errorCount++;
+                }
               } else {
+                console.error(`[SlidesAdminClient] No slides returned for page ${i + 1}`);
                 errorCount++;
               }
+            } else {
+              const errorData = await uploadResponse.json().catch(() => ({}));
+              console.error(`[SlidesAdminClient] Upload failed for slide ${i + 1}:`, errorData.error || uploadResponse.status);
+              errorCount++;
+              // If first slide fails, show immediate error
+              if (i === 0 && errorData.error) {
+                setError(errorData.error);
+              }
             }
-          } else {
+          } catch (fetchError) {
+            console.error(`[SlidesAdminClient] Network error uploading slide ${i + 1}:`, fetchError);
             errorCount++;
           }
         }
