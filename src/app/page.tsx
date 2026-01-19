@@ -26,7 +26,7 @@ export default function HomePage() {
               Calgary Meetup
             </h1>
             <p className="text-gray-500 text-sm font-light tracking-widest uppercase opacity-50">
-              Community Event Systems
+              Community Builder Event
             </p>
           </div>
         </div>
