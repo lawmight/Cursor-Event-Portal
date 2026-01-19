@@ -59,16 +59,16 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
       <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
-        <div className="animate-fade-in space-y-2">
-          <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">
+        <div className="space-y-2">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium animate-slide-up" style={{ animationDelay: "100ms" }}>
             Schedule
           </p>
-          <h1 className="text-4xl font-light text-white tracking-tight">
+          <h1 className="text-4xl font-light text-white tracking-tight animate-slide-up" style={{ animationDelay: "200ms" }}>
             Agenda
           </h1>
         </div>
 
-        <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+        <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
           <AgendaList items={items} eventId={event.id} />
         </div>
       </main>

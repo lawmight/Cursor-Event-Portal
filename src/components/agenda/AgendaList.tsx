@@ -108,10 +108,10 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
             <button
               key={item.id}
               onClick={() => hasDetails && setSelectedItem(item)}
-              className={`w-full text-left glass rounded-[24px] p-6 transition-all duration-300 animate-slide-up relative overflow-hidden group ${
+              className={`w-full text-left glass rounded-[24px] p-6 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
                 isCurrentlyNow
-                  ? "border-white/20 bg-white/[0.06]"
-                  : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
+                  ? "border-white/20 bg-white/[0.06] shadow-glow"
+                  : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:shadow-glow-lg hover:border-white/10"
               } ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
               style={{ animationDelay: `${index * 50}ms` }}
             >

@@ -40,21 +40,24 @@ export function SimulateStartButton({ event, eventSlug }: SimulateStartButtonPro
     <button
       onClick={handleSimulateStart}
       disabled={isPending || !event.seat_lockout_active}
-      className="glass rounded-[40px] p-6 border border-white/20 hover:bg-white/10 transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full glass rounded-[40px] p-8 border border-white/20 hover:bg-white/10 transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed animate-beam relative overflow-hidden"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
-            <Play className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+          <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+            <Play className="w-8 h-8 text-gray-400 group-hover:text-white transition-colors fill-current opacity-50 group-hover:opacity-100" />
           </div>
-          <div className="space-y-1">
-            <h3 className="text-xl font-light tracking-tight text-white/90">
+          <div className="text-left space-y-1">
+            <h3 className="text-2xl font-light tracking-tight text-white/90">
               Simulate Start
             </h3>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-              {isPending ? "Processing..." : "Test Event Start"}
+            <p className="text-[11px] uppercase tracking-[0.4em] text-gray-500 font-medium">
+              {isPending ? "Processing Engine..." : "Force Deactivate Lockout"}
             </p>
           </div>
+        </div>
+        <div className="px-6 py-2 rounded-full border border-white/10 bg-white/5 text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold group-hover:bg-white group-hover:text-black transition-all">
+          Trigger
         </div>
       </div>
     </button>
