@@ -208,6 +208,27 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         );
       }
 
+      // If slide deck is not live, render as non-clickable div
+      if (isSlideDeckNotLive) {
+        return (
+          <div
+            key={item.href}
+            className="flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group text-gray-800 cursor-not-allowed pointer-events-none"
+          >
+            <div className="transition-all duration-300 relative opacity-40">
+              <Icon className="w-5 h-5 stroke-[1.5px]" />
+            </div>
+            <span
+              className={cn(
+                "text-[8px] font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap mt-1 opacity-0 absolute translate-y-1"
+              )}
+            >
+              {item.label}
+            </span>
+          </div>
+        );
+      }
+
       return (
         <Link
           key={item.href}
@@ -217,15 +238,12 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
             "flex flex-col items-center justify-center gap-1.5 py-4 w-full transition-all duration-300 relative group",
             isActive
               ? "text-white"
-              : isSlideDeckNotLive
-              ? "text-gray-800 cursor-pointer"
               : "text-gray-600 hover:text-white"
           )}
         >
           <div className={cn(
             "transition-all duration-300 relative",
-            isActive && "scale-110",
-            isSlideDeckNotLive && "opacity-40"
+            isActive && "scale-110"
           )}>
             <Icon className={cn("w-5 h-5", isActive ? "stroke-[2.5px]" : "stroke-[1.5px]")} />
 
