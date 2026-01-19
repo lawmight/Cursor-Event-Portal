@@ -292,7 +292,8 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
 
       {/* Mobile Nav - collapsible bubble in bottom left */}
       <div
-        className="md:hidden fixed left-4 bottom-4 z-50"
+        className="md:hidden"
+        style={{ position: 'fixed', left: '1rem', bottom: '1rem', top: 'auto', zIndex: 50 }}
       >
         {/* Expanded menu */}
         <div
