@@ -52,7 +52,11 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
   const latestAnnouncement = announcements[0] || null;
 
   return (
-    <div className="min-h-screen bg-black-gradient flex flex-col pb-40">
+    <div className="min-h-screen bg-black-gradient flex flex-col pb-40 relative overflow-hidden">
+      {/* Subtle Depth Elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
+      
       <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
       <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
