@@ -311,15 +311,18 @@ export async function generateHybridGroupMatches(
   intakes: AttendeeIntake[]
 ): Promise<MatchingResult> {
   // Build attendee profiles
-  const profiles: AttendeeProfile[] = intakes.map((intake) => ({
-    id: intake.user_id,
-    name: intake.user?.name || "Anonymous",
-    email: intake.user?.email || null,
-    goals: [...intake.goals, intake.goals_other].filter(Boolean),
-    offers: [...intake.offers, intake.offers_other].filter(Boolean),
-    company: undefined, // Could be extracted from user profile if available
-    domain: extractDomain(intake.user?.email),
-  }));
+  const profiles: AttendeeProfile[] = intakes.map((intake) => {
+    const profile: AttendeeProfile = {
+      id: intake.user_id,
+      name: intake.user?.name || "Anonymous",
+      email: intake.user?.email || null,
+      goals: [...intake.goals, intake.goals_other].filter((g): g is string => typeof g === "string" && g !== null),
+      offers: [...intake.offers, intake.offers_other].filter((o): o is string => typeof o === "string" && o !== null),
+      domain: extractDomain(intake.user?.email) ?? undefined,
+    };
+    // Company could be extracted from user profile if available
+    return profile;
+  });
   
   // Track how many groups each person is in
   const groupCounts = new Map<string, number>();

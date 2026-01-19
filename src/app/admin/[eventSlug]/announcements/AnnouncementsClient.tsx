@@ -15,7 +15,7 @@ import { formatTime as formatTimeWithTZ } from "@/lib/utils";
 interface AnnouncementsClientProps {
   event: Event;
   eventSlug: string;
-  adminCode: string;
+  adminCode?: string;
   initialAnnouncements: Announcement[];
 }
 

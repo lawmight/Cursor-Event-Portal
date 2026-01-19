@@ -13,12 +13,14 @@ import Image from "next/image";
 interface SurveysAdminClientProps {
   event: Event;
   eventSlug: string;
+  adminCode?: string;
   initialSurveys: Survey[];
 }
 
 export function SurveysAdminClient({
   event,
   eventSlug,
+  adminCode,
   initialSurveys,
 }: SurveysAdminClientProps) {
   const router = useRouter();
@@ -109,7 +111,8 @@ export function SurveysAdminClient({
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       <AdminHeader 
-        eventSlug={eventSlug} 
+        eventSlug={eventSlug}
+        adminCode={adminCode}
         subtitle="Survey Management"
         rightElement={
           <button

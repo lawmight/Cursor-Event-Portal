@@ -12,7 +12,7 @@ import { formatTime } from "@/lib/utils";
 interface AgendaAdminClientProps {
   event: Event;
   eventSlug: string;
-  adminCode: string;
+  adminCode?: string;
   initialItems: AgendaItem[];
 }
 

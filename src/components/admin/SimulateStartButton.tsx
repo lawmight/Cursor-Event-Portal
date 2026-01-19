@@ -10,7 +10,7 @@ import type { Event } from "@/types";
 interface SimulateStartButtonProps {
   event: Event;
   eventSlug: string;
-  adminCode: string;
+  adminCode?: string;
 }
 
 export function SimulateStartButton({ event, eventSlug, adminCode }: SimulateStartButtonProps) {

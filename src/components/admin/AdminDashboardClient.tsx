@@ -22,7 +22,7 @@ import type { Event, Question } from "@/types";
 interface AdminDashboardClientProps {
   event: Event;
   eventSlug: string;
-  adminCode: string;
+  adminCode?: string;
   initialOpenQuestions: number;
   initialQuestions: Question[];
 }
@@ -53,7 +53,7 @@ function markQuestionAsSeen(questionId: string) {
 function markAllQuestionsAsSeen(questionIds: string[]) {
   if (typeof window === "undefined") return;
   const seen = getSeenQuestionIds();
-  const updated = [...new Set([...seen, ...questionIds])];
+  const updated = Array.from(new Set([...seen, ...questionIds]));
   // Keep only last 100
   const trimmed = updated.slice(-100);
   localStorage.setItem("seen-question-ids", JSON.stringify(trimmed));

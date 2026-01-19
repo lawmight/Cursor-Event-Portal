@@ -113,7 +113,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           <div className="flex items-center justify-between mb-8">
             <div className="space-y-2">
               <h3 className="text-[11px] uppercase tracking-[0.4em] text-gray-400 font-medium">
-                Resource Allocation
+                Event Capacity
               </h3>
               <p className="text-2xl font-light tracking-tight text-white/90">
                 {stats.registered} registered · {stats.checkedIn} checked in

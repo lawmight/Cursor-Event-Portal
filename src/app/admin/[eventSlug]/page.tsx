@@ -155,7 +155,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
 
         {/* Simulate Start Button - For Testing */}
         {event.seat_lockout_active && (
-          <SimulateStartButton event={event} eventSlug={eventSlug} />
+          <SimulateStartButton event={event} eventSlug={eventSlug} adminCode={undefined} />
         )}
 
         {/* Quick Actions */}
@@ -205,6 +205,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           <AdminDashboardClient
             event={event}
             eventSlug={eventSlug}
+            adminCode={undefined}
             initialOpenQuestions={openQuestions}
             initialQuestions={questions}
           />

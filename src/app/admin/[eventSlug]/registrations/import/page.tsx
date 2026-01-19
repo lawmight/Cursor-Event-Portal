@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getEventBySlug, getEventRegistrations } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
-import { ImportRegistrationsClient } from "./ImportRegistrationsClient";
+import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 
 interface ImportRegistrationsPageProps {
   params: Promise<{ eventSlug: string }>;

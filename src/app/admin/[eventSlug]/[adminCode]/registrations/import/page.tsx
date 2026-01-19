@@ -3,7 +3,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createClient } from "@/lib/supabase/server";
 import { getEventRegistrations } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
-import { ImportRegistrationsClient } from "../../../../[eventSlug]/registrations/import/ImportRegistrationsClient";
+import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 import { validateAdminCode } from "@/lib/utils/admin";
 
 interface ImportRegistrationsPageProps {

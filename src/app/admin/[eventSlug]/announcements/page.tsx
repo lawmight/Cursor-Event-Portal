@@ -35,5 +35,5 @@ export default async function AnnouncementsPage({ params }: AnnouncementsPagePro
 
   const announcements = await getAnnouncements(event.id);
 
-  return <AnnouncementsClient event={event} initialAnnouncements={announcements} />;
+  return <AnnouncementsClient event={event} eventSlug={eventSlug} adminCode={undefined} initialAnnouncements={announcements} />;
 }

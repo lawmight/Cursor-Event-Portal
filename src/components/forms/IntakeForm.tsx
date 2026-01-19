@@ -15,6 +15,7 @@ interface IntakeFormProps {
   eventSlug: string;
   hasConsented?: boolean;
   userEmail?: string | null;
+  retentionDays?: number;
 }
 
 const GOAL_OPTIONS: { value: IntakeGoalTag; label: string }[] = [

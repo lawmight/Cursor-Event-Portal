@@ -35,6 +35,6 @@ export default async function AdminAgendaPage({ params }: AdminAgendaPageProps) 
 
   const items = await getAgendaItems(event.id);
 
-  return <AgendaAdminClient event={event} eventSlug={eventSlug} initialItems={items} />;
+  return <AgendaAdminClient event={event} eventSlug={eventSlug} adminCode={undefined} initialItems={items} />;
 }
 

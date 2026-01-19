@@ -43,6 +43,7 @@ export default async function AdminPollsPage({ params }: AdminPollsPageProps) {
     <PollsAdminClient
       event={event}
       eventSlug={eventSlug}
+      adminCode={undefined}
       initialPolls={polls}
     />
   );

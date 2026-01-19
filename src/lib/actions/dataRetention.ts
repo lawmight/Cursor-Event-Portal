@@ -45,7 +45,7 @@ export async function cleanupExpiredIntakeData() {
         .from("attendee_intakes")
         .delete()
         .eq("event_id", event.id)
-        .select("*", { count: "exact", head: false });
+        .select("*", { count: "exact" });
 
       if (deleteError) {
         console.error(`[cleanupExpiredIntakeData] Error deleting intakes for event ${event.id}:`, deleteError);

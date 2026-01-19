@@ -31,7 +31,7 @@ function getSeenQuestionIds(): string[] {
 function markAllQuestionsAsSeen(questionIds: string[]) {
   if (typeof window === "undefined") return;
   const seen = getSeenQuestionIds();
-  const updated = [...new Set([...seen, ...questionIds])];
+  const updated = Array.from(new Set([...seen, ...questionIds]));
   const trimmed = updated.slice(-100);
   localStorage.setItem("seen-question-ids", JSON.stringify(trimmed));
 }

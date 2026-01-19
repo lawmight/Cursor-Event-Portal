@@ -236,7 +236,7 @@ export function AnalyticsClient({
                     borderRadius: "12px",
                     color: "#fff",
                   }}
-                  formatter={(value: number) => [`${value}%`, "Participation Rate"]}
+                  formatter={(value: number | undefined) => [`${value ?? 0}%`, "Participation Rate"]}
                 />
                 <Bar dataKey="participation" fill="#fff" radius={[8, 8, 0, 0]} />
               </BarChart>

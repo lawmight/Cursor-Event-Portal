@@ -512,7 +512,7 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
       )
     `)
     .eq("event_id", eventId)
-    .order("match_score", { ascending: false, nullsLast: true })
+    .order("match_score", { ascending: false, nullsFirst: false })
     .order("table_number", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 

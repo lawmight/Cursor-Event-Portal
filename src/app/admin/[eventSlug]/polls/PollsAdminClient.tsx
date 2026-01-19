@@ -22,7 +22,7 @@ import type { Event, Poll } from "@/types";
 interface PollsAdminClientProps {
   event: Event;
   eventSlug: string;
-  adminCode: string;
+  adminCode?: string;
   initialPolls: Poll[];
 }
 

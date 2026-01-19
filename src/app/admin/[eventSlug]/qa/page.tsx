@@ -52,6 +52,7 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
       event={event}
       initialQuestions={questions}
       eventSlug={eventSlug}
+      adminCode={undefined}
       userId={session.userId}
       sortBy={sortBy}
       statusFilter={statusFilter}

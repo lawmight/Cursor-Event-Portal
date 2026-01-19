@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Download, Upload, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck } from "lucide-react";
 import type { Event, Registration, Question, Survey, SurveyResponse } from "@/types";
 import { getDetailedAttendeeData } from "@/lib/actions/export";
-import { ImportRegistrationsClient } from "../../../registrations/import/ImportRegistrationsClient";
+import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 
 interface DataManagementClientProps {
   event: Event;
