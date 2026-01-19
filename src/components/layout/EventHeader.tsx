@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,6 +26,8 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
   const router = useRouter();
   const [announcement, setAnnouncement] = useState<Announcement | null>(initialAnnouncement || null);
   const [tableAssignment, setTableAssignment] = useState<TableAssignment | null>(null);
+  const [isFirstView, setIsFirstView] = useState(false);
+  const hasMarkedAsSeen = useRef(false);
 
   // Auto-refresh every 60 seconds to catch any updates
   useEffect(() => {
@@ -167,10 +169,28 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
       if (!error && data?.group) {
         const group = data.group as any;
         if (group.status === "approved" && group.table_number) {
-          setTableAssignment({
+          const newAssignment = {
             tableNumber: group.table_number,
             groupName: group.name,
-          });
+          };
+          setTableAssignment(newAssignment);
+
+          // Check if this is the first time seeing this assignment
+          const seenKey = `table-seen-${event.id}-${userId}-${group.table_number}`;
+          const hasSeen = typeof window !== "undefined" ? localStorage.getItem(seenKey) : null;
+
+          if (!hasSeen && !hasMarkedAsSeen.current) {
+            setIsFirstView(true);
+            hasMarkedAsSeen.current = true;
+
+            // Mark as seen after the animation completes (5 seconds)
+            setTimeout(() => {
+              if (typeof window !== "undefined") {
+                localStorage.setItem(seenKey, "true");
+              }
+              setIsFirstView(false);
+            }, 5000);
+          }
         }
       }
     }
@@ -245,11 +265,29 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
 
           {/* Table Assignment */}
           {tableAssignment && (
-            <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/10 shadow-xl backdrop-blur-xl group hover:bg-white/[0.05] transition-all">
-              <MapPin className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+            <div className={cn(
+              "flex items-center gap-3 px-5 py-2.5 rounded-2xl border shadow-xl backdrop-blur-xl group hover:bg-white/[0.05] transition-all duration-500",
+              isFirstView
+                ? "bg-white/[0.15] border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-105"
+                : "bg-white/[0.03] border-white/10"
+            )}>
+              <MapPin className={cn(
+                "w-4 h-4 transition-colors duration-500",
+                isFirstView
+                  ? "text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+                  : "text-gray-400 group-hover:text-white"
+              )} />
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Table</span>
-                <span className="text-sm font-semibold text-white">
+                <span className={cn(
+                  "text-[10px] uppercase tracking-[0.2em] font-bold transition-colors duration-500",
+                  isFirstView ? "text-white/90" : "text-gray-500"
+                )}>Table</span>
+                <span className={cn(
+                  "text-sm font-semibold transition-all duration-500",
+                  isFirstView
+                    ? "text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] scale-110"
+                    : "text-white"
+                )}>
                   {tableAssignment.tableNumber}
                 </span>
               </div>
