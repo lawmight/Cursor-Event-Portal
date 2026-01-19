@@ -39,7 +39,7 @@ const OFFER_OPTIONS: { value: IntakeOfferTag; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail = null }: IntakeFormProps) {
+export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail = null, retentionDays = 60 }: IntakeFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<"goals" | "offers">("goals");
   const [goals, setGoals] = useState<IntakeGoalTag[]>([]);
@@ -150,7 +150,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
           ✓ Optional & Voluntary
         </p>
         <p className="text-[10px] text-gray-500 leading-relaxed">
-          This data helps us match you with relevant people and opportunities. You can skip this step and still participate in all event features. Data is only used for this event and will not be shared externally.
+          This data helps us match you with relevant people and opportunities. You can skip this step and still participate in all event features. Data is only used for this event and will not be shared externally. Your intake responses will be automatically deleted {retentionDays} days after the event ends, in accordance with our data retention policy.
         </p>
       </div>
 

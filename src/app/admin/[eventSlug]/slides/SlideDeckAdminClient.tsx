@@ -14,12 +14,14 @@ import { cn } from "@/lib/utils";
 interface SlideDeckAdminClientProps {
   event: Event;
   eventSlug: string;
+  adminCode?: string;
   initialDeck: SlideDeck | null;
 }
 
 export function SlideDeckAdminClient({
   event,
   eventSlug,
+  adminCode,
   initialDeck,
 }: SlideDeckAdminClientProps) {
   const router = useRouter();
@@ -160,7 +162,8 @@ export function SlideDeckAdminClient({
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       <AdminHeader 
-        eventSlug={eventSlug} 
+        eventSlug={eventSlug}
+        adminCode={adminCode}
         subtitle="Slide Deck Management"
         rightElement={
           <button

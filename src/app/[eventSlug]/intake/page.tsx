@@ -90,6 +90,7 @@ export default async function IntakePage({ params }: IntakePageProps) {
             eventSlug={eventSlug}
             hasConsented={consentStatus.hasConsented}
             userEmail={user?.email || null}
+            retentionDays={event.data_retention_days || 60}
           />
         </div>
       </div>

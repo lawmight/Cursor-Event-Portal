@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getEventIntakes } from "@/lib/supabase/queries";
 import type { GroupStatus, AttendeeIntake } from "@/types";
 import OpenAI from "openai";
+import { generateHybridGroupMatches } from "@/lib/utils/matching";
 
 // Lazy initialization to avoid build-time errors
 function getOpenAIClient() {
@@ -283,32 +284,35 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     return { error: "OpenAI API key is not configured. Please contact support." };
   }
 
-  // Call LLM for matching directly with timeout handling
+  // Call hybrid matching system (embeddings + constraints + scoring)
   let groups: Array<{
     name: string;
     description: string;
     memberIds: string[];
     matchReasons?: Record<string, string>;
+    score?: number;
+    constraints?: any[];
   }>;
   try {
-    console.log("[generateGroups] Calling OpenAI to generate groups...");
+    console.log("[generateGroups] Calling hybrid matching system...");
     console.log("[generateGroups] Number of intakes:", intakes.length);
     console.log("[generateGroups] OpenAI API key present:", !!process.env.OPENAI_API_KEY);
     
-    // Set a timeout for the OpenAI call (2 minutes max to avoid Next.js server action timeout)
-    // Note: Next.js server actions typically timeout at 10-60 seconds on hosting platforms
+    // Set a timeout for the matching call (2 minutes max)
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error("Group generation timed out after 2 minutes")), 2 * 60 * 1000);
     });
     
     const startTime = Date.now();
-    groups = await Promise.race([
-      generateGroupSuggestions(intakes),
+    const matchingResult = await Promise.race([
+      generateHybridGroupMatches(intakes),
       timeoutPromise
     ]);
     const duration = Date.now() - startTime;
     
+    groups = matchingResult.groups;
     console.log("[generateGroups] Generated groups:", groups?.length || 0, `(took ${duration}ms)`);
+    console.log("[generateGroups] Average score:", groups.length > 0 ? (groups.reduce((sum, g) => sum + (g.score || 0), 0) / groups.length).toFixed(2) : 0);
   } catch (error) {
     console.error("[generateGroups] Failed to generate groups:", error);
     console.error("[generateGroups] Error details:", {
@@ -373,6 +377,7 @@ export async function generateGroups(eventId: string, eventSlug: string) {
           description: group.description,
           status: "pending",
           table_number: tableNumber,
+          match_score: group.score || null,
         })
         .select("id")
         .single();

@@ -384,7 +384,7 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
     <div className="glass rounded-[48px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all group">
       <div className="flex items-start justify-between mb-10">
         <div className="space-y-3 flex-1">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <h3 className="text-3xl font-light tracking-tight text-white/90">{group.name}</h3>
             {editingTableNumber ? (
               <input
@@ -411,6 +411,18 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
               >
                 {group.table_number ? `Table ${group.table_number}` : "Assign Table"}
               </button>
+            )}
+            {group.match_score !== null && group.match_score !== undefined && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">Match Score</span>
+                <span className={`text-lg font-light tabular-nums ${
+                  group.match_score >= 80 ? "text-emerald-400" :
+                  group.match_score >= 60 ? "text-amber-400" :
+                  "text-red-400"
+                }`}>
+                  {group.match_score.toFixed(1)}
+                </span>
+              </div>
             )}
           </div>
           <p className="text-gray-700 text-sm tracking-tight leading-relaxed max-w-xl">{group.description}</p>

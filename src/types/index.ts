@@ -19,6 +19,7 @@ export interface Event {
   seat_lockout_active: boolean;
   timezone: string;
   admin_code: string;
+  data_retention_days: number;
   created_at: string;
 }
 
@@ -212,6 +213,7 @@ export interface SuggestedGroup {
   description: string | null;
   status: GroupStatus;
   table_number: number | null;
+  match_score: number | null;
   created_at: string;
   // Joined fields
   members?: SuggestedGroupMember[];

@@ -19,10 +19,12 @@ import {
   Sparkles,
   Vote,
   Calendar,
+  BarChart3,
+  Database,
 } from "lucide-react";
 import { SimulateStartButton } from "@/components/admin/SimulateStartButton";
 import { checkAndUnlockAtStartTime } from "@/lib/actions/seating";
-import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient";
+import { EventSocial } from "@/components/admin/EventSocial";
 import { validateAdminCode } from "@/lib/utils/admin";
 
 interface AdminDashboardProps {
@@ -122,17 +124,11 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </div>
           <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
-            <div className="h-full flex shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+            <div className="h-full shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               <div
-                className="bg-white transition-all duration-1000"
+                className="bg-white transition-all duration-1000 h-full"
                 style={{
                   width: `${(stats.checkedIn / event.capacity) * 100}%`,
-                }}
-              />
-              <div
-                className="bg-white/20 transition-all duration-1000"
-                style={{
-                  width: `${((stats.registered - stats.checkedIn) / event.capacity) * 100}%`,
                 }}
               />
             </div>
@@ -140,11 +136,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           <div className="flex gap-8 mt-6">
             <span className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-              Checked
-            </span>
-            <span className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              Pending
+              Checking In
             </span>
             <span className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
@@ -202,55 +194,14 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <AdminDashboardClient
+          <EventSocial
             event={event}
             eventSlug={eventSlug}
             adminCode={adminCode}
             initialOpenQuestions={openQuestions}
             initialQuestions={questions}
+            surveyResponses={surveyResponses}
           />
-
-          <Link href={`/admin/${eventSlug}/${adminCode}/announcements`} className="animate-slide-up" style={{ animationDelay: "900ms" }}>
-            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
-                    <Megaphone className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Bulletin
-                    </h3>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Broadcast Signal
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </Link>
-
-          <Link href={`/admin/${eventSlug}/${adminCode}/polls`} className="animate-slide-up" style={{ animationDelay: "1000ms" }}>
-            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
-                    <Vote className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Live Polls
-                    </h3>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Audience Engagement
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </Link>
 
           <Link href={`/admin/${eventSlug}/${adminCode}/groups`} className="animate-slide-up" style={{ animationDelay: "1100ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
@@ -273,26 +224,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/${adminCode}/surveys`} className="animate-slide-up" style={{ animationDelay: "1200ms" }}>
-            <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
-                    <ClipboardCheck className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Surveys
-                    </h3>
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Feedback Collection
-                    </p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </Link>
 
           <Link href={`/admin/${eventSlug}/${adminCode}/slides`} className="animate-slide-up" style={{ animationDelay: "1300ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
@@ -315,19 +246,19 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/${adminCode}/registrations/import`} className="animate-slide-up" style={{ animationDelay: "1400ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/analytics`} className="animate-slide-up" style={{ animationDelay: "1400ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
-                    <Upload className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                    <BarChart3 className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Import
+                      Analytics
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Luma Sync
+                      Insights & Reports
                     </p>
                   </div>
                 </div>
@@ -336,19 +267,19 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/${adminCode}/export`} className="animate-slide-up" style={{ animationDelay: "1500ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/data`} className="animate-slide-up" style={{ animationDelay: "1500ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
-                    <Download className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                    <Database className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Data Export
+                      Data Management
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Export CSV Files
+                      Import & Export
                     </p>
                   </div>
                 </div>

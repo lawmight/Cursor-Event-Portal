@@ -512,6 +512,7 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
       )
     `)
     .eq("event_id", eventId)
+    .order("match_score", { ascending: false, nullsLast: true })
     .order("table_number", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
@@ -736,4 +737,194 @@ export async function getActivePollsWithVotes(
   );
 
   return pollsWithVotes;
+}
+
+// Analytics queries
+export interface CheckInDataPoint {
+  time: string; // ISO timestamp
+  count: number;
+  cumulative: number;
+}
+
+export interface QAAnalytics {
+  mostUpvoted: Question[];
+  unansweredAging: Array<{
+    question: Question;
+    ageMinutes: number;
+  }>;
+}
+
+export interface PollParticipation {
+  pollId: string;
+  pollTitle: string;
+  totalVotes: number;
+  participationRate: number; // percentage of checked-in attendees
+  checkedInCount: number;
+}
+
+export interface IntakeAnalytics {
+  completionRate: number; // percentage
+  dropOffRate: number; // percentage
+  started: number;
+  completed: number;
+  skipped: number;
+  total: number;
+}
+
+export async function getCheckInCurve(eventId: string): Promise<CheckInDataPoint[]> {
+  const supabase = await createClient();
+  
+  const { data: registrations, error } = await supabase
+    .from("registrations")
+    .select("checked_in_at, created_at")
+    .eq("event_id", eventId)
+    .not("checked_in_at", "is", null)
+    .order("checked_in_at", { ascending: true });
+
+  if (error || !registrations || registrations.length === 0) return [];
+
+  // Group by hour
+  const hourlyCounts = new Map<string, number>();
+  
+  registrations.forEach((reg) => {
+    if (!reg.checked_in_at) return;
+    const date = new Date(reg.checked_in_at);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const hourKey = `${date.getFullYear()}-${month}-${day}T${hour}:00:00`;
+    
+    hourlyCounts.set(hourKey, (hourlyCounts.get(hourKey) || 0) + 1);
+  });
+
+  // Convert to array, sort by time, and calculate cumulative
+  const sortedEntries = Array.from(hourlyCounts.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  let cumulative = 0;
+  
+  return sortedEntries.map(([time, count]) => {
+    cumulative += count;
+    return {
+      time,
+      count, // Count for this hour
+      cumulative, // Total up to this hour
+    };
+  });
+}
+
+export async function getQAAnalytics(eventId: string): Promise<QAAnalytics> {
+  const supabase = await createClient();
+  
+  const { data: questions, error } = await supabase
+    .from("questions")
+    .select("*, user:users(name)")
+    .eq("event_id", eventId)
+    .order("upvotes", { ascending: false });
+
+  if (error || !questions) {
+    return { mostUpvoted: [], unansweredAging: [] };
+  }
+
+  const mostUpvoted = questions.slice(0, 10);
+  
+  const now = new Date();
+  const unansweredAging = questions
+    .filter((q) => q.status === "open")
+    .map((q) => {
+      const created = new Date(q.created_at);
+      const ageMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+      return { question: q, ageMinutes };
+    })
+    .sort((a, b) => b.ageMinutes - a.ageMinutes);
+
+  return { mostUpvoted, unansweredAging };
+}
+
+export async function getPollParticipation(eventId: string): Promise<PollParticipation[]> {
+  const supabase = await createClient();
+  
+  // Get all polls
+  const { data: polls, error: pollsError } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("event_id", eventId);
+
+  if (pollsError || !polls) return [];
+
+  // Get checked-in count
+  const { count: checkedInCount } = await supabase
+    .from("registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", eventId)
+    .not("checked_in_at", "is", null);
+
+  const totalCheckedIn = checkedInCount || 0;
+
+  // Get votes for each poll
+  const participationData = await Promise.all(
+    polls.map(async (poll) => {
+      const { count: voteCount } = await supabase
+        .from("poll_votes")
+        .select("id", { count: "exact", head: true })
+        .eq("poll_id", poll.id);
+
+      const totalVotes = voteCount || 0;
+      const participationRate = totalCheckedIn > 0 ? (totalVotes / totalCheckedIn) * 100 : 0;
+
+      return {
+        pollId: poll.id,
+        pollTitle: poll.question,
+        totalVotes,
+        participationRate,
+        checkedInCount: totalCheckedIn,
+      };
+    })
+  );
+
+  return participationData;
+}
+
+export async function getIntakeAnalytics(eventId: string): Promise<IntakeAnalytics> {
+  const supabase = await createClient();
+  
+  // Get total registrations
+  const { count: totalRegistrations } = await supabase
+    .from("registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", eventId);
+
+  const total = totalRegistrations || 0;
+
+  // Get intakes
+  const { data: intakes, error } = await supabase
+    .from("attendee_intakes")
+    .select("id, completed, skipped")
+    .eq("event_id", eventId);
+
+  if (error || !intakes) {
+    return {
+      completionRate: 0,
+      dropOffRate: 0,
+      started: 0,
+      completed: 0,
+      skipped: 0,
+      total,
+    };
+  }
+
+  const started = intakes.length;
+  const completed = intakes.filter((i) => i.completed).length;
+  const skipped = intakes.filter((i) => i.skipped).length;
+  const notStarted = total - started;
+
+  const completionRate = total > 0 ? (completed / total) * 100 : 0;
+  const dropOffRate = started > 0 ? ((started - completed - skipped) / started) * 100 : 0;
+
+  return {
+    completionRate,
+    dropOffRate,
+    started,
+    completed,
+    skipped,
+    total,
+  };
 }

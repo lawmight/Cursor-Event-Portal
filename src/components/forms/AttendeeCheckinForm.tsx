@@ -611,7 +611,7 @@ export function AttendeeCheckinForm({
               <li>Improve future events</li>
             </ul>
             <p className="text-[11px] text-gray-500 pt-2 border-t border-white/10">
-              Your data is <strong className="text-white">not shared with third parties</strong> and is <strong className="text-white">not tied to your name within the platform or publicly</strong>.
+              Your data is <strong className="text-white">not shared with third parties</strong> and is <strong className="text-white">not tied to your name within the platform or publicly</strong>. Your intake responses (goals and offers) will be automatically deleted 60 days after the event ends, in accordance with our data retention policy.
             </p>
           </div>
 
