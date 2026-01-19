@@ -412,7 +412,7 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
               </button>
             )}
           </div>
-          <p className="text-gray-700 text-sm tracking-tight leading-relaxed max-w-xl">{group.description}</p>
+          <p className="text-gray-400 text-sm tracking-tight leading-relaxed max-w-xl">{group.description}</p>
         </div>
         <span className={`px-5 py-2 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold border ${statusColors[group.status]}`}>
           {group.status}
@@ -448,7 +448,7 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
               ) : (
                 <button
                   onClick={() => setRemovingMemberId(member.user_id)}
-                  className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/[0.02] border border-white/[0.05] text-gray-700 hover:text-red-500 hover:border-red-500/30 transition-all flex items-center justify-center opacity-0 group-hover/member:opacity-100"
+                  className="absolute bottom-3 right-3 w-7 h-7 rounded-lg bg-white/[0.02] border border-white/[0.05] text-gray-700 hover:text-red-500 hover:border-red-500/30 transition-all flex items-center justify-center opacity-0 group-hover/member:opacity-100"
                   title="Remove from group"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -462,7 +462,7 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
                   </div>
                 )}
               </div>
-              <span className="text-[10px] uppercase tracking-[0.1em] text-gray-800 font-medium">{member.match_reason}</span>
+              <span className="text-[10px] uppercase tracking-[0.1em] text-gray-500 font-medium">{member.match_reason}</span>
             </div>
         ))}
       </div>
