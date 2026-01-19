@@ -226,20 +226,13 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
                 if (!agendaImage) return null;
 
                 return (
-                  <div className="absolute -right-4 top-0 -translate-y-1/4 opacity-0 group-hover:opacity-85 transition-all duration-300 pointer-events-none scale-95 group-hover:scale-100">
-                    <div className="w-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20 bg-black/60 backdrop-blur-sm">
+                  <div className="absolute -right-4 top-0 -translate-y-1/4 opacity-0 group-hover:opacity-75 transition-all duration-300 pointer-events-none scale-95 group-hover:scale-100">
+                    <div className="w-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
                       <img
                         src={agendaImage.url}
                         alt={item.title}
                         className="w-full h-40 object-cover"
                       />
-                      {agendaImage.caption && (
-                        <div className="px-3 py-2">
-                          <p className="text-[10px] text-gray-300 text-center font-light">
-                            {agendaImage.caption}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
