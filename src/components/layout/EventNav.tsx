@@ -281,7 +281,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
 
       {/* Desktop Nav - hidden on mobile */}
       <nav className="hidden md:block fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">
-        <div className="glass rounded-[40px] border border-white/5 w-20 pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
+        <div className="glass rounded-[40px] border border-white/5 w-20 pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.8)] transition-all duration-300 hover:w-24 hover:shadow-[0_30px_60px_rgba(0,0,0,0.9),0_0_20px_rgba(255,255,255,0.1)]">
           <div className="py-6">
             <div className="flex flex-col items-center gap-4">
               {renderNavItems()}
@@ -315,7 +315,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={cn(
-              "glass w-14 h-14 rounded-full border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all duration-300",
+              "glass w-14 h-14 rounded-full border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all duration-200 active:scale-95 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8),0_0_15px_rgba(255,255,255,0.1)]",
               isMobileMenuOpen ? "bg-white/10" : "bg-black/40"
             )}
           >
