@@ -31,6 +31,12 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
   const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch - only show nav after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Subscribe to lockout status changes
   useEffect(() => {
@@ -290,59 +296,61 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
         </div>
       </nav>
 
-      {/* Mobile Nav - collapsible bubble in bottom left */}
-      <div
-        className="md:hidden"
-        style={{ position: 'fixed', left: '1rem', bottom: '1rem', top: 'auto', zIndex: 50 }}
-      >
-        {/* Expanded menu */}
+      {/* Mobile Nav - collapsible bubble in bottom left - only render after mount to prevent flash */}
+      {isMounted && (
         <div
-          className={cn(
-            "glass rounded-[32px] border border-white/5 shadow-glass mb-3 transition-opacity transition-transform duration-300 origin-bottom-left overflow-hidden",
-            isMobileMenuOpen
-              ? "opacity-100 scale-100 pointer-events-auto"
-              : "opacity-0 scale-75 pointer-events-none"
-          )}
+          className="md:hidden"
+          style={{ position: 'fixed', left: '1rem', bottom: '1rem', top: 'auto', zIndex: 50 }}
         >
-          <div className="py-4 px-2 w-20">
-            <div className="flex flex-col items-center gap-2">
-              {renderNavItems()}
+          {/* Expanded menu */}
+          <div
+            className={cn(
+              "glass rounded-[32px] border border-white/5 shadow-glass mb-3 transition-opacity transition-transform duration-300 origin-bottom-left overflow-hidden",
+              isMobileMenuOpen
+                ? "opacity-100 scale-100 pointer-events-auto"
+                : "opacity-0 scale-75 pointer-events-none"
+            )}
+          >
+            <div className="py-4 px-2 w-20">
+              <div className="flex flex-col items-center gap-2">
+                {renderNavItems()}
+              </div>
             </div>
           </div>
+
+          {/* Toggle bubble button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className={cn(
+              "glass w-14 h-14 rounded-full border border-white/10 shadow-glass flex items-center justify-center transition-all duration-300 active:scale-95",
+              isMobileMenuOpen ? "bg-white/10 shadow-glow" : "bg-black/40 hover:shadow-glow"
+            )}
+          >
+            <div className="relative">
+              <Menu
+                className={cn(
+                  "w-6 h-6 text-white transition-all duration-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                  isMobileMenuOpen ? "opacity-0 rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"
+                )}
+              />
+              <X
+                className={cn(
+                  "w-6 h-6 text-white transition-all duration-300",
+                  isMobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-75"
+                )}
+              />
+            </div>
+
+            {/* Poll alert on bubble when menu closed */}
+            {!isMobileMenuOpen && pollAlertVisible && hasActivePolls && (
+              <div className="absolute -top-1 -right-1">
+                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+                <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-75" />
+              </div>
+            )}
+          </button>
         </div>
-
-        {/* Toggle bubble button */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className={cn(
-            "glass w-14 h-14 rounded-full border border-white/10 shadow-glass flex items-center justify-center transition-all duration-300 active:scale-95",
-            isMobileMenuOpen ? "bg-white/10 shadow-glow" : "bg-black/40 hover:shadow-glow"
-          )}
-        >
-          <div className="relative">
-            <Menu
-              className={cn(
-                "w-6 h-6 text-white transition-all duration-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-                isMobileMenuOpen ? "opacity-0 rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"
-              )}
-            />
-            <X
-              className={cn(
-                "w-6 h-6 text-white transition-all duration-300",
-                isMobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-75"
-              )}
-            />
-          </div>
-
-          {/* Poll alert on bubble when menu closed */}
-          {!isMobileMenuOpen && pollAlertVisible && hasActivePolls && (
-            <div className="absolute -top-1 -right-1">
-              <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
-              <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-75" />
-            </div>
-          )}
-        </button>
-      </div>
+      )}
     </>
   );
 }
