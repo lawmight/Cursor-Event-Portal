@@ -55,7 +55,7 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
     return { url: "/agenda-build.png", caption: "Create something amazing" };
   }
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
-    return { url: "/agenda-blitz.png", caption: "Quick-fire rounds" };
+    return { url: "/blitz.png", caption: "Quick-fire rounds" };
   }
 
   return null;
@@ -219,12 +219,12 @@ export function AgendaList({ items: initialItems, eventId }: AgendaListProps) {
 
               {/* Hover Image Preview */}
               {(() => {
-                // For blitz items, always use agenda-blitz image
+                // For blitz items, always use blitz image
                 const titleLower = item.title.toLowerCase();
                 const isBlitz = titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid");
                 
                 const agendaImage = isBlitz
-                  ? { url: "/agenda-blitz.png", caption: "Quick-fire rounds" }
+                  ? { url: "/blitz.png", caption: "Quick-fire rounds" }
                   : item.image_url
                   ? { url: item.image_url, caption: "" }
                   : getAgendaImage(item.title);
