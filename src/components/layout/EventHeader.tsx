@@ -168,13 +168,13 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
       <div className="glass border-b border-white/5 py-8 backdrop-blur-3xl">
         <div className="max-w-lg mx-auto px-6 flex items-center justify-between">
           <Link href={`/${event.slug}`} className="flex items-center gap-5 group">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-2xl group-hover:scale-105 transition-all flex items-center justify-center p-1">
+            <div className="w-[86px] h-[86px] rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-2xl group-hover:scale-105 transition-all flex items-center justify-center p-1">
               <div className="w-full h-full rounded-[14px] overflow-hidden">
                 <Image
                   src="/cursor-calgary.avif"
                   alt="Cursor Calgary"
-                  width={64}
-                  height={64}
+                  width={86}
+                  height={86}
                   className="w-full h-full object-cover"
                   priority
                 />
