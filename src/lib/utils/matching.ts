@@ -396,85 +396,132 @@ Respond ONLY with valid JSON:
     }
   }
   
+  // 1. Ensure global uniqueness of member assignments across all groups
+  const assignedGlobal = new Set<string>();
+  const preProcessedGroups: Array<{ name: string; description: string; memberIds: string[] }> = [];
+
+  for (const group of llmGroups) {
+    // Filter out duplicates within the group and already assigned users
+    const uniqueMemberIds = Array.from(new Set(group.memberIds)).filter(id => {
+      if (assignedGlobal.has(id)) return false;
+      // Only include IDs that actually exist in our profiles
+      return profiles.some(p => p.id === id);
+    });
+
+    if (uniqueMemberIds.length > 0) {
+      preProcessedGroups.push({
+        ...group,
+        memberIds: uniqueMemberIds
+      });
+      uniqueMemberIds.forEach(id => assignedGlobal.add(id));
+    }
+  }
+
+  // 2. Handle attendees missed by LLM
+  const missedProfiles = profiles.filter(p => !assignedGlobal.has(p.id));
+  if (missedProfiles.length > 0) {
+    console.log(`[generateHybridGroupMatches] Distributing ${missedProfiles.length} missed attendees`);
+    
+    // If we have existing groups, distribute them
+    if (preProcessedGroups.length > 0) {
+      missedProfiles.forEach((p, index) => {
+        // Add to the group with the fewest members to keep them balanced
+        const targetGroup = preProcessedGroups.reduce((prev, curr) => 
+          prev.memberIds.length <= curr.memberIds.length ? prev : curr
+        );
+        targetGroup.memberIds.push(p.id);
+        assignedGlobal.add(p.id);
+      });
+    } else {
+      // Create a new group if none exist
+      preProcessedGroups.push({
+        name: "Networking Group",
+        description: "General networking group for remaining attendees",
+        memberIds: missedProfiles.map(p => p.id)
+      });
+      missedProfiles.forEach(p => assignedGlobal.add(p.id));
+    }
+  }
+  
   // Refine groups with constraints and scoring
-  const refinedGroups = await Promise.all(
-    llmGroups.map(async (group) => {
-      const constraints = checkConstraints(profiles, group.memberIds, groupCounts);
-      
-      // Filter out groups with hard constraint violations
-      const hasHardViolation = constraints.some((c) => c.severity === "hard" && c.type !== "mutual_benefit");
-      if (hasHardViolation) {
-        // Try to fix by removing problematic members
-        const fixedMemberIds = group.memberIds.filter((id) => {
-          const constraint = constraints.find((c) => c.type === "dominator" && c.value?.userId === id);
-          return !constraint;
-        });
-        
-        if (fixedMemberIds.length >= 2) {
-          group.memberIds = fixedMemberIds;
-        }
-      }
-      
-      // Re-check constraints after fixes
-      const finalConstraints = checkConstraints(profiles, group.memberIds, groupCounts);
-      const score = await calculateGroupScore(profiles, group.memberIds, finalConstraints);
-      
-      // Update group counts
-      group.memberIds.forEach((id) => {
-        groupCounts.set(id, (groupCounts.get(id) || 0) + 1);
+  const refinedGroups: MatchingResult["groups"] = [];
+  
+  for (const group of preProcessedGroups) {
+    const constraints = checkConstraints(profiles, group.memberIds, groupCounts);
+    
+    // Filter out groups with hard constraint violations
+    const hasHardViolation = constraints.some((c) => c.severity === "hard" && c.type !== "mutual_benefit");
+    if (hasHardViolation) {
+      // Try to fix by removing problematic members
+      const fixedMemberIds = group.memberIds.filter((id) => {
+        const constraint = constraints.find((c) => c.type === "dominator" && c.value?.userId === id);
+        return !constraint;
       });
       
-      // Generate mutual benefit edges
-      const memberProfiles = profiles.filter((p) => group.memberIds.includes(p.id));
-      const mutualBenefitEdges: Array<{ from: string; to: string; reason: string }> = [];
-      
-      for (let i = 0; i < memberProfiles.length; i++) {
-        for (let j = i + 1; j < memberProfiles.length; j++) {
-          const p1 = memberProfiles[i];
-          const p2 = memberProfiles[j];
-          
-          const p1OffersMatchP2Goals = p1.offers.filter((offer) =>
-            p2.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-          );
-          const p2OffersMatchP1Goals = p2.offers.filter((offer) =>
-            p1.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-          );
-          
-          if (p1OffersMatchP2Goals.length > 0) {
-            mutualBenefitEdges.push({
-              from: p1.id,
-              to: p2.id,
-              reason: `${p1.name} offers ${p1OffersMatchP2Goals.join(", ")} which matches ${p2.name}'s goals`,
-            });
-          }
-          if (p2OffersMatchP1Goals.length > 0) {
-            mutualBenefitEdges.push({
-              from: p2.id,
-              to: p1.id,
-              reason: `${p2.name} offers ${p2OffersMatchP1Goals.join(", ")} which matches ${p1.name}'s goals`,
-            });
-          }
+      if (fixedMemberIds.length >= 2) {
+        group.memberIds = fixedMemberIds;
+      }
+    }
+    
+    // Re-check constraints after fixes
+    const finalConstraints = checkConstraints(profiles, group.memberIds, groupCounts);
+    const score = await calculateGroupScore(profiles, group.memberIds, finalConstraints);
+    
+    // Update group counts
+    group.memberIds.forEach((id) => {
+      groupCounts.set(id, (groupCounts.get(id) || 0) + 1);
+    });
+    
+    // Generate mutual benefit edges
+    const memberProfiles = profiles.filter((p) => group.memberIds.includes(p.id));
+    const mutualBenefitEdges: Array<{ from: string; to: string; reason: string }> = [];
+    
+    for (let i = 0; i < memberProfiles.length; i++) {
+      for (let j = i + 1; j < memberProfiles.length; j++) {
+        const p1 = memberProfiles[i];
+        const p2 = memberProfiles[j];
+        
+        const p1OffersMatchP2Goals = p1.offers.filter((offer) =>
+          p2.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
+        );
+        const p2OffersMatchP1Goals = p2.offers.filter((offer) =>
+          p1.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
+        );
+        
+        if (p1OffersMatchP2Goals.length > 0) {
+          mutualBenefitEdges.push({
+            from: p1.id,
+            to: p2.id,
+            reason: `${p1.name} offers ${p1OffersMatchP2Goals.join(", ")} which matches ${p2.name}'s goals`,
+          });
+        }
+        if (p2OffersMatchP1Goals.length > 0) {
+          mutualBenefitEdges.push({
+            from: p2.id,
+            to: p1.id,
+            reason: `${p2.name} offers ${p2OffersMatchP1Goals.join(", ")} which matches ${p1.name}'s goals`,
+          });
         }
       }
-      
-      // Generate structured rationale
-      const matchReasons = generateStructuredRationale(
-        profiles,
-        group.memberIds,
-        finalConstraints,
-        mutualBenefitEdges
-      );
-      
-      return {
-        name: group.name,
-        description: group.description,
-        memberIds: group.memberIds,
-        matchReasons,
-        score: Math.round(score * 100) / 100, // Round to 2 decimal places
-        constraints: finalConstraints,
-      };
-    })
-  );
+    }
+    
+    // Generate structured rationale
+    const matchReasons = generateStructuredRationale(
+      profiles,
+      group.memberIds,
+      finalConstraints,
+      mutualBenefitEdges
+    );
+    
+    refinedGroups.push({
+      name: group.name,
+      description: group.description,
+      memberIds: group.memberIds,
+      matchReasons,
+      score: Math.round(score * 100) / 100, // Round to 2 decimal places
+      constraints: finalConstraints,
+    });
+  }
   
   // Sort by score descending
   refinedGroups.sort((a, b) => b.score - a.score);
