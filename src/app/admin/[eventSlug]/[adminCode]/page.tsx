@@ -118,7 +118,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </span>
             <span className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              Capacity ({event.capacity - stats.registered} left)
+              Capacity ({event.capacity - stats.checkedIn} left)
             </span>
           </div>
         </div>
