@@ -7,19 +7,27 @@ import { ArrowLeft } from "lucide-react";
 interface AdminHeaderProps {
   eventSlug: string;
   adminCode?: string;
+  title?: string;
   subtitle: string;
   rightElement?: React.ReactNode;
   showBackArrow?: boolean;
 }
 
-export function AdminHeader({ eventSlug, adminCode, subtitle, rightElement, showBackArrow = true }: AdminHeaderProps) {
+export function AdminHeader({ 
+  eventSlug, 
+  adminCode, 
+  title = "Calgary Cursor Meetup", 
+  subtitle, 
+  rightElement, 
+  showBackArrow = true 
+}: AdminHeaderProps) {
   const adminPath = adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
   
   return (
     <header className="z-10 py-12">
       <div className="max-w-4xl mx-auto px-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-10">
             {showBackArrow && (
               <Link 
                 href={adminPath}
@@ -40,8 +48,8 @@ export function AdminHeader({ eventSlug, adminCode, subtitle, rightElement, show
                 className="object-contain group-hover:scale-105 transition-transform"
               />
             </Link>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-light tracking-tight text-white">Calgary Cursor Meetup - Admin Dashboard</h1>
+            <div className="space-y-1 ml-2">
+              <h1 className="text-4xl font-light tracking-tight text-white">{title}</h1>
               <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">{subtitle}</p>
             </div>
           </div>
