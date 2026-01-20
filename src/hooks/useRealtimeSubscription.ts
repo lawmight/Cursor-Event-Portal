@@ -63,12 +63,15 @@ export function useRealtimeSubscription({
           table: config.table,
           filter,
         },
-        async () => {
+        () => {
           if (config.onEvent) {
             config.onEvent();
           }
           if (autoRefresh) {
-            router.refresh();
+            // Use setTimeout to avoid Next.js treating router.refresh() as a Promise
+            setTimeout(() => {
+              router.refresh();
+            }, 0);
           }
         }
       );

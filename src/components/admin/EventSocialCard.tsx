@@ -88,12 +88,12 @@ export function EventSocialCard({
         }
       );
     
-    const subscription = channel.subscribe();
-    
-    // Handle both Promise and non-Promise returns for compatibility
-    if (subscription && typeof (subscription as any).then === "function") {
-      (subscription as any).catch((err: any) => console.error("Subscription error:", err));
-    }
+    // Subscribe - just call it directly, no need to handle return value
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        console.log("[EventSocialCard] Subscribed to questions");
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);

@@ -138,15 +138,12 @@ export function EventSocial({
         }
       );
     
-    // Subscribe - handle both Promise and non-Promise returns
-    const subscribeResult = channel.subscribe();
-    
-    // If subscribe returns a Promise, handle it without storing it
-    if (subscribeResult && typeof (subscribeResult as any).then === "function") {
-      (subscribeResult as any).catch((err: any) => {
-        console.error("[EventSocial] Subscription error:", err);
-      });
-    }
+    // Subscribe - just call it directly, no need to handle return value
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        console.log("[EventSocial] Subscribed to questions");
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);
