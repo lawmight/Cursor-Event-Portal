@@ -9,14 +9,14 @@ const EVENT_SLUG = "calgary-jan-2026";
 const AGENDA_ITEMS = [
   {
     title: "Mingling & Networking",
-    description: "Arrive early and connect with fellow developers. The room will be set up into pods for collaboration.",
+    description: "Connect with fellow developers. Collaboration pods available.",
     start_time: "2026-01-29T00:00:00Z", // 5:00pm MST (opening)
     end_time: "2026-01-29T00:30:00Z", // 5:30pm MST (start)
     sort_order: 0,
   },
   {
     title: "Welcome & Introductions",
-    description: "Quick 5-minute introduction to kick off the event.",
+    description: "Event introduction and welcome.",
     speaker: "Jia Ming Huang",
     start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
     end_time: "2026-01-29T00:35:00Z", // 5:35pm MST
@@ -24,7 +24,7 @@ const AGENDA_ITEMS = [
   },
   {
     title: "Short Demos",
-    description: "A few quick demos (up to 5 minutes each) showcasing what's possible with Cursor.",
+    description: "Quick demos showcasing Cursor capabilities.",
     speaker: "Simon Loewen",
     start_time: "2026-01-29T00:35:00Z", // 5:35pm MST
     end_time: "2026-01-29T00:50:00Z", // 5:50pm MST
@@ -32,22 +32,21 @@ const AGENDA_ITEMS = [
   },
   {
     title: "Build Session",
-    description: "Work with your pod to build something together. Walk around to get help and answer questions. Room is set up in collaboration pods.",
-    speaker: "Jia Ming Huang",
+    description: "Collaborative building session. Work with your pod and get help from facilitators.",
     start_time: "2026-01-29T00:50:00Z", // 5:50pm MST
     end_time: "2026-01-29T02:20:00Z", // 7:20pm MST
     sort_order: 3,
   },
   {
     title: "Blitz Demos & Community Voting",
-    description: "Quick demos from each pod followed by community voting. Prizes will be awarded based on community votes (pending merch/swag confirmation).",
+    description: "Quick demos from each pod followed by community voting. Prizes awarded to winners.",
     start_time: "2026-01-29T02:20:00Z", // 7:20pm MST
     end_time: "2026-01-29T03:00:00Z", // 8:00pm MST
     sort_order: 4,
   },
   {
     title: "Networking & Tear-Down",
-    description: "Continue networking, share contact information, and help clean up.",
+    description: "Continue networking and share contact information.",
     start_time: "2026-01-29T03:00:00Z", // 8:00pm MST
     end_time: "2026-01-29T03:30:00Z", // 8:30pm MST (finish)
     sort_order: 5,

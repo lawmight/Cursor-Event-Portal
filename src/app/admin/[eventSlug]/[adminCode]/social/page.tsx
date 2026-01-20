@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -44,11 +44,15 @@ export default function EventSocialPage({ params }: EventSocialPageProps) {
   const [eventSlug, setEventSlug] = useState<string>("");
   const [adminCode, setAdminCode] = useState<string>("");
 
-  // Get params
-  params.then(({ eventSlug: slug, adminCode: code }) => {
-    if (slug !== eventSlug) setEventSlug(slug);
-    if (code !== adminCode) setAdminCode(code);
-  });
+  // Get params using useEffect to properly handle Promise
+  useEffect(() => {
+    params.then(({ eventSlug: slug, adminCode: code }) => {
+      setEventSlug(slug);
+      setAdminCode(code);
+    }).catch((error) => {
+      console.error("Error loading params:", error);
+    });
+  }, [params]);
 
   const currentIndex = TABS.findIndex((t) => t.id === activeTab);
 
