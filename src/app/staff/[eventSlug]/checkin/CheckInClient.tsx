@@ -318,31 +318,7 @@ export function CheckInClient({
                     }
                   }}
                 >
-                  {/* Intake Signals Hover Overlay */}
-                  {registration.user?.intakes?.[0] && !registration.user.intakes[0].skipped && (
-                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center px-8 z-10 pointer-events-none">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mr-2 w-full mb-1">Attendee Signals</span>
-                        {registration.user.intakes[0].goals?.filter(g => g !== 'other').map((goal) => (
-                          <Badge key={goal} variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full">
-                            {SIGNAL_LABELS[goal] || goal}
-                          </Badge>
-                        ))}
-                        {registration.user.intakes[0].offers?.filter(o => o !== 'other').map((offer) => (
-                          <Badge key={offer} variant="outline" className="bg-white/20 border-white/30 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full font-bold">
-                            {SIGNAL_LABELS[offer] || offer}
-                          </Badge>
-                        ))}
-                        {(registration.user.intakes[0].goals_other || registration.user.intakes[0].offers_other) && (
-                          <Badge variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full italic">
-                            Other Interests
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-5 min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity">
+                  <div className="flex items-center gap-5 min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity relative z-10">
                     <div className="relative shrink-0">
                       <div
                         className={cn(
@@ -369,6 +345,55 @@ export function CheckInClient({
                       </p>
                     </div>
                   </div>
+
+                  {/* Intake Signals Hover Overlay */}
+                  {registration.user?.intakes?.[0] && !registration.user.intakes[0].skipped && (
+                    <div className="absolute left-0 top-0 bottom-0 right-[140px] bg-black/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center px-8 z-30 pointer-events-none rounded-l-[32px]">
+                      <div className="flex flex-col gap-3 w-full">
+                        {/* Keep name visible in overlay */}
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className="relative shrink-0">
+                            <div
+                              className={cn(
+                                "w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-light transition-all border",
+                                isCheckedIn
+                                  ? "bg-white border-white text-black"
+                                  : "bg-white/[0.1] border-white/20 text-white"
+                              )}
+                            >
+                              {registration.user?.name.charAt(0).toUpperCase()}
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-base font-light text-white truncate tracking-tight">
+                              {registration.user?.name}
+                            </p>
+                            <p className="text-[9px] text-gray-400 uppercase tracking-widest truncate font-medium mt-0.5">
+                              {registration.user?.email || "No email"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 w-full mb-1">Attendee Signals</span>
+                          {registration.user.intakes[0].goals?.filter(g => g !== 'other').map((goal) => (
+                            <Badge key={goal} variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full">
+                              {SIGNAL_LABELS[goal] || goal}
+                            </Badge>
+                          ))}
+                          {registration.user.intakes[0].offers?.filter(o => o !== 'other').map((offer) => (
+                            <Badge key={offer} variant="outline" className="bg-white/20 border-white/30 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full font-bold">
+                              {SIGNAL_LABELS[offer] || offer}
+                            </Badge>
+                          ))}
+                          {(registration.user.intakes[0].goals_other || registration.user.intakes[0].offers_other) && (
+                            <Badge variant="outline" className="bg-white/5 border-white/10 text-white text-[9px] uppercase tracking-widest py-1 px-3 rounded-full italic">
+                              Other Interests
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2 relative z-20" data-action-area>
                     {/* Deregister confirmation or button */}

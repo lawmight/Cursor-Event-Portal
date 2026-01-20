@@ -48,7 +48,7 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
     return { url: "/agenda-intro.png", caption: "Setting the stage" };
   }
   if (titleLower.includes("demo") || titleLower.includes("showcase") || titleLower.includes("present")) {
-    return { url: "/demos-2.png", caption: "Live demonstrations" };
+    return { url: "/agenda-demos.png", caption: "Live demonstrations" };
   }
   if (titleLower.includes("network") || titleLower.includes("group") || titleLower.includes("connect")) {
     return { url: "/agenda-networking.png", caption: "Build meaningful connections" };
