@@ -142,8 +142,8 @@ export function EventSocial({
     const subscribeResult = channel.subscribe();
     
     // If subscribe returns a Promise, handle it without storing it
-    if (subscribeResult && typeof subscribeResult.then === "function") {
-      subscribeResult.catch((err: any) => {
+    if (subscribeResult && typeof (subscribeResult as any).then === "function") {
+      (subscribeResult as any).catch((err: any) => {
         console.error("[EventSocial] Subscription error:", err);
       });
     }
