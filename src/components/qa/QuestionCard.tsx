@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { upvoteQuestion, createAnswer, updateQuestionStatus, acceptAnswer, deleteQuestion } from "@/lib/actions/questions";
 import { timeAgo } from "@/lib/utils";
 import type { Question, UserRole } from "@/types";
-import { ChevronUp, MessageCircle, Check, Pin, EyeOff } from "lucide-react";
+import { ChevronUp, MessageCircle, Check, Pin, PinOff, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface QuestionCardProps {
@@ -52,13 +52,17 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
     setLoading(false);
   };
 
-  const handleStatusChange = async (status: "answered" | "pinned") => {
+  const handleStatusChange = async (status: "answered" | "pinned" | "open") => {
     setLoading(true);
     const result = await updateQuestionStatus(question.id, status, eventSlug);
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(`Question ${status}`);
+      if (status === "open" && question.status === "pinned") {
+        toast.success("Question unpinned");
+      } else {
+        toast.success(`Question ${status}`);
+      }
       router.refresh();
     }
     setLoading(false);
@@ -211,7 +215,16 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
 
             {isModerator && (
               <div className="flex items-center gap-8">
-                {question.status !== "pinned" && (
+                {question.status === "pinned" ? (
+                  <button
+                    onClick={() => handleStatusChange("open")}
+                    disabled={loading}
+                    className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-white transition-colors"
+                  >
+                    <PinOff className="w-3.5 h-3.5 opacity-40" />
+                    Unpin
+                  </button>
+                ) : (
                   <button
                     onClick={() => handleStatusChange("pinned")}
                     disabled={loading}
