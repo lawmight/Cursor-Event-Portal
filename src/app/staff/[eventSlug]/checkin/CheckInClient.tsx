@@ -194,13 +194,6 @@ export function CheckInClient({
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
-        {/* Event Status Bar */}
-        <EventStatusBar 
-          event={event}
-          initialAgendaItems={initialAgendaItems}
-          eventId={event.id}
-        />
-
         {/* Stats - Floating Grid */}
         <div className="grid grid-cols-2 gap-6">
           <div className="glass rounded-[32px] p-8 space-y-4 relative overflow-hidden group">
@@ -219,6 +212,13 @@ export function CheckInClient({
             <p className="text-4xl font-light tracking-tighter text-white">{checkedInCount}</p>
           </div>
         </div>
+
+        {/* Event Status Bar */}
+        <EventStatusBar 
+          event={event}
+          initialAgendaItems={initialAgendaItems}
+          eventId={event.id}
+        />
 
         {/* Capacity - Ultra Minimal */}
         <div className="glass rounded-[32px] p-8 space-y-6">
