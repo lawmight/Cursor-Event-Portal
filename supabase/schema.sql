@@ -345,7 +345,7 @@ VALUES (
   'Calgary Cursor Meetup - January 2026',
   'TBD',
   'Calgary, AB',
-  50,
+  65,
   '2026-01-29 00:30:00+00',
   '2026-01-29 03:30:00+00',
   'published'
