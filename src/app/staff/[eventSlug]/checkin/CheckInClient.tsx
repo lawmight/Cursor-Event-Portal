@@ -9,7 +9,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AttendeeDetailModal } from "@/components/admin/AttendeeDetailModal";
 import { EventStatusBar } from "@/components/staff/EventStatusBar";
-import { StaffQuickActions } from "@/components/staff/StaffQuickActions";
 import { RealtimeHealthWidget } from "@/components/staff/RealtimeHealthWidget";
 
 interface CheckInClientProps {
@@ -203,20 +202,8 @@ export function CheckInClient({
           eventId={event.id}
         />
 
-        {/* Quick Actions & Health Widget */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StaffQuickActions
-            onCheckInByEmail={() => {
-              // Focus the email input
-              const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-              emailInput?.focus();
-            }}
-            onAddGuest={() => {
-              // Focus the add email input
-              const addInput = document.querySelector('input[placeholder*="Add attendee email"]') as HTMLInputElement;
-              addInput?.focus();
-            }}
-          />
+        {/* Health Widget */}
+        <div className="flex justify-center">
           <RealtimeHealthWidget eventId={event.id} />
         </div>
 
