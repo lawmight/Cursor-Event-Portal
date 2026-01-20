@@ -58,7 +58,7 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
       
       <EventHeader event={event} announcement={latestAnnouncement} userId={session.userId} />
 
-      <main className="max-w-lg mx-auto w-full px-6 py-12 space-y-12">
+      <main className="max-w-[640px] mx-auto w-full px-6 py-12 space-y-12">
         <div className="space-y-2">
           <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium animate-slide-up" style={{ animationDelay: "100ms" }}>
             Schedule
