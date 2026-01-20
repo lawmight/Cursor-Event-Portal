@@ -113,7 +113,10 @@ export function EventSocial({
       setQuestions(openQData as Question[]);
     };
 
-    checkNewQuestions();
+    // Call async function and handle any errors
+    checkNewQuestions().catch((err) => {
+      console.error("Error checking new questions on mount:", err);
+    });
 
     // Subscribe to question changes
     const supabase = createClient();
@@ -128,10 +131,22 @@ export function EventSocial({
           filter: `event_id=eq.${event.id}`,
         },
         () => {
-          checkNewQuestions();
+          // Call async function without awaiting to avoid Promise serialization issues
+          checkNewQuestions().catch((err) => {
+            console.error("Error checking new questions:", err);
+          });
         }
-      )
-      .subscribe();
+      );
+    
+    // Subscribe - handle both Promise and non-Promise returns
+    const subscribeResult = channel.subscribe();
+    
+    // If subscribe returns a Promise, handle it without storing it
+    if (subscribeResult && typeof subscribeResult.then === "function") {
+      subscribeResult.catch((err: any) => {
+        console.error("[EventSocial] Subscription error:", err);
+      });
+    }
 
     return () => {
       supabase.removeChannel(channel);

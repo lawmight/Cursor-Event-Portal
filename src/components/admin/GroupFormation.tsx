@@ -79,7 +79,9 @@ export function GroupFormation({
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Refresh to show the new groups
-        router.refresh();
+        setTimeout(() => {
+          router.refresh();
+        }, 0);
         
         // Show success or warning message
         if (result.warning) {
@@ -116,8 +118,14 @@ export function GroupFormation({
   };
 
   const handleStatusChange = async (groupId: string, status: GroupStatus) => {
-    await updateGroupStatus(groupId, status, eventSlug);
-    router.refresh();
+    const result = await updateGroupStatus(groupId, status, eventSlug);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setTimeout(() => {
+        router.refresh();
+      }, 0);
+    }
   };
 
   const handleMemberRemove = async (groupId: string, userId: string) => {
@@ -125,7 +133,9 @@ export function GroupFormation({
     if (result.error) {
       setError(result.error);
     } else {
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 0);
     }
   };
 
@@ -134,7 +144,9 @@ export function GroupFormation({
     if (result.error) {
       setError(result.error);
     } else {
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 0);
     }
   };
 
@@ -369,7 +381,9 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
       alert(result.error);
       setTableNumber(group.table_number?.toString() || "");
     } else {
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 0);
     }
     setEditingTableNumber(false);
   };
