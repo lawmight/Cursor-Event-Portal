@@ -153,7 +153,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 </div>
               )}
 
-              <div className="relative z-10 space-y-5 md:space-y-6 max-w-full md:max-w-[55%] transition-all duration-500">
+              <div className="relative z-10 space-y-5 md:space-y-6 max-w-full md:max-w-[65%] transition-all duration-500">
                 {/* Time and Duration Row */}
                 <div className="flex items-center gap-5 md:gap-6 flex-wrap">
                   <div className={`text-[13px] md:text-[14px] font-semibold uppercase tracking-[0.2em] ${
@@ -234,7 +234,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 if (!agendaImage) return null;
 
                 return (
-                  <div className="absolute inset-y-0 right-0 w-full md:w-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none translate-x-4 group-hover:translate-x-0 overflow-hidden">
+                  <div className="absolute inset-y-0 right-0 w-full md:w-[40%] opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none translate-x-4 group-hover:translate-x-0 overflow-hidden">
                     <div className="relative w-full h-full">
                       <img
                         src={agendaImage.url}
@@ -242,7 +242,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                         className="w-full h-full object-cover"
                       />
                       {/* Gradient to blend with card content */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[rgba(10,10,10,1)] via-[rgba(10,10,10,0.5)] to-transparent z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent z-10" />
                       
                       {/* Blur transition */}
                       <div 
