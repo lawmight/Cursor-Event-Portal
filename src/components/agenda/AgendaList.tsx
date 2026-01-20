@@ -44,6 +44,10 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
   if (titleLower.includes("arrival") || titleLower.includes("mingle") || titleLower.includes("mingling") || titleLower.includes("check-in") || titleLower.includes("checkin")) {
     return { url: "/agenda-mingling.png", caption: "Connect with fellow attendees" };
   }
+  // Specific image for Build Showcase session
+  if (titleLower.includes("build showcase")) {
+    return { url: "/showcase.png", caption: "Build showcase and community voting" };
+  }
   if (titleLower.includes("intro") || titleLower.includes("welcome") || titleLower.includes("opening")) {
     return { url: "/agenda-intro.png", caption: "Setting the stage" };
   }
