@@ -22,6 +22,9 @@ interface AdminDashboardProps {
   params: Promise<{ eventSlug: string; adminCode: string }>;
 }
 
+// Force fresh data on every request (no caching)
+export const revalidate = 0;
+
 export default async function AdminDashboard({ params }: AdminDashboardProps) {
   const { eventSlug, adminCode } = await params;
 

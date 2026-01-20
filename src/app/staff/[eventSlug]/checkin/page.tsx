@@ -8,6 +8,9 @@ interface CheckInPageProps {
   params: Promise<{ eventSlug: string }>;
 }
 
+// Force fresh data on every request (no caching)
+export const revalidate = 0;
+
 export default async function CheckInPage({ params }: CheckInPageProps) {
   const { eventSlug } = await params;
 
