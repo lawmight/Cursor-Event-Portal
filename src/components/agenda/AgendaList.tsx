@@ -145,7 +145,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {isCurrentlyNow && (
-                <div className="absolute top-0 right-0 p-6 md:p-7 z-20">
+                <div className="absolute top-0 right-0 p-6 md:p-7 z-30">
                   <div className="flex items-center gap-2.5">
                     <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/70 font-medium">Live</span>
                     <div className="w-3 h-3 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
@@ -153,7 +153,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 </div>
               )}
 
-              <div className="relative z-10 space-y-5 md:space-y-6 max-w-full md:max-w-[65%] transition-all duration-500">
+              <div className="relative z-20 space-y-5 md:space-y-6 max-w-full md:max-w-[65%] transition-all duration-500">
                 {/* Time and Duration Row */}
                 <div className="flex items-center gap-5 md:gap-6 flex-wrap">
                   <div className={`text-[13px] md:text-[14px] font-semibold uppercase tracking-[0.2em] ${
@@ -234,7 +234,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 if (!agendaImage) return null;
 
                 return (
-                  <div className="absolute inset-y-0 right-0 w-full md:w-[40%] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-500 pointer-events-none overflow-hidden">
+                  <div className="absolute inset-y-0 right-0 w-full md:w-[40%] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-500 pointer-events-none overflow-hidden z-0">
                     <div className="relative w-full h-full">
                       <img
                         src={agendaImage.url}
@@ -243,7 +243,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                         loading="eager"
                       />
                       {/* Gradient to blend with card content */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent z-0" />
                     </div>
                   </div>
                 );
