@@ -49,16 +49,14 @@ export function AdminHeader({
                 className="object-contain group-hover:scale-105 transition-transform"
               />
             </Link>
-            <div className="space-y-1 ml-2">
+            <div className="ml-2">
               <h1 className="text-4xl font-light tracking-tight text-white">{title}</h1>
-              <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">{subtitle}</p>
             </div>
           </div>
-          {rightElement && (
-            <div className="flex items-center gap-4">
-              {rightElement}
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">{subtitle}</p>
+            {rightElement && rightElement}
+          </div>
         </div>
       </div>
     </header>
