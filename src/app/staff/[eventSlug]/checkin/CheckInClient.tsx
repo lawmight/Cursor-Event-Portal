@@ -9,7 +9,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AttendeeDetailModal } from "@/components/admin/AttendeeDetailModal";
 import { EventStatusBar } from "@/components/staff/EventStatusBar";
-import { RealtimeHealthWidget } from "@/components/staff/RealtimeHealthWidget";
 
 interface CheckInClientProps {
   event: Event;
@@ -201,11 +200,6 @@ export function CheckInClient({
           initialAgendaItems={initialAgendaItems}
           eventId={event.id}
         />
-
-        {/* Health Widget */}
-        <div className="flex justify-center">
-          <RealtimeHealthWidget eventId={event.id} />
-        </div>
 
         {/* Stats - Floating Grid */}
         <div className="grid grid-cols-2 gap-6">
