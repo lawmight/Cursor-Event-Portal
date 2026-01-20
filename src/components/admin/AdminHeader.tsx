@@ -21,6 +21,7 @@ export function AdminHeader({
   rightElement, 
   showBackArrow = true 
 }: AdminHeaderProps) {
+  // Always use adminCode format if available, otherwise fallback to old format
   const adminPath = adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
   
   return (

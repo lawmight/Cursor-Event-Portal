@@ -33,6 +33,11 @@ export default async function AdminSurveysPage({ params }: AdminSurveysPageProps
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/surveys`);
+  }
+
   const surveys = await getAllSurveys(event.id);
 
   return (

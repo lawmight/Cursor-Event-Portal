@@ -35,6 +35,12 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    const searchParamsStr = new URLSearchParams({ sort: sort || "trending", status: status || "all" }).toString();
+    redirect(`/admin/${eventSlug}/${event.admin_code}/qa?${searchParamsStr}`);
+  }
+
   const sortBy = sort === "new" ? "new" : "trending";
   const statusFilter = status === "answered" ? "answered" : status === "hidden" ? "hidden" : status === "pinned" ? "pinned" : status === "open" ? "open" : "all";
 

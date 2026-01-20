@@ -33,6 +33,11 @@ export default async function AnnouncementsPage({ params }: AnnouncementsPagePro
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/announcements`);
+  }
+
   const announcements = await getAnnouncements(event.id);
 
   return <AnnouncementsClient event={event} eventSlug={eventSlug} adminCode={undefined} initialAnnouncements={announcements} />;

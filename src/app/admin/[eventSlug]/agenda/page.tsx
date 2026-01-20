@@ -33,6 +33,11 @@ export default async function AdminAgendaPage({ params }: AdminAgendaPageProps) 
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/agenda`);
+  }
+
   const items = await getAgendaItems(event.id);
 
   return <AgendaAdminClient event={event} eventSlug={eventSlug} adminCode={undefined} initialItems={items} />;

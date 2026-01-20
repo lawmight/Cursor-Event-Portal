@@ -38,6 +38,11 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/groups`);
+  }
+
   const [intakes, groups] = await Promise.all([
     getEventIntakes(event.id),
     getSuggestedGroups(event.id),

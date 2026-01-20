@@ -39,6 +39,11 @@ export default async function ExportPage({ params }: ExportPageProps) {
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/export`);
+  }
+
   const [registrations, questions, survey] = await Promise.all([
     getEventRegistrations(event.id),
     getQuestions(event.id),

@@ -34,6 +34,11 @@ export default async function ImportRegistrationsPage({
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/registrations/import`);
+  }
+
   const existing = await getEventRegistrations(event.id);
 
   return (

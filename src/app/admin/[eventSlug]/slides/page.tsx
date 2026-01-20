@@ -33,6 +33,11 @@ export default async function AdminSlideDeckPage({ params }: AdminSlideDeckPageP
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}/slides`);
+  }
+
   const slideDeck = await getSlideDeck(event.id);
 
   return <SlideDeckAdminClient event={event} eventSlug={eventSlug} initialDeck={slideDeck} />;

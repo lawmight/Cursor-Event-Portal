@@ -53,6 +53,11 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
     redirect(`/${eventSlug}/agenda`);
   }
 
+  // Redirect to new admin URL format with adminCode
+  if (event.admin_code) {
+    redirect(`/admin/${eventSlug}/${event.admin_code}`);
+  }
+
   const [stats, questions] = await Promise.all([
     getEventStats(event.id),
     getQuestions(event.id),
