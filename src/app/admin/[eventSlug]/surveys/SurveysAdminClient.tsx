@@ -15,6 +15,7 @@ interface SurveysAdminClientProps {
   eventSlug: string;
   adminCode?: string;
   initialSurveys: Survey[];
+  isEmbedded?: boolean;
 }
 
 export function SurveysAdminClient({
@@ -22,6 +23,7 @@ export function SurveysAdminClient({
   eventSlug,
   adminCode,
   initialSurveys,
+  isEmbedded = false,
 }: SurveysAdminClientProps) {
   const router = useRouter();
   const [surveys, setSurveys] = useState(initialSurveys);
@@ -108,6 +110,188 @@ export function SurveysAdminClient({
   const publishedSurvey = surveys.find((s) => s.published_at);
   const draftSurveys = surveys.filter((s) => !s.published_at);
 
+  const content = (
+    <main className={cn("max-w-4xl mx-auto px-6 py-12 space-y-12 animate-fade-in", isEmbedded && "py-0")}>
+      {/* Error Message */}
+      {error && (
+        <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
+      {/* Published Survey */}
+      {publishedSurvey && (
+        <div className="glass rounded-[40px] p-10 border-green-500/20 bg-green-500/5">
+          <div className="flex items-start justify-between gap-6 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] uppercase tracking-[0.15em] font-medium">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  Published
+                </span>
+                <span className="text-[9px] text-gray-700">
+                  Live on feedback page
+                </span>
+              </div>
+              <h2 className="text-3xl font-light tracking-tight text-white/90 mb-2">
+                {publishedSurvey.title}
+              </h2>
+              <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
+                {publishedSurvey.schema.fields.length} Questions
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleUnpublish(publishedSurvey.id)}
+                disabled={isPending}
+                className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-600 hover:text-white hover:border-white/20 transition-all text-[10px] uppercase tracking-[0.2em] font-bold"
+              >
+                <EyeOff className="w-4 h-4 inline mr-2" />
+                Unpublish
+              </button>
+              <button
+                onClick={() => handleDelete(publishedSurvey.id)}
+                disabled={isPending}
+                className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {publishedSurvey.schema.fields.map((field, idx) => (
+              <div key={field.id} className="p-4 rounded-2xl bg-white/[0.01] border border-white/[0.02]">
+                <p className="text-sm text-white/70 font-light">
+                  {idx + 1}. {field.label} {field.required && <span className="text-gray-700">*</span>}
+                </p>
+                <p className="text-[9px] text-gray-700 uppercase tracking-[0.2em] mt-1">
+                  {field.type}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No Surveys - Show Quick Start */}
+      {surveys.length === 0 && (
+        <div className="glass rounded-[40px] p-12 border-dashed border-white/10 text-center space-y-6">
+          <ClipboardCheck className="w-12 h-12 mx-auto text-gray-700" />
+          <div className="space-y-2">
+            <h3 className="text-xl font-light text-white/90">No surveys yet</h3>
+            <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
+              Get started by creating a default feedback survey
+            </p>
+          </div>
+          <button
+            onClick={handleCreateDefault}
+            disabled={isPending}
+            className="px-8 py-4 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPending ? "Creating..." : "Create Default Survey"}
+          </button>
+          <p className="text-[9px] text-gray-800 pt-2">
+            Or create a custom survey using the + button above
+          </p>
+        </div>
+      )}
+
+      {/* Draft Surveys */}
+      {surveys.length > 0 && (
+        <div className="space-y-8">
+          <div className="flex items-center gap-4 px-2">
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+              {draftSurveys.length > 0 ? "Draft Surveys" : "No Drafts"}
+            </p>
+            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          </div>
+
+          {draftSurveys.length === 0 ? (
+            <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                No draft surveys
+              </p>
+            </div>
+          ) : (
+          <div className="space-y-6">
+            {draftSurveys.map((survey) => (
+              <div
+                key={survey.id}
+                className="glass rounded-[40px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all"
+              >
+                <div className="flex items-start justify-between gap-6 mb-6">
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-light tracking-tight text-white/90 mb-2">
+                      {survey.title}
+                    </h3>
+                    <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
+                      {survey.schema.fields.length} Questions · Created {new Date(survey.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handlePublish(survey.id)}
+                      disabled={isPending}
+                      className="px-6 py-3 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl"
+                    >
+                      <Eye className="w-4 h-4 inline mr-2" />
+                      Publish
+                    </button>
+                    <button
+                      onClick={() => handleDelete(survey.id)}
+                      disabled={isPending}
+                      className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {survey.schema.fields.slice(0, 3).map((field, idx) => (
+                    <div key={field.id} className="p-3 rounded-xl bg-white/[0.01] border border-white/[0.02]">
+                      <p className="text-xs text-white/60 font-light">
+                        {idx + 1}. {field.label}
+                      </p>
+                    </div>
+                  ))}
+                  {survey.schema.fields.length > 3 && (
+                    <p className="text-[9px] text-gray-700 text-center pt-2">
+                      +{survey.schema.fields.length - 3} more questions
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
+    </main>
+  );
+
+  if (isEmbedded) {
+    return (
+      <>
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-all shadow-xl"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+        {content}
+        {showCreateModal && (
+          <CreateSurveyModal
+            onClose={() => setShowCreateModal(false)}
+            onCreate={handleCreate}
+            isPending={isPending}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       <AdminHeader 
@@ -124,162 +308,7 @@ export function SurveysAdminClient({
         }
       />
 
-      <main className="max-w-4xl mx-auto px-6 py-12 space-y-12 animate-fade-in">
-        {/* Error Message */}
-        {error && (
-          <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
-
-        {/* Published Survey */}
-        {publishedSurvey && (
-          <div className="glass rounded-[40px] p-10 border-green-500/20 bg-green-500/5">
-            <div className="flex items-start justify-between gap-6 mb-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] uppercase tracking-[0.15em] font-medium">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    Published
-                  </span>
-                  <span className="text-[9px] text-gray-700">
-                    Live on feedback page
-                  </span>
-                </div>
-                <h2 className="text-3xl font-light tracking-tight text-white/90 mb-2">
-                  {publishedSurvey.title}
-                </h2>
-                <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
-                  {publishedSurvey.schema.fields.length} Questions
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleUnpublish(publishedSurvey.id)}
-                  disabled={isPending}
-                  className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-600 hover:text-white hover:border-white/20 transition-all text-[10px] uppercase tracking-[0.2em] font-bold"
-                >
-                  <EyeOff className="w-4 h-4 inline mr-2" />
-                  Unpublish
-                </button>
-                <button
-                  onClick={() => handleDelete(publishedSurvey.id)}
-                  disabled={isPending}
-                  className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {publishedSurvey.schema.fields.map((field, idx) => (
-                <div key={field.id} className="p-4 rounded-2xl bg-white/[0.01] border border-white/[0.02]">
-                  <p className="text-sm text-white/70 font-light">
-                    {idx + 1}. {field.label} {field.required && <span className="text-gray-700">*</span>}
-                  </p>
-                  <p className="text-[9px] text-gray-700 uppercase tracking-[0.2em] mt-1">
-                    {field.type}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* No Surveys - Show Quick Start */}
-        {surveys.length === 0 && (
-          <div className="glass rounded-[40px] p-12 border-dashed border-white/10 text-center space-y-6">
-            <ClipboardCheck className="w-12 h-12 mx-auto text-gray-700" />
-            <div className="space-y-2">
-              <h3 className="text-xl font-light text-white/90">No surveys yet</h3>
-              <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
-                Get started by creating a default feedback survey
-              </p>
-            </div>
-            <button
-              onClick={handleCreateDefault}
-              disabled={isPending}
-              className="px-8 py-4 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending ? "Creating..." : "Create Default Survey"}
-            </button>
-            <p className="text-[9px] text-gray-800 pt-2">
-              Or create a custom survey using the + button above
-            </p>
-          </div>
-        )}
-
-        {/* Draft Surveys */}
-        {surveys.length > 0 && (
-          <div className="space-y-8">
-            <div className="flex items-center gap-4 px-2">
-              <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
-                {draftSurveys.length > 0 ? "Draft Surveys" : "No Drafts"}
-              </p>
-              <div className="h-[1px] flex-1 bg-white/[0.03]" />
-            </div>
-
-            {draftSurveys.length === 0 ? (
-              <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 opacity-40">
-                <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-                  No draft surveys
-                </p>
-              </div>
-            ) : (
-            <div className="space-y-6">
-              {draftSurveys.map((survey) => (
-                <div
-                  key={survey.id}
-                  className="glass rounded-[40px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all"
-                >
-                  <div className="flex items-start justify-between gap-6 mb-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-light tracking-tight text-white/90 mb-2">
-                        {survey.title}
-                      </h3>
-                      <p className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">
-                        {survey.schema.fields.length} Questions · Created {new Date(survey.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handlePublish(survey.id)}
-                        disabled={isPending}
-                        className="px-6 py-3 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl"
-                      >
-                        <Eye className="w-4 h-4 inline mr-2" />
-                        Publish
-                      </button>
-                      <button
-                        onClick={() => handleDelete(survey.id)}
-                        disabled={isPending}
-                        className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {survey.schema.fields.slice(0, 3).map((field, idx) => (
-                      <div key={field.id} className="p-3 rounded-xl bg-white/[0.01] border border-white/[0.02]">
-                        <p className="text-xs text-white/60 font-light">
-                          {idx + 1}. {field.label}
-                        </p>
-                      </div>
-                    ))}
-                    {survey.schema.fields.length > 3 && (
-                      <p className="text-[9px] text-gray-700 text-center pt-2">
-                        +{survey.schema.fields.length - 3} more questions
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        )}
-      </main>
+      {content}
 
       <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>

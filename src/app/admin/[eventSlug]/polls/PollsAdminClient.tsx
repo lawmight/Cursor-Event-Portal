@@ -24,6 +24,7 @@ interface PollsAdminClientProps {
   eventSlug: string;
   adminCode?: string;
   initialPolls: Poll[];
+  isEmbedded?: boolean;
 }
 
 export function PollsAdminClient({
@@ -31,6 +32,7 @@ export function PollsAdminClient({
   eventSlug,
   adminCode,
   initialPolls,
+  isEmbedded = false,
 }: PollsAdminClientProps) {
   const router = useRouter();
   const [polls, setPolls] = useState(initialPolls);
@@ -97,6 +99,135 @@ export function PollsAdminClient({
     }
   };
 
+  const content = (
+    <main className={cn("max-w-4xl mx-auto px-6 py-8 space-y-6", isEmbedded && "py-0")}>
+      {/* Error Message */}
+      {error && (
+        <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
+      {polls.length === 0 ? (
+        <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/10">
+          <BarChart3 className="w-12 h-12 text-gray-700 mx-auto" />
+          <p className="text-gray-500 text-sm">No polls created yet</p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="text-white text-sm underline underline-offset-4 hover:no-underline"
+          >
+            Create your first poll
+          </button>
+        </div>
+      ) : (
+        polls.map((poll) => (
+          <div
+            key={poll.id}
+            className={cn(
+              "glass rounded-[32px] p-8 transition-all",
+              poll.is_active
+                ? "border-green-500/30 bg-green-500/5"
+                : "border-white/5"
+            )}
+          >
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-3">
+                  {poll.is_active ? (
+                    <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] uppercase tracking-[0.15em] font-medium">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      Live
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-white/5 text-gray-500 text-[10px] uppercase tracking-[0.15em] font-medium">
+                      Draft
+                    </span>
+                  )}
+                  {poll.ends_at && (
+                    <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                      <Clock className="w-3 h-3" />
+                      Ends {new Date(poll.ends_at).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-xl font-light text-white">
+                  {poll.question}
+                </h3>
+
+                <div className="flex flex-wrap gap-2">
+                  {poll.options.map((option, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 text-xs"
+                    >
+                      {option}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleActive(poll.id)}
+                  disabled={loading === poll.id}
+                  className={cn(
+                    "p-3 rounded-full transition-all",
+                    poll.is_active
+                      ? "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
+                      : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                  )}
+                  title={poll.is_active ? "Pause poll" : "Start poll"}
+                >
+                  {poll.is_active ? (
+                    <Pause className="w-4 h-4" />
+                  ) : (
+                    <Play className="w-4 h-4" />
+                  )}
+                </button>
+                <button
+                  onClick={() => handleDelete(poll.id)}
+                  disabled={loading === poll.id}
+                  className="p-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                  title="Delete poll"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </main>
+  );
+
+  if (isEmbedded) {
+    return (
+      <>
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-medium text-sm hover:bg-gray-200 transition-colors shadow-lg"
+          >
+            <Plus className="w-4 h-4" />
+            New Poll
+          </button>
+        </div>
+        {content}
+        {showCreateModal && (
+          <CreatePollModal
+            onClose={() => {
+              setShowCreateModal(false);
+              setError(null);
+            }}
+            onCreate={handleCreatePoll}
+            error={error}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black-gradient text-white">
       <AdminHeader 
@@ -114,105 +245,7 @@ export function PollsAdminClient({
       />
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        {/* Error Message */}
-        {error && (
-          <div className="glass rounded-[32px] p-6 bg-red-500/10 border border-red-500/20">
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
-
-        {polls.length === 0 ? (
-          <div className="glass rounded-[40px] p-20 text-center space-y-4 border-dashed border-white/10">
-            <BarChart3 className="w-12 h-12 text-gray-700 mx-auto" />
-            <p className="text-gray-500 text-sm">No polls created yet</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="text-white text-sm underline underline-offset-4 hover:no-underline"
-            >
-              Create your first poll
-            </button>
-          </div>
-        ) : (
-          polls.map((poll) => (
-            <div
-              key={poll.id}
-              className={cn(
-                "glass rounded-[32px] p-8 transition-all",
-                poll.is_active
-                  ? "border-green-500/30 bg-green-500/5"
-                  : "border-white/5"
-              )}
-            >
-              <div className="flex items-start justify-between gap-6">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
-                    {poll.is_active ? (
-                      <span className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] uppercase tracking-[0.15em] font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                        Live
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 rounded-full bg-white/5 text-gray-500 text-[10px] uppercase tracking-[0.15em] font-medium">
-                        Draft
-                      </span>
-                    )}
-                    {poll.ends_at && (
-                      <span className="flex items-center gap-1.5 text-[10px] text-gray-600">
-                        <Clock className="w-3 h-3" />
-                        Ends {new Date(poll.ends_at).toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-xl font-light text-white">
-                    {poll.question}
-                  </h3>
-
-                  <div className="flex flex-wrap gap-2">
-                    {poll.options.map((option, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 text-xs"
-                      >
-                        {option}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleToggleActive(poll.id)}
-                    disabled={loading === poll.id}
-                    className={cn(
-                      "p-3 rounded-full transition-all",
-                      poll.is_active
-                        ? "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
-                        : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                    )}
-                    title={poll.is_active ? "Pause poll" : "Start poll"}
-                  >
-                    {poll.is_active ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(poll.id)}
-                    disabled={loading === poll.id}
-                    className="p-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
-                    title="Delete poll"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </main>
+      {content}
 
       <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
