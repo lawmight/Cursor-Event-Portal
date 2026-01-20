@@ -154,8 +154,8 @@ export function GroupFormation({
     <div className="space-y-12">
       {/* Stats Header */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
-          <div className="flex items-center gap-6">
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="flex items-center gap-6 w-full">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/attendees.png"
@@ -172,8 +172,8 @@ export function GroupFormation({
           </div>
         </div>
 
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
-          <div className="flex items-center gap-6">
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="flex items-center gap-6 w-full">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/proposals.png"
@@ -190,8 +190,8 @@ export function GroupFormation({
           </div>
         </div>
 
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors">
-          <div className="flex items-center gap-6">
+        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="flex items-center gap-6 w-full">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
                 src="/group-synthesis.png"
