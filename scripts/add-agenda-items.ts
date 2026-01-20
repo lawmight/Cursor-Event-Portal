@@ -1,7 +1,7 @@
 /**
  * Script to add agenda items for Calgary Cursor Meetup - January 2026
  * 
- * Event: 5:00pm opening, 5:30pm start, 8:30pm finish MST on Jan 28, 2026
+ * Event: 5:30pm start, 8:30pm finish MST on Jan 28, 2026
  * 
  * Run this script to populate the agenda items for the event.
  * Make sure to set the EVENT_ID environment variable or update it in the script.
@@ -23,55 +23,67 @@ const EVENT_SLUG = "calgary-jan-2026";
 const EVENT_DATE = "2026-01-28";
 
 // All times in UTC (MST is UTC-7)
-// Event: 5:00pm opening, 5:30pm start, 8:30pm finish MST on Jan 28, 2026
-// 5:00pm MST = 12:00am UTC on Jan 29
+// Event: 5:30pm start, 8:30pm finish MST on Jan 28, 2026
 // 5:30pm MST = 12:30am UTC on Jan 29
+// 6:00pm MST = 1:00am UTC on Jan 29
+// 6:10pm MST = 1:10am UTC on Jan 29
+// 6:30pm MST = 1:30am UTC on Jan 29
+// 7:30pm MST = 2:30am UTC on Jan 29
+// 7:45pm MST = 2:45am UTC on Jan 29
+// 8:00pm MST = 3:00am UTC on Jan 29
 // 8:30pm MST = 3:30am UTC on Jan 29
 
 const agendaItems = [
   {
-    title: "Mingling & Networking",
-    description: "Arrive early and connect with fellow developers. The room will be set up into pods for collaboration.",
-    start_time: "2026-01-29T00:00:00Z", // 5:00pm MST (opening)
-    end_time: "2026-01-29T00:30:00Z", // 5:30pm MST (start)
+    title: "Arrivals and Mingle",
+    description: "Connect with fellow developers. Collaboration pods available.",
+    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
+    end_time: "2026-01-29T01:00:00Z", // 6:00pm MST
     sort_order: 0,
   },
   {
-    title: "Welcome & Introductions",
-    description: "Quick 5-minute introduction to kick off the event.",
+    title: "Intro to Cursor",
+    description: "Event introduction and welcome.",
     speaker: "Jia Ming Huang",
-    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
-    end_time: "2026-01-29T00:35:00Z", // 5:35pm MST
+    start_time: "2026-01-29T01:00:00Z", // 6:00pm MST
+    end_time: "2026-01-29T01:10:00Z", // 6:10pm MST
     sort_order: 1,
   },
   {
-    title: "Short Demos",
-    description: "A few quick demos (2-3 minutes each) showcasing what's possible with Cursor.",
+    title: "Community Demos",
+    description: "Quick demos showcasing Cursor capabilities.",
     speaker: "Simon Loewen",
-    start_time: "2026-01-29T00:35:00Z", // 5:35pm MST
-    end_time: "2026-01-29T00:50:00Z", // 5:50pm MST
+    start_time: "2026-01-29T01:10:00Z", // 6:10pm MST
+    end_time: "2026-01-29T01:30:00Z", // 6:30pm MST
     sort_order: 2,
   },
   {
-    title: "Build Session",
-    description: "Work with your pod to build something together. Walk around to get help and answer questions. Room is set up in collaboration pods.",
-    start_time: "2026-01-29T00:50:00Z", // 5:50pm MST
-    end_time: "2026-01-29T02:20:00Z", // 7:20pm MST
+    title: "Building",
+    description: "Collaborative building session. Work with your pod and get help from facilitators.",
+    start_time: "2026-01-29T01:30:00Z", // 6:30pm MST
+    end_time: "2026-01-29T02:30:00Z", // 7:30pm MST
     sort_order: 3,
   },
   {
-    title: "Blitz Demos & Community Voting",
-    description: "Quick demos from each pod followed by community voting. Prizes will be awarded based on community votes (pending merch/swag confirmation).",
-    start_time: "2026-01-29T02:20:00Z", // 7:20pm MST
-    end_time: "2026-01-29T03:00:00Z", // 8:00pm MST
+    title: "Networking and Judging",
+    description: "Network with other attendees while judges evaluate the builds.",
+    start_time: "2026-01-29T02:30:00Z", // 7:30pm MST
+    end_time: "2026-01-29T02:45:00Z", // 7:45pm MST
     sort_order: 4,
   },
   {
-    title: "Networking & Tear-Down",
-    description: "Continue networking, share contact information, and help clean up.",
+    title: "Build Showcase",
+    description: "Quick demos from each pod followed by community voting. Prizes awarded to winners.",
+    start_time: "2026-01-29T02:45:00Z", // 7:45pm MST
+    end_time: "2026-01-29T03:00:00Z", // 8:00pm MST
+    sort_order: 5,
+  },
+  {
+    title: "Wind-Down",
+    description: "Continue networking and share contact information.",
     start_time: "2026-01-29T03:00:00Z", // 8:00pm MST
     end_time: "2026-01-29T03:30:00Z", // 8:30pm MST (finish)
-    sort_order: 5,
+    sort_order: 6,
   },
 ];
 

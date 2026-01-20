@@ -5,51 +5,59 @@ import { getSession } from "@/lib/actions/registration";
 const EVENT_SLUG = "calgary-jan-2026";
 
 // Agenda items for Calgary Cursor Meetup - January 2026
-// Event: 5:00pm opening, 5:30pm start, 8:30pm finish MST on Jan 28, 2026 = 12:00am-3:30am UTC on Jan 29, 2026
+// Event: 5:30pm start, 8:30pm finish MST on Jan 28, 2026 = 12:30am-3:30am UTC on Jan 29, 2026
+// MST is UTC-7
 const AGENDA_ITEMS = [
   {
-    title: "Mingling & Networking",
-    description: "Arrive early and connect with fellow developers. The room is set up with collaboration pods for small group discussions.",
-    start_time: "2026-01-29T00:00:00Z", // 5:00pm MST (opening)
-    end_time: "2026-01-29T00:30:00Z", // 5:30pm MST (start)
+    title: "Arrivals and Mingle",
+    description: "Connect with fellow developers. Collaboration pods available.",
+    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
+    end_time: "2026-01-29T01:00:00Z", // 6:00pm MST
     sort_order: 0,
   },
   {
-    title: "Welcome & Introductions",
-    description: "Brief introduction to the event, agenda overview, and what to expect throughout the evening.",
+    title: "Intro to Cursor",
+    description: "Event introduction and welcome.",
     speaker: "Jia Ming Huang",
-    start_time: "2026-01-29T00:30:00Z", // 5:30pm MST
-    end_time: "2026-01-29T00:35:00Z", // 5:35pm MST
+    start_time: "2026-01-29T01:00:00Z", // 6:00pm MST
+    end_time: "2026-01-29T01:10:00Z", // 6:10pm MST
     sort_order: 1,
   },
   {
-    title: "Short Demos",
-    description: "Quick demonstrations showcasing what's possible with Cursor. Each demo runs up to 5 minutes.",
+    title: "Community Demos",
+    description: "Quick demos showcasing Cursor capabilities.",
     speaker: "Simon Loewen",
-    start_time: "2026-01-29T00:35:00Z", // 5:35pm MST
-    end_time: "2026-01-29T00:50:00Z", // 5:50pm MST
+    start_time: "2026-01-29T01:10:00Z", // 6:10pm MST
+    end_time: "2026-01-29T01:30:00Z", // 6:30pm MST
     sort_order: 2,
   },
   {
-    title: "Build Session",
-    description: "Collaborative building session where you work with your pod to create something together. Facilitators will be available to help and answer questions.",
-    start_time: "2026-01-29T00:50:00Z", // 5:50pm MST
-    end_time: "2026-01-29T02:20:00Z", // 7:20pm MST
+    title: "Building",
+    description: "Collaborative building session. Work with your pod and get help from facilitators.",
+    start_time: "2026-01-29T01:30:00Z", // 6:30pm MST
+    end_time: "2026-01-29T02:30:00Z", // 7:30pm MST
     sort_order: 3,
   },
   {
-    title: "Blitz Demos & Community Voting",
-    description: "Each pod presents a quick demo of what they built. The community votes on their favorites, with prizes awarded to the winners.",
-    start_time: "2026-01-29T02:20:00Z", // 7:20pm MST
-    end_time: "2026-01-29T03:00:00Z", // 8:00pm MST
+    title: "Networking and Judging",
+    description: "Network with other attendees while judges evaluate the builds.",
+    start_time: "2026-01-29T02:30:00Z", // 7:30pm MST
+    end_time: "2026-01-29T02:45:00Z", // 7:45pm MST
     sort_order: 4,
   },
   {
-    title: "Networking & Tear-Down",
-    description: "Continue networking with other attendees, exchange contact information, and connect with the community.",
+    title: "Build Showcase",
+    description: "Quick demos from each pod followed by community voting. Prizes awarded to winners.",
+    start_time: "2026-01-29T02:45:00Z", // 7:45pm MST
+    end_time: "2026-01-29T03:00:00Z", // 8:00pm MST
+    sort_order: 5,
+  },
+  {
+    title: "Wind-Down",
+    description: "Continue networking and share contact information.",
     start_time: "2026-01-29T03:00:00Z", // 8:00pm MST
     end_time: "2026-01-29T03:30:00Z", // 8:30pm MST (finish)
-    sort_order: 5,
+    sort_order: 6,
   },
 ];
 
