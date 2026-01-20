@@ -124,6 +124,12 @@ export function SlideDeckAdminClient({
   const handleToggleLive = async (isLive: boolean) => {
     if (!deck) return;
 
+    // Prevent disabling slides page if popup is enabled
+    if (!isLive && deck.popup_visible) {
+      setError("Cannot disable slides page when right-center popup is enabled. Please disable the popup first.");
+      return;
+    }
+
     setError(null);
     
     // Optimistic update
@@ -145,7 +151,32 @@ export function SlideDeckAdminClient({
 
     setError(null);
     
-    // Optimistic update
+    // If enabling popup, also enable slides page if it's not already enabled
+    if (popupVisible && !deck.is_live) {
+      // Enable both popup and slides page
+      setDeck((prev) => prev ? { ...prev, popup_visible: true, is_live: true } : null);
+      
+      startTransition(async () => {
+        // Enable slides page first, then popup
+        const liveResult = await toggleSlideDeckLive(event.id, eventSlug, true);
+        if (liveResult.error) {
+          setError(liveResult.error);
+          router.refresh();
+          return;
+        }
+        
+        const popupResult = await toggleSlideDeckPopup(event.id, eventSlug, true);
+        if (popupResult.error) {
+          setError(popupResult.error);
+          router.refresh();
+        } else {
+          router.refresh();
+        }
+      });
+      return;
+    }
+    
+    // Optimistic update for disabling popup (no restrictions)
     setDeck((prev) => prev ? { ...prev, popup_visible: popupVisible } : null);
 
     startTransition(async () => {
@@ -242,14 +273,21 @@ export function SlideDeckAdminClient({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleToggleLive(!deck.is_live)}
-                  disabled={isPending}
+                  disabled={isPending || (!deck.is_live && deck.popup_visible)}
                   className={cn(
                     "w-10 h-10 rounded-lg border transition-all flex items-center justify-center",
                     deck.is_live
                       ? "bg-green-500/20 border-green-500/30 text-green-400"
-                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20",
+                    !deck.is_live && deck.popup_visible && "opacity-50 cursor-not-allowed"
                   )}
-                  title={deck.is_live ? "Hide from attendees tab" : "Show in attendees tab"}
+                  title={
+                    !deck.is_live && deck.popup_visible
+                      ? "Cannot disable slides page when popup is enabled"
+                      : deck.is_live
+                      ? "Hide from attendees tab"
+                      : "Show in attendees tab"
+                  }
                 >
                   {deck.is_live ? (
                     <Eye className="w-4 h-4" />
