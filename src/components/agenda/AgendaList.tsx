@@ -123,7 +123,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-8">
         {items.map((item, index) => {
           const isCurrentlyNow = isNow(item.start_time, item.end_time);
           const isUpNext = isNext(
@@ -145,7 +145,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {isCurrentlyNow && (
-                <div className="absolute top-0 right-0 p-6 md:p-7">
+                <div className="absolute top-0 right-0 p-6 md:p-7 z-20">
                   <div className="flex items-center gap-2.5">
                     <span className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/70 font-medium">Live</span>
                     <div className="w-3 h-3 rounded-full bg-white animate-pulse shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
@@ -153,7 +153,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 </div>
               )}
 
-              <div className="space-y-5 md:space-y-6">
+              <div className="relative z-10 space-y-5 md:space-y-6 max-w-full md:max-w-[55%] transition-all duration-500">
                 {/* Time and Duration Row */}
                 <div className="flex items-center gap-5 md:gap-6 flex-wrap">
                   <div className={`text-[13px] md:text-[14px] font-semibold uppercase tracking-[0.2em] ${
@@ -234,12 +234,23 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 if (!agendaImage) return null;
 
                 return (
-                  <div className="absolute -right-4 bottom-0 translate-y-1/4 opacity-0 group-hover:opacity-75 transition-all duration-300 pointer-events-none scale-95 group-hover:scale-100">
-                    <div className="w-[276px] rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
+                  <div className="absolute inset-y-0 right-0 w-full md:w-1/2 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none translate-x-4 group-hover:translate-x-0 overflow-hidden">
+                    <div className="relative w-full h-full">
                       <img
                         src={agendaImage.url}
                         alt={item.title}
-                        className="w-full h-[184px] object-cover"
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Gradient to blend with card content */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-[rgba(10,10,10,1)] via-[rgba(10,10,10,0.5)] to-transparent z-10" />
+                      
+                      {/* Blur transition */}
+                      <div 
+                        className="absolute inset-y-0 left-0 w-1/2 backdrop-blur-xl z-20"
+                        style={{ 
+                          maskImage: 'linear-gradient(to right, black, transparent)',
+                          WebkitMaskImage: 'linear-gradient(to right, black, transparent)'
+                        }}
                       />
                     </div>
                   </div>
