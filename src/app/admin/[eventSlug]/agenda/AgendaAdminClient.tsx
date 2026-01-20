@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createAgendaItem, updateAgendaItem, deleteAgendaItem } from "@/lib/actions/agenda";
 import type { Event, AgendaItem } from "@/types";
-import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User, Image } from "lucide-react";
 import { formatTime } from "@/lib/utils";
 
 interface AgendaAdminClientProps {
@@ -51,6 +51,7 @@ export function AgendaAdminClient({
     speaker?: string;
     start_time?: string;
     end_time?: string;
+    image_url?: string;
   }) => {
     setError(null);
     startTransition(async () => {
@@ -155,9 +156,17 @@ export function AgendaAdminClient({
                         </div>
                       )}
                     </div>
-                    <h3 className="text-2xl font-light tracking-tight text-white/90">
-                      {item.title}
-                    </h3>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-2xl font-light tracking-tight text-white/90">
+                        {item.title}
+                      </h3>
+                      {item.image_url && (
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+                          <Image className="w-3 h-3 text-gray-500" />
+                          <span className="text-[9px] uppercase tracking-[0.15em] text-gray-600">Image</span>
+                        </div>
+                      )}
+                    </div>
                     {item.description && (
                       <p className="text-sm text-gray-500 leading-relaxed">
                         {item.description}
@@ -212,6 +221,7 @@ export function AgendaAdminClient({
       {(showCreateModal || editingItem) && (
         <CreateEditModal
           item={editingItem}
+          eventId={event.id}
           onClose={() => {
             setShowCreateModal(false);
             setEditingItem(null);
@@ -227,6 +237,7 @@ export function AgendaAdminClient({
 
 interface CreateEditModalProps {
   item: AgendaItem | null;
+  eventId: string;
   onClose: () => void;
   onCreate: (data: {
     title: string;
@@ -235,6 +246,7 @@ interface CreateEditModalProps {
     speaker?: string;
     start_time?: string;
     end_time?: string;
+    image_url?: string;
   }) => void;
   onUpdate?: (data: Partial<AgendaItem>) => void;
   isPending: boolean;
@@ -242,6 +254,7 @@ interface CreateEditModalProps {
 
 function CreateEditModal({
   item,
+  eventId,
   onClose,
   onCreate,
   onUpdate,
@@ -257,7 +270,48 @@ function CreateEditModal({
   const [endTime, setEndTime] = useState(
     item?.end_time ? new Date(item.end_time).toISOString().slice(0, 16) : ""
   );
+  const [imageUrl, setImageUrl] = useState(item?.image_url || "");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("eventId", eventId);
+
+      const response = await fetch("/api/admin/upload-agenda-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to upload image");
+      }
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setImageUrl(data.url);
+      } else {
+        throw new Error("Failed to upload image");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload image";
+      setError(errorMessage);
+    } finally {
+      setUploadingImage(false);
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,6 +329,7 @@ function CreateEditModal({
       speaker: speaker.trim() || undefined,
       start_time: startTime ? new Date(startTime).toISOString() : undefined,
       end_time: endTime ? new Date(endTime).toISOString() : undefined,
+      image_url: imageUrl.trim() || undefined,
     };
 
     if (item && onUpdate) {
@@ -389,6 +444,42 @@ function CreateEditModal({
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
                 placeholder="e.g., Main Hall"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+              Image
+            </label>
+            <div className="space-y-3">
+              {imageUrl && (
+                <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-white/10">
+                  <img
+                    src={imageUrl}
+                    alt="Agenda preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl("")}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              <label className="block">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage || isPending}
+                  className="hidden"
+                />
+                <div className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white hover:bg-white/10 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center text-sm">
+                  {uploadingImage ? "Uploading..." : imageUrl ? "Change Image" : "Upload Image"}
+                </div>
+              </label>
             </div>
           </div>
 

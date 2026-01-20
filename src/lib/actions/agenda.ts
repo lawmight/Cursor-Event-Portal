@@ -16,6 +16,7 @@ export async function createAgendaItem(
     start_time?: string | null;
     end_time?: string | null;
     sort_order?: number;
+    image_url?: string | null;
   }
 ) {
   const session = await getSession();
@@ -59,6 +60,7 @@ export async function createAgendaItem(
       start_time: data.start_time || null,
       end_time: data.end_time || null,
       sort_order: data.sort_order ?? maxSortOrder + 1,
+      image_url: data.image_url || null,
     })
     .select()
     .single();
