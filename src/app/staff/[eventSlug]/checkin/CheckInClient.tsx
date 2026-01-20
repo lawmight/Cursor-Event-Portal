@@ -206,10 +206,6 @@ export function CheckInClient({
         {/* Quick Actions & Health Widget */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StaffQuickActions
-            onCheckInByQR={() => {
-              // TODO: Implement QR scanner
-              alert("QR scanner coming soon");
-            }}
             onCheckInByEmail={() => {
               // Focus the email input
               const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
@@ -220,7 +216,6 @@ export function CheckInClient({
               const addInput = document.querySelector('input[placeholder*="Add attendee email"]') as HTMLInputElement;
               addInput?.focus();
             }}
-            onPrintBadge={undefined} // Not implemented yet
           />
           <RealtimeHealthWidget eventId={event.id} />
         </div>
