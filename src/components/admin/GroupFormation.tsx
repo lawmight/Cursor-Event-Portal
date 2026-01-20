@@ -158,8 +158,8 @@ export function GroupFormation({
           <div className="flex items-center gap-6 w-full">
             <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
               <Image
-                src="/attendees.png"
-                alt="Attendees"
+                src="/attendees-2.png"
+                alt="Intake Responses"
                 width={40}
                 height={40}
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
