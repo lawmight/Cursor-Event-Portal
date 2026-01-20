@@ -154,7 +154,15 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             </div>
           </Link>
 
-          <Link href={`/admin/${eventSlug}/${adminCode}/agenda`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>
+          <EventSocialCard 
+            event={event}
+            eventSlug={eventSlug}
+            adminCode={adminCode}
+            initialOpenQuestions={openQuestions}
+            initialQuestions={questions}
+          />
+
+          <Link href={`/admin/${eventSlug}/${adminCode}/agenda`} className="animate-slide-up" style={{ animationDelay: "1100ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -174,14 +182,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
               </div>
             </div>
           </Link>
-
-          <EventSocialCard 
-            event={event}
-            eventSlug={eventSlug}
-            adminCode={adminCode}
-            initialOpenQuestions={openQuestions}
-            initialQuestions={questions}
-          />
 
           <Link href={`/admin/${eventSlug}/${adminCode}/groups`} className="animate-slide-up" style={{ animationDelay: "1100ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
