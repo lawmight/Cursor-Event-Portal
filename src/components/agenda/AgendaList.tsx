@@ -44,6 +44,10 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
   if (titleLower.includes("arrival") || titleLower.includes("mingle") || titleLower.includes("mingling") || titleLower.includes("check-in") || titleLower.includes("checkin")) {
     return { url: "/agenda-mingling.png", caption: "Connect with fellow attendees" };
   }
+  // Specific swap: \"Networking and Judging\" should use the Wind-Down image
+  if (titleLower.includes("networking and judging")) {
+    return { url: "/blitz2.png", caption: "Networking while judges deliberate" };
+  }
   // Specific image for Build Showcase session
   if (titleLower.includes("build showcase")) {
     return { url: "/showcase.png", caption: "Build showcase and community voting" };
@@ -63,8 +67,9 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
     return { url: "/blitz2.png", caption: "Quick-fire rounds" };
   }
+  // Wind-down sessions now use the networking image, completing the swap
   if (titleLower.includes("wind") || titleLower.includes("wrap") || titleLower.includes("closing") || titleLower.includes("tear")) {
-    return { url: "/blitz2.png", caption: "Wrapping up" };
+    return { url: "/agenda-networking.png", caption: "Wrapping up and connecting" };
   }
 
   return null;
