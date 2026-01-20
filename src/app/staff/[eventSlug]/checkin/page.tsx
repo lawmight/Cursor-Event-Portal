@@ -45,6 +45,7 @@ export default async function CheckInPage({ params }: CheckInPageProps) {
   return (
     <CheckInClient
       event={event}
+      eventSlug={eventSlug}
       initialRegistrations={registrations}
       stats={stats}
       initialAgendaItems={agendaItems}

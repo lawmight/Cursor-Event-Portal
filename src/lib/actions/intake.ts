@@ -40,7 +40,7 @@ export async function submitIntake(
       return { error: "Already submitted intake" };
     }
 
-    // Insert intake response
+    // Insert intake response (event-specific)
     const { error: intakeError } = await supabase.from("attendee_intakes").insert({
       event_id: eventId,
       user_id: session.userId,
@@ -58,6 +58,22 @@ export async function submitIntake(
         return { error: "Server configuration error. Please contact support." };
       }
       return { error: `Failed to save intake: ${intakeError.message}` };
+    }
+
+    // Also update the user's profile with their goals/offers (persistent across events)
+    const { error: profileError } = await supabase
+      .from("users")
+      .update({
+        goals: formData.goals,
+        goals_other: formData.goalsOther || null,
+        offers: formData.offers,
+        offers_other: formData.offersOther || null,
+      })
+      .eq("id", session.userId);
+
+    if (profileError) {
+      // Log but don't fail - the event-specific intake was saved successfully
+      console.error("submitIntake: Failed to update user profile:", profileError);
     }
 
     // Mark intake as completed on registration
@@ -162,6 +178,110 @@ export async function skipIntake(eventId: string, eventSlug: string) {
       return { error: "Server configuration error. Please contact support." };
     }
     return { error: `Failed to skip intake: ${errorMessage}` };
+  }
+}
+
+export async function updateUserProfile(
+  eventId: string,
+  eventSlug: string,
+  userId: string,
+  formData: IntakeFormData
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  // Only allow users to update their own profile, or staff/admin to update any profile
+  if (session.userId !== userId) {
+    const supabase = await createServiceClient();
+    const { data: user } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.userId)
+      .single();
+
+    if (!user || !["staff", "admin"].includes(user.role)) {
+      return { error: "Not authorized to update this profile" };
+    }
+  }
+
+  try {
+    const supabase = await createServiceClient();
+
+    // Update user profile (persistent goals/offers)
+    const { error: profileError } = await supabase
+      .from("users")
+      .update({
+        goals: formData.goals,
+        goals_other: formData.goalsOther || null,
+        offers: formData.offers,
+        offers_other: formData.offersOther || null,
+      })
+      .eq("id", userId);
+
+    if (profileError) {
+      console.error("updateUserProfile: Failed to update user profile:", profileError);
+      return { error: `Failed to update profile: ${profileError.message}` };
+    }
+
+    // Also update or create the event-specific intake if it exists
+    const { data: existingIntake } = await supabase
+      .from("attendee_intakes")
+      .select("id")
+      .eq("event_id", eventId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existingIntake) {
+      // Update existing intake
+      const { error: intakeError } = await supabase
+        .from("attendee_intakes")
+        .update({
+          goals: formData.goals,
+          goals_other: formData.goalsOther || null,
+          offers: formData.offers,
+          offers_other: formData.offersOther || null,
+          skipped: false,
+        })
+        .eq("id", existingIntake.id);
+
+      if (intakeError) {
+        console.error("updateUserProfile: Failed to update intake:", intakeError);
+        // Don't fail - profile was updated successfully
+      }
+    } else {
+      // Create new intake for this event
+      const { error: intakeError } = await supabase.from("attendee_intakes").insert({
+        event_id: eventId,
+        user_id: userId,
+        goals: formData.goals,
+        goals_other: formData.goalsOther || null,
+        offers: formData.offers,
+        offers_other: formData.offersOther || null,
+        skipped: false,
+      });
+
+      if (intakeError) {
+        console.error("updateUserProfile: Failed to create intake:", intakeError);
+        // Don't fail - profile was updated successfully
+      }
+
+      // Mark intake as completed on registration
+      await supabase
+        .from("registrations")
+        .update({ intake_completed_at: new Date().toISOString() })
+        .eq("event_id", eventId)
+        .eq("user_id", userId);
+    }
+
+    revalidatePath(`/${eventSlug}`);
+    revalidatePath(`/staff/${eventSlug}/checkin`);
+    return { success: true };
+  } catch (error) {
+    console.error("updateUserProfile: Exception:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return { error: `Failed to update profile: ${errorMessage}` };
   }
 }
 

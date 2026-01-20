@@ -12,6 +12,7 @@ import { EventStatusBar } from "@/components/staff/EventStatusBar";
 
 interface CheckInClientProps {
   event: Event;
+  eventSlug: string;
   initialRegistrations: Registration[];
   stats: { registered: number; checkedIn: number };
   initialAgendaItems: AgendaItem[];
@@ -37,6 +38,7 @@ const SIGNAL_LABELS: Record<string, string> = {
 
 export function CheckInClient({
   event,
+  eventSlug,
   initialRegistrations,
   stats,
   initialAgendaItems,
@@ -434,6 +436,7 @@ export function CheckInClient({
         <AttendeeDetailModal
           userId={selectedAttendee.userId}
           eventId={event.id}
+          eventSlug={eventSlug}
           userName={selectedAttendee.userName}
           userEmail={selectedAttendee.userEmail}
           isOpen={!!selectedAttendee}

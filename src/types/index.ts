@@ -28,6 +28,11 @@ export interface User {
   email: string | null;
   name: string;
   role: UserRole;
+  // Profile goals/offers (persistent across events)
+  goals?: IntakeGoalTag[];
+  goals_other?: string | null;
+  offers?: IntakeOfferTag[];
+  offers_other?: string | null;
   created_at: string;
 }
 
