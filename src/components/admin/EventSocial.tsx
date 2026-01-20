@@ -222,11 +222,6 @@ export function EventSocial({
           <div className="flex items-center gap-6">
             <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow relative">
               <Icon className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
-              {stats.alert && (
-                <div className="absolute -top-1 -right-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
-                </div>
-              )}
             </div>
             <div className="space-y-1">
               <h3 className="text-xl font-light tracking-tight text-white/90">

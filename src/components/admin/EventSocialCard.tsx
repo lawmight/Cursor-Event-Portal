@@ -1,0 +1,132 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { MessageCircle, ArrowRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import type { Event, Question } from "@/types";
+
+interface EventSocialCardProps {
+  event: Event;
+  eventSlug: string;
+  adminCode: string;
+  initialOpenQuestions: number;
+  initialQuestions: Question[];
+}
+
+// Helper functions for localStorage tracking
+function getSeenQuestionIds(): string[] {
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem("seen-question-ids");
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
+export function EventSocialCard({
+  event,
+  eventSlug,
+  adminCode,
+  initialOpenQuestions,
+  initialQuestions,
+}: EventSocialCardProps) {
+  const pathname = usePathname();
+  const [openQuestions, setOpenQuestions] = useState(initialOpenQuestions);
+  const [questions, setQuestions] = useState(initialQuestions);
+  const [newQuestionAlert, setNewQuestionAlert] = useState(false);
+
+  // Check for new questions and subscribe to changes
+  useEffect(() => {
+    const checkNewQuestions = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("questions")
+        .select("id, status, created_at")
+        .eq("event_id", event.id)
+        .eq("status", "open")
+        .order("created_at", { ascending: false });
+
+      if (!data) {
+        setOpenQuestions(0);
+        setNewQuestionAlert(false);
+        return;
+      }
+
+      const openQ = data.length;
+      setOpenQuestions(openQ);
+
+      // Only show alert if there are open questions that haven't been seen
+      const seenIds = getSeenQuestionIds();
+      const unseenQuestions = data.filter((q) => !seenIds.includes(q.id));
+      setNewQuestionAlert(unseenQuestions.length > 0);
+
+      // Update questions state - filter to open questions only
+      const openQData = data.filter((q) => q.status === "open");
+      setQuestions(openQData as Question[]);
+    };
+
+    checkNewQuestions().catch(err => console.error("Error checking questions:", err));
+
+    // Subscribe to question changes
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`admin-dashboard-questions-${event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "questions",
+          filter: `event_id=eq.${event.id}`,
+        },
+        () => {
+          checkNewQuestions().catch(err => console.error("Error checking questions on update:", err));
+        }
+      );
+    
+    const subscription = channel.subscribe();
+    
+    // Handle both Promise and non-Promise returns for compatibility
+    if (subscription && typeof (subscription as any).then === "function") {
+      (subscription as any).catch((err: any) => console.error("Subscription error:", err));
+    }
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event.id]);
+
+  return (
+    <Link href={`/admin/${eventSlug}/${adminCode}/social`} className="animate-slide-up" style={{ animationDelay: "800ms" }}>
+      <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow relative">
+              <MessageCircle className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-light tracking-tight text-white/90">
+                Event Social
+              </h3>
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
+                  Q&A, Polls & Broadcasts
+                </p>
+                {newQuestionAlert && (
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-green-400 font-bold flex items-center">
+                    <span className="mr-1.5">•</span> New
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+        </div>
+      </div>
+    </Link>
+  );
+}
