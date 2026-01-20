@@ -235,11 +235,11 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
 
                 return (
                   <div className="absolute -right-4 bottom-0 translate-y-1/4 opacity-0 group-hover:opacity-75 transition-all duration-300 pointer-events-none scale-95 group-hover:scale-100">
-                    <div className="w-60 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
+                    <div className="w-[276px] rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
                       <img
                         src={agendaImage.url}
                         alt={item.title}
-                        className="w-full h-40 object-cover"
+                        className="w-full h-[184px] object-cover"
                       />
                     </div>
                   </div>
