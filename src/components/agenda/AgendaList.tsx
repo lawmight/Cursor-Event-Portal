@@ -59,6 +59,9 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
   if (titleLower.includes("blitz") || titleLower.includes("lightning") || titleLower.includes("rapid")) {
     return { url: "/blitz2.png", caption: "Quick-fire rounds" };
   }
+  if (titleLower.includes("wind") || titleLower.includes("wrap") || titleLower.includes("closing") || titleLower.includes("tear")) {
+    return { url: "/blitz2.png", caption: "Wrapping up" };
+  }
 
   return null;
 }
