@@ -234,19 +234,20 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = "Amer
                 if (!agendaImage) return null;
 
                 return (
-                  <div className="absolute inset-y-0 right-0 w-full md:w-[40%] opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none translate-x-4 group-hover:translate-x-0 overflow-hidden">
+                  <div className="absolute inset-y-0 right-0 w-full md:w-[40%] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-700 pointer-events-none translate-x-4 group-hover:translate-x-0 overflow-hidden">
                     <div className="relative w-full h-full">
                       <img
                         src={agendaImage.url}
                         alt={item.title}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                       {/* Gradient to blend with card content */}
                       <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent z-10" />
                       
-                      {/* Blur transition */}
+                      {/* Blur transition - only applies backdrop-blur on hover */}
                       <div 
-                        className="absolute inset-y-0 left-0 w-1/2 backdrop-blur-xl z-20"
+                        className="absolute inset-y-0 left-0 w-1/2 z-20 backdrop-blur-none group-hover:backdrop-blur-xl transition-all duration-700"
                         style={{ 
                           maskImage: 'linear-gradient(to right, black, transparent)',
                           WebkitMaskImage: 'linear-gradient(to right, black, transparent)'
