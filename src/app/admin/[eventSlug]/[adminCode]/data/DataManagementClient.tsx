@@ -9,6 +9,7 @@ import { ImportRegistrationsClient } from "@/components/admin/ImportRegistration
 interface DataManagementClientProps {
   event: Event;
   eventSlug: string;
+  adminCode?: string;
   registrations: Registration[];
   questions: Question[];
   survey: Survey | null;
@@ -18,6 +19,7 @@ interface DataManagementClientProps {
 export function DataManagementClient({
   event,
   eventSlug,
+  adminCode,
   registrations,
   questions,
   survey,
@@ -322,6 +324,7 @@ export function DataManagementClient({
           eventId={event.id}
           eventSlug={eventSlug}
           existingEmails={existingEmails}
+          adminCode={adminCode}
         />
       )}
     </div>

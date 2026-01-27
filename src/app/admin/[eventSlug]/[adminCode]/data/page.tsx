@@ -40,6 +40,7 @@ export default async function DataManagementPage({ params }: DataManagementPageP
         <DataManagementClient
           event={event}
           eventSlug={eventSlug}
+          adminCode={adminCode}
           registrations={registrations}
           questions={questions}
           survey={survey}
