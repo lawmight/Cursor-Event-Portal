@@ -60,9 +60,32 @@ export function SlideDeckAdminClient({
       // Read file into memory first to avoid ERR_UPLOAD_FILE_CHANGED errors
       // This happens when antivirus, OneDrive, or Windows indexing touches the file
       setUploadProgress("Reading file...");
-      const arrayBuffer = await file.arrayBuffer();
-      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
-      const memoryFile = new File([blob], file.name, { type: "application/pdf" });
+      let memoryFile: File;
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+        memoryFile = new File([blob], file.name, { type: "application/pdf" });
+      } catch (readError) {
+        console.error("Failed to read file:", readError);
+        const readMessage =
+          readError instanceof Error ? readError.message : String(readError ?? "");
+        const isNotFoundLike =
+          readMessage.toLowerCase().includes("requested file or directory could not be found") ||
+          readMessage.toLowerCase().includes("notfounderror") ||
+          readMessage.toLowerCase().includes("not found");
+
+        if (isNotFoundLike) {
+          setError(
+            `Windows couldn't access "${file.name}" while reading it. Try copying it to a different local folder (for example, your Desktop), renaming it, and uploading again.`
+          );
+        } else {
+          setError(
+            `Could not read file "${file.name}". The file may be locked, corrupted, or temporarily inaccessible. Try closing any programs that have it open.`
+          );
+        }
+        setUploading(false);
+        return;
+      }
 
       setUploadProgress("Uploading slide deck...");
       const formData = new FormData();
