@@ -27,7 +27,7 @@ export function SimulateStartButton({ event, eventSlug, adminCode }: SimulateSta
     if (!confirmed) return;
 
     startTransition(async () => {
-      const result = await simulateEventStart(event.id, eventSlug);
+      const result = await simulateEventStart(event.id, eventSlug, adminCode);
       if (result.error) {
         toast.error(result.error);
       } else {

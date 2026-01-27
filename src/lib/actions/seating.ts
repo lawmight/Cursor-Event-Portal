@@ -4,13 +4,32 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 
-export async function toggleSeatLockout(eventId: string, active: boolean, eventSlug: string) {
+function getAdminPath(eventSlug: string, adminCode?: string) {
+  return adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true as const };
+    }
+
+    return { valid: false as const, error: "Not authorized" };
+  }
+
   const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
+  if (!session) return { valid: false as const, error: "Not authenticated" };
 
-  const supabase = await createServiceClient();
-
-  // Verify admin role
   const { data: user } = await supabase
     .from("users")
     .select("role")
@@ -18,7 +37,23 @@ export async function toggleSeatLockout(eventId: string, active: boolean, eventS
     .single();
 
   if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  return { valid: true as const };
+}
+
+export async function toggleSeatLockout(
+  eventId: string,
+  active: boolean,
+  eventSlug: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -31,7 +66,7 @@ export async function toggleSeatLockout(eventId: string, active: boolean, eventS
     return { error: "Failed to update lockout status" };
   }
 
-  revalidatePath(`/admin/${eventSlug}`);
+  revalidatePath(getAdminPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/agenda`);
   return { success: true };
 }
@@ -70,21 +105,12 @@ export async function getUserTableAssignment(eventId: string, userId: string) {
   return null;
 }
 
-export async function simulateEventStart(eventId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
-
+export async function simulateEventStart(eventId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify admin role
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   // Deactivate lockout to simulate event start
@@ -98,7 +124,7 @@ export async function simulateEventStart(eventId: string, eventSlug: string) {
     return { error: "Failed to simulate event start" };
   }
 
-  revalidatePath(`/admin/${eventSlug}`);
+  revalidatePath(getAdminPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/agenda`);
   revalidatePath(`/${eventSlug}/`);
   return { success: true };

@@ -10,9 +10,10 @@ import type { Event } from "@/types";
 interface SeatLockoutControlProps {
   event: Event;
   eventSlug: string;
+  adminCode?: string;
 }
 
-export function SeatLockoutControl({ event, eventSlug }: SeatLockoutControlProps) {
+export function SeatLockoutControl({ event, eventSlug, adminCode }: SeatLockoutControlProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isActive, setIsActive] = useState(event.seat_lockout_active);
@@ -32,7 +33,7 @@ export function SeatLockoutControl({ event, eventSlug }: SeatLockoutControlProps
     }
 
     startTransition(async () => {
-      const result = await toggleSeatLockout(event.id, newState, eventSlug);
+      const result = await toggleSeatLockout(event.id, newState, eventSlug, adminCode);
       if (result.error) {
         toast.error(result.error);
       } else {
