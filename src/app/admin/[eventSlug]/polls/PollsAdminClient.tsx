@@ -42,7 +42,7 @@ export function PollsAdminClient({
 
   const handleToggleActive = async (pollId: string) => {
     setLoading(pollId);
-    const result = await togglePollActive(pollId, eventSlug);
+    const result = await togglePollActive(pollId, eventSlug, adminCode);
     if (result.success) {
       setPolls((prev) =>
         prev.map((p) =>
@@ -58,7 +58,7 @@ export function PollsAdminClient({
     if (!confirm("Are you sure you want to delete this poll?")) return;
 
     setLoading(pollId);
-    const result = await deletePoll(pollId, eventSlug);
+    const result = await deletePoll(pollId, eventSlug, adminCode);
     if (result.success) {
       setPolls((prev) => prev.filter((p) => p.id !== pollId));
       router.refresh();
@@ -73,7 +73,7 @@ export function PollsAdminClient({
     is_active: boolean;
   }) => {
     setError(null);
-    const result = await createPoll(event.id, eventSlug, data);
+    const result = await createPoll(event.id, eventSlug, data, adminCode);
     if (result.success && result.pollId) {
       setPolls((prev) => [
         {

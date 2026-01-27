@@ -4,6 +4,47 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 
+function getAdminPollsPath(eventSlug: string, adminCode?: string) {
+  return adminCode ? `/admin/${eventSlug}/${adminCode}/polls` : `/admin/${eventSlug}/polls`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true as const };
+    }
+
+    return { valid: false as const, error: "Not authorized. Admin access required." };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return { valid: false as const, error: "Not authenticated" };
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { valid: false as const, error: "Not authorized. Admin access required." };
+  }
+
+  return { valid: true as const, userId: session.userId };
+}
+
 export async function votePoll(
   pollId: string,
   optionIndex: number,
@@ -82,40 +123,15 @@ export async function createPoll(
     options: string[];
     ends_at?: string;
     is_active?: boolean;
-  }
+  },
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    console.error("createPoll: No session found");
-    return { error: "Not authenticated" };
-  }
-
   try {
     const supabase = await createServiceClient();
 
-    // Verify user is admin
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.userId)
-      .single();
-
-    if (userError) {
-      console.error("createPoll: Error fetching user:", userError);
-      // Check if it's an API key error
-      if (userError.message?.includes("Invalid API key") || userError.message?.includes("JWT")) {
-        return { error: "Server configuration error. Please contact support." };
-      }
-      return { error: "Failed to verify user permissions" };
-    }
-
-    if (!user || user.role !== "admin") {
-      console.error("createPoll: Authorization failed:", { 
-        userId: session.userId, 
-        userFound: !!user, 
-        role: user?.role 
-      });
-      return { error: "Not authorized. Admin access required." };
+    const auth = await validateAdminAccess(supabase, eventId, adminCode);
+    if (!auth.valid) {
+      return { error: auth.error || "Not authorized. Admin access required." };
     }
 
     const { data: poll, error } = await supabase
@@ -135,7 +151,7 @@ export async function createPoll(
       return { error: `Failed to create poll: ${error.message}` };
     }
 
-    revalidatePath(`/admin/${eventSlug}/polls`);
+    revalidatePath(getAdminPollsPath(eventSlug, adminCode));
     revalidatePath(`/${eventSlug}/polls`);
     return { success: true, pollId: poll.id };
   } catch (error) {
@@ -157,24 +173,24 @@ export async function updatePoll(
     ends_at?: string | null;
     is_active?: boolean;
     show_results?: boolean;
-  }
+  },
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: poll } = await supabase
+    .from("polls")
+    .select("event_id")
+    .eq("id", pollId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!poll) {
+    return { error: "Poll not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, poll.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -187,28 +203,27 @@ export async function updatePoll(
     return { error: "Failed to update poll" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/polls`);
+  revalidatePath(getAdminPollsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/polls`);
   return { success: true };
 }
 
-export async function deletePoll(pollId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function deletePoll(pollId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: poll } = await supabase
+    .from("polls")
+    .select("event_id")
+    .eq("id", pollId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!poll) {
+    return { error: "Poll not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, poll.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase.from("polls").delete().eq("id", pollId);
@@ -218,39 +233,27 @@ export async function deletePoll(pollId: string, eventSlug: string) {
     return { error: "Failed to delete poll" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/polls`);
+  revalidatePath(getAdminPollsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/polls`);
   return { success: true };
 }
 
-export async function togglePollActive(pollId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function togglePollActive(pollId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
-
-  // Get current state
   const { data: poll } = await supabase
     .from("polls")
-    .select("is_active")
+    .select("is_active, event_id")
     .eq("id", pollId)
     .single();
 
   if (!poll) {
     return { error: "Poll not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, poll.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -263,7 +266,7 @@ export async function togglePollActive(pollId: string, eventSlug: string) {
     return { error: "Failed to toggle poll" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/polls`);
+  revalidatePath(getAdminPollsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/polls`);
   return { success: true, is_active: !poll.is_active };
 }
@@ -311,7 +314,7 @@ export async function deactivateExpiredPolls(eventId: string, eventSlug?: string
 
     // Revalidate paths if eventSlug is provided
     if (eventSlug) {
-      revalidatePath(`/admin/${eventSlug}/polls`);
+      revalidatePath(getAdminPollsPath(eventSlug));
       revalidatePath(`/${eventSlug}/polls`);
     }
 
