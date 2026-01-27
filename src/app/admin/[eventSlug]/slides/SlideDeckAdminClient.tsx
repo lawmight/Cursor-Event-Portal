@@ -100,7 +100,15 @@ export function SlideDeckAdminClient({
         e.target.value = "";
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to upload slide deck";
+      let errorMessage = err instanceof Error ? err.message : "Failed to upload slide deck";
+
+      // Handle common network/file errors with clearer messages
+      if (errorMessage.toLowerCase().includes("failed to fetch") ||
+          errorMessage.toLowerCase().includes("network") ||
+          errorMessage.toLowerCase().includes("file changed")) {
+        errorMessage = "Upload failed. If the file is in OneDrive or a synced folder, try copying it to your Desktop first and uploading from there.";
+      }
+
       setError(errorMessage);
     } finally {
       setUploading(false);
