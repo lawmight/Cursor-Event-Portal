@@ -129,6 +129,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
+      exp: Date.now() + 7 * 24 * 60 * 60 * 1000, // 1 week
     };
 
     const cookieStore = await cookies();

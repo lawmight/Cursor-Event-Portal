@@ -36,6 +36,7 @@ export default async function ImportRegistrationsPage({
           existingEmails={existing
             .map((r) => r.user?.email?.toLowerCase())
             .filter(Boolean) as string[]}
+          adminCode={adminCode}
         />
       </main>
 

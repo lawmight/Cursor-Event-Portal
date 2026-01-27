@@ -64,6 +64,10 @@ export function SlideDeckAdminClient({
       const uploadResponse = await fetch("/api/admin/upload-deck", {
         method: "POST",
         body: formData,
+        headers: adminCode ? {
+          "x-admin-code": adminCode,
+          "x-event-id": event.id,
+        } : {},
       });
 
       if (!uploadResponse.ok) {

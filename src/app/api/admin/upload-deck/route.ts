@@ -4,21 +4,40 @@ import { getSession } from "@/lib/actions/registration";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
     const supabase = await createServiceClient();
 
-    const { data: user } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.userId)
-      .single();
+    // Check for admin code in header (alternative to session auth)
+    const adminCode = request.headers.get("x-admin-code");
+    const headerEventId = request.headers.get("x-event-id");
 
-    if (!user || user.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    if (adminCode && headerEventId) {
+      // Validate admin code against event
+      const { data: event } = await supabase
+        .from("events")
+        .select("admin_code")
+        .eq("id", headerEventId)
+        .single();
+
+      if (!event || event.admin_code !== adminCode) {
+        return NextResponse.json({ error: "Invalid admin code" }, { status: 403 });
+      }
+      // Admin code is valid, proceed
+    } else {
+      // Fall back to session auth
+      const session = await getSession();
+      if (!session) {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+
+      const { data: user } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.userId)
+        .single();
+
+      if (!user || user.role !== "admin") {
+        return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+      }
     }
 
     const formData = await request.formData();

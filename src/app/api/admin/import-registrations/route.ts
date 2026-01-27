@@ -14,34 +14,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get session from cookie
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("portal_session");
-    if (!sessionCookie) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    let session;
-    try {
-      session = JSON.parse(sessionCookie.value);
-    } catch {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-    }
-
-    // Verify admin role
     const supabase = await createServiceClient();
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.userId)
-      .single();
 
-    if (!user || user.role !== "admin") {
-      console.error("Admin check failed:", { userId: session.userId, user, userError });
-      return NextResponse.json({
-        error: "Admin access required",
-        debug: { userId: session.userId, userFound: !!user, role: user?.role }
-      }, { status: 403 });
+    // Check for admin code in header (alternative to session auth)
+    const adminCode = request.headers.get("x-admin-code");
+    const headerEventId = request.headers.get("x-event-id");
+
+    if (adminCode && headerEventId) {
+      // Validate admin code against event
+      const { data: event } = await supabase
+        .from("events")
+        .select("admin_code")
+        .eq("id", headerEventId)
+        .single();
+
+      if (!event || event.admin_code !== adminCode) {
+        return NextResponse.json({ error: "Invalid admin code" }, { status: 403 });
+      }
+      // Admin code is valid, proceed
+    } else {
+      // Fall back to session auth
+      const cookieStore = await cookies();
+      const sessionCookie = cookieStore.get("portal_session");
+      if (!sessionCookie) {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+
+      let session;
+      try {
+        session = JSON.parse(sessionCookie.value);
+      } catch {
+        return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+      }
+
+      // Verify admin role
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.userId)
+        .single();
+
+      if (!user || user.role !== "admin") {
+        console.error("Admin check failed:", { userId: session.userId, user, userError });
+        return NextResponse.json({
+          error: "Admin access required",
+          debug: { userId: session.userId, userFound: !!user, role: user?.role }
+        }, { status: 403 });
+      }
     }
 
     // Verify event exists
