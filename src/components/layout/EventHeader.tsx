@@ -153,36 +153,18 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
     if (!userId) return;
 
     async function fetchTableAssignment() {
-      const supabase = createClient();
-      
-      const { data, error } = await supabase
-        .from("suggested_group_members")
-        .select(`
-          group:suggested_groups(
-            id,
-            name,
-            table_number,
-            status
-          )
-        `)
-        .eq("user_id", userId)
-        .single();
+      try {
+        const response = await fetch(`/api/table-assignment?eventId=${event.id}`);
+        if (!response.ok) return;
+        const data = await response.json();
 
-      if (!error && data?.group) {
-        // data.group is an array from nested select, get first item
-        const groupArray = data.group as { id: string; name: string; table_number: number; status: string }[];
-        const group = groupArray[0];
-        if (group && group.status === "approved" && group.table_number) {
-          const newAssignment = {
-            tableNumber: group.table_number,
-            groupName: group.name,
-            groupId: group.id,
-          };
-          setTableAssignment(newAssignment);
+        const newAssignment = data.assignment || null;
+        setTableAssignment(newAssignment);
 
+        if (newAssignment) {
           // Check if this is the first time seeing this assignment (using Supabase)
           try {
-            const hasSeen = await hasUserSeenItem(userId!, 'table_assignment', group.id);
+            const hasSeen = await hasUserSeenItem(userId!, "table_assignment", newAssignment.groupId);
 
             if (!hasSeen && !hasMarkedAsSeen.current) {
               setIsFirstView(true);
@@ -191,7 +173,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               // Mark as seen after the animation completes (5 seconds)
               setTimeout(async () => {
                 try {
-                  await markItemAsSeen(userId!, event.id, 'table_assignment', group.id);
+                  await markItemAsSeen(userId!, event.id, "table_assignment", newAssignment.groupId);
                 } catch (err) {
                   console.error("[EventHeader] Error marking as seen:", err);
                 }
@@ -202,32 +184,15 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
             console.error("[EventHeader] Error checking seen status:", err);
           }
         }
+      } catch (err) {
+        console.error("[EventHeader] Table assignment fetch error:", err);
       }
     }
 
     fetchTableAssignment();
 
-    // Subscribe to group changes
-    const supabase = createClient();
-    const groupChannel = supabase
-      .channel(`group-assignment-header-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "suggested_groups",
-          filter: `event_id=eq.${event.id}`,
-        },
-        () => {
-          fetchTableAssignment();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(groupChannel);
-    };
+    const interval = setInterval(fetchTableAssignment, 10000);
+    return () => clearInterval(interval);
   }, [event.id, userId]);
 
   // Event opens at 5:00 PM MST on Jan 28, 2026 = 2026-01-29T00:00:00Z (midnight UTC on Jan 29)
