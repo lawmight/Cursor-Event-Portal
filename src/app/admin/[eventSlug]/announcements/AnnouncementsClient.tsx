@@ -41,7 +41,15 @@ export function AnnouncementsClient({
       try {
         const response = await fetch(`/api/announcements`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(adminCode
+              ? {
+                  "x-admin-code": adminCode,
+                  "x-event-id": event.id,
+                }
+              : {}),
+          },
           body: JSON.stringify({
             eventId: event.id,
             content: newContent.trim(),
@@ -72,6 +80,12 @@ export function AnnouncementsClient({
       try {
         const response = await fetch(`/api/announcements/${id}`, {
           method: "DELETE",
+          headers: adminCode
+            ? {
+                "x-admin-code": adminCode,
+                "x-event-id": event.id,
+              }
+            : undefined,
         });
 
         if (response.ok) {

@@ -16,36 +16,7 @@ export async function DELETE(
       );
     }
 
-    // Get session
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    // Verify admin role
     const supabase = await createServiceClient();
-    const { data: user, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.userId)
-      .single();
-
-    if (userError) {
-      console.error("User lookup error:", userError);
-      return NextResponse.json(
-        { error: "Failed to verify user" },
-        { status: 500 }
-      );
-    }
-
-    if (!user || user.role !== "admin") {
-      console.error("Admin check failed:", { userId: session.userId, userFound: !!user, role: user?.role });
-      return NextResponse.json(
-        { error: "Admin access required" },
-        { status: 403 }
-      );
-    }
-
     // Verify announcement exists and belongs to an event the admin has access to
     const { data: announcement, error: fetchError } = await supabase
       .from("announcements")
@@ -58,6 +29,58 @@ export async function DELETE(
         { error: "Announcement not found" },
         { status: 404 }
       );
+    }
+
+    // Check for admin code in header (alternative to session auth)
+    const adminCode = request.headers.get("x-admin-code");
+    const headerEventId = request.headers.get("x-event-id");
+
+    if (adminCode && headerEventId) {
+      const { data: event } = await supabase
+        .from("events")
+        .select("admin_code")
+        .eq("id", headerEventId)
+        .single();
+
+      const matchesEvent = headerEventId === announcement.event_id;
+      if (!event || event.admin_code !== adminCode || !matchesEvent) {
+        return NextResponse.json(
+          { error: "Admin access required" },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Fall back to session auth
+      const session = await getSession();
+      if (!session) {
+        return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.userId)
+        .single();
+
+      if (userError) {
+        console.error("User lookup error:", userError);
+        return NextResponse.json(
+          { error: "Failed to verify user" },
+          { status: 500 }
+        );
+      }
+
+      if (!user || user.role !== "admin") {
+        console.error("Admin check failed:", {
+          userId: session.userId,
+          userFound: !!user,
+          role: user?.role,
+        });
+        return NextResponse.json(
+          { error: "Admin access required" },
+          { status: 403 }
+        );
+      }
     }
 
     // Delete the announcement
