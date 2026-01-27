@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Upload, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck } from "lucide-react";
+import { Download, Upload, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck, Lock, X } from "lucide-react";
 import type { Event, Registration, Question, Survey, SurveyResponse } from "@/types";
 import { getDetailedAttendeeData } from "@/lib/actions/export";
 import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
+
+const DOWNLOAD_PASSWORD = "CursorCalgary2026";
 
 interface DataManagementClientProps {
   event: Event;
@@ -27,6 +29,35 @@ export function DataManagementClient({
 }: DataManagementClientProps) {
   const [activeTab, setActiveTab] = useState<"import" | "export">("export");
   const [exporting, setExporting] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [pendingExport, setPendingExport] = useState<(() => void) | null>(null);
+
+  const verifyPassword = () => {
+    if (passwordInput === DOWNLOAD_PASSWORD) {
+      setIsAuthenticated(true);
+      setShowPasswordModal(false);
+      setPasswordError("");
+      setPasswordInput("");
+      if (pendingExport) {
+        pendingExport();
+        setPendingExport(null);
+      }
+    } else {
+      setPasswordError("Incorrect password. Please try again.");
+    }
+  };
+
+  const requirePassword = (exportFn: () => void) => {
+    if (isAuthenticated) {
+      exportFn();
+    } else {
+      setPendingExport(() => exportFn);
+      setShowPasswordModal(true);
+    }
+  };
 
   const exportToCSV = (data: any[], filename: string) => {
     if (data.length === 0) {
@@ -182,7 +213,7 @@ export function DataManagementClient({
                 </div>
               </div>
               <button
-                onClick={exportRegistrations}
+                onClick={() => requirePassword(exportRegistrations)}
                 disabled={exporting !== null || registrations.length === 0}
                 className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
                   exporting !== null || registrations.length === 0
@@ -218,7 +249,7 @@ export function DataManagementClient({
                 </div>
               </div>
               <button
-                onClick={exportQuestions}
+                onClick={() => requirePassword(exportQuestions)}
                 disabled={exporting !== null || questions.length === 0}
                 className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
                   exporting !== null || questions.length === 0
@@ -254,7 +285,7 @@ export function DataManagementClient({
                 </div>
               </div>
               <button
-                onClick={exportDetailedAttendees}
+                onClick={() => requirePassword(exportDetailedAttendees)}
                 disabled={exporting !== null || registrations.length === 0}
                 className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
                   exporting !== null || registrations.length === 0
@@ -288,7 +319,7 @@ export function DataManagementClient({
                   </div>
                 </div>
                 <button
-                  onClick={exportSurveyResponses}
+                  onClick={() => requirePassword(exportSurveyResponses)}
                   disabled={exporting !== null || surveyResponses.length === 0}
                   className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
                     exporting !== null || surveyResponses.length === 0
@@ -326,6 +357,67 @@ export function DataManagementClient({
           existingEmails={existingEmails}
           adminCode={adminCode}
         />
+      )}
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass rounded-[32px] p-8 max-w-md w-full mx-4 border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-white/70" />
+                </div>
+                <h3 className="text-xl font-light text-white">Download Protection</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordError("");
+                  setPasswordInput("");
+                  setPendingExport(null);
+                }}
+                className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4 text-white/50" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-400 mb-6">
+              Please enter the password to download event data.
+            </p>
+
+            <div className="space-y-4">
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value);
+                  setPasswordError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    verifyPassword();
+                  }
+                }}
+                placeholder="Enter password"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-white/30 transition-colors"
+                autoFocus
+              />
+
+              {passwordError && (
+                <p className="text-red-400 text-sm">{passwordError}</p>
+              )}
+
+              <button
+                onClick={verifyPassword}
+                className="w-full px-6 py-3 rounded-xl bg-white text-black font-medium hover:scale-[1.02] transition-transform"
+              >
+                Verify & Download
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
