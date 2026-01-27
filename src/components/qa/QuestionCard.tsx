@@ -18,9 +18,19 @@ interface QuestionCardProps {
   adminCode?: string;
   userRole?: UserRole;
   userId?: string;
+  onQuestionUpdated?: (questionId: string, updater: (question: Question) => Question) => void;
+  onQuestionDeleted?: (questionId: string) => void;
 }
 
-export function QuestionCard({ question, eventSlug, adminCode, userRole, userId }: QuestionCardProps) {
+export function QuestionCard({
+  question,
+  eventSlug,
+  adminCode,
+  userRole,
+  userId,
+  onQuestionUpdated,
+  onQuestionDeleted,
+}: QuestionCardProps) {
   const router = useRouter();
   const [showAnswerForm, setShowAnswerForm] = useState(false);
   const [answerContent, setAnswerContent] = useState("");
@@ -48,7 +58,10 @@ export function QuestionCard({ question, eventSlug, adminCode, userRole, userId 
       toast.success("Reply posted");
       setAnswerContent("");
       setShowAnswerForm(false);
-      router.refresh();
+      onQuestionUpdated?.(question.id, (current) => ({
+        ...current,
+        answers: current.answers ? [...current.answers] : current.answers,
+      }));
     }
     setLoading(false);
   };
@@ -64,7 +77,10 @@ export function QuestionCard({ question, eventSlug, adminCode, userRole, userId 
       } else {
         toast.success(`Question ${status}`);
       }
-      router.refresh();
+      onQuestionUpdated?.(question.id, (current) => ({
+        ...current,
+        status,
+      }));
     }
     setLoading(false);
   };
@@ -79,7 +95,7 @@ export function QuestionCard({ question, eventSlug, adminCode, userRole, userId 
       toast.error(result.error);
     } else {
       toast.success("Question discarded");
-      router.refresh();
+      onQuestionDeleted?.(question.id);
     }
     setLoading(false);
   };
@@ -91,7 +107,16 @@ export function QuestionCard({ question, eventSlug, adminCode, userRole, userId 
       toast.error(result.error);
     } else {
       toast.success("Answer verified");
-      router.refresh();
+      onQuestionUpdated?.(question.id, (current) => ({
+        ...current,
+        status: "answered",
+        answers: current.answers
+          ? current.answers.map((answer) => ({
+              ...answer,
+              is_accepted: answer.id === answerId,
+            }))
+          : current.answers,
+      }));
     }
     setLoading(false);
   };

@@ -47,6 +47,16 @@ export function AdminQAClient({
     });
   };
 
+  const updateQuestion = (questionId: string, updater: (question: Question) => Question) => {
+    setQuestions((prev) =>
+      prev.map((question) => (question.id === questionId ? updater(question) : question))
+    );
+  };
+
+  const removeQuestion = (questionId: string) => {
+    setQuestions((prev) => prev.filter((question) => question.id !== questionId));
+  };
+
   // Subscribe to real-time question updates
   useEffect(() => {
     const supabase = createClient();
@@ -247,6 +257,8 @@ export function AdminQAClient({
                 adminCode={adminCode}
                 userRole="admin"
                 userId={userId}
+                onQuestionUpdated={updateQuestion}
+                onQuestionDeleted={removeQuestion}
               />
             ))}
           </div>
