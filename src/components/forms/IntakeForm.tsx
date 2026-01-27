@@ -159,7 +159,25 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
       router.push(`/${eventSlug}`);
       router.refresh();
     }
-  }, [eventId, eventSlug, goals, goalsOther, offers, offersOther, router]);
+  }, [
+    eventId,
+    eventSlug,
+    goals,
+    goalsOther,
+    offers,
+    offersOther,
+    roleCategory,
+    founderStage,
+    yearsExperience,
+    degreeType,
+    linkedin,
+    github,
+    website,
+    intent,
+    followupConsent,
+    cursorExperience,
+    router,
+  ]);
 
   const handleSubmit = async () => {
     if (step === "profile") {
@@ -248,23 +266,6 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
-                  Stage
-                </label>
-                <select
-                  value={careerStage}
-                  onChange={(e) => setCareerStage(e.target.value as CareerStage)}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
-                >
-                  {STAGE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value} className="bg-black">
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {roleCategory === "founder" && (
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
@@ -323,15 +324,76 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
 
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
-                  Socials or Website
+                  LinkedIn
                 </label>
                 <input
                   type="text"
-                  value={socials}
-                  onChange={(e) => setSocials(e.target.value)}
-                  placeholder="LinkedIn, website, or handle"
+                  value={linkedin}
+                  onChange={(e) => setLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/..."
                   className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  GitHub
+                </label>
+                <input
+                  type="text"
+                  value={github}
+                  onChange={(e) => setGithub(e.target.value)}
+                  placeholder="https://github.com/username"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Personal Website
+                </label>
+                <input
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourname.com"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Intent
+                </label>
+                <textarea
+                  value={intent}
+                  onChange={(e) => setIntent(e.target.value)}
+                  placeholder="Short answer"
+                  rows={2}
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Contact After The Event?
+                </label>
+                <select
+                  value={followupConsent === null ? "" : followupConsent ? "yes" : "no"}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) {
+                      setFollowupConsent(null);
+                    } else {
+                      setFollowupConsent(value === "yes");
+                    }
+                  }}
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                >
+                  <option value="" className="bg-black">Select</option>
+                  <option value="yes" className="bg-black">Yes, you may contact me</option>
+                  <option value="no" className="bg-black">No, please don't contact me</option>
+                </select>
               </div>
 
               <div className="space-y-2">
