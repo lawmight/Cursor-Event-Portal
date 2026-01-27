@@ -115,7 +115,7 @@ export function SlideDeckAdminClient({
 
     setError(null);
     startTransition(async () => {
-      const result = await removeSlideDeck(event.id, eventSlug);
+      const result = await removeSlideDeck(event.id, eventSlug, adminCode);
       if (result.success) {
         setDeck(null);
         router.refresh();
@@ -140,7 +140,7 @@ export function SlideDeckAdminClient({
     setDeck((prev) => prev ? { ...prev, is_live: isLive } : null);
 
     startTransition(async () => {
-      const result = await toggleSlideDeckLive(event.id, eventSlug, isLive);
+      const result = await toggleSlideDeckLive(event.id, eventSlug, isLive, adminCode);
       if (result.error) {
         setError(result.error);
         router.refresh(); // Revert on error
@@ -162,14 +162,14 @@ export function SlideDeckAdminClient({
       
       startTransition(async () => {
         // Enable slides page first, then popup
-        const liveResult = await toggleSlideDeckLive(event.id, eventSlug, true);
+        const liveResult = await toggleSlideDeckLive(event.id, eventSlug, true, adminCode);
         if (liveResult.error) {
           setError(liveResult.error);
           router.refresh();
           return;
         }
         
-        const popupResult = await toggleSlideDeckPopup(event.id, eventSlug, true);
+        const popupResult = await toggleSlideDeckPopup(event.id, eventSlug, true, adminCode);
         if (popupResult.error) {
           setError(popupResult.error);
           router.refresh();
@@ -184,7 +184,7 @@ export function SlideDeckAdminClient({
     setDeck((prev) => prev ? { ...prev, popup_visible: popupVisible } : null);
 
     startTransition(async () => {
-      const result = await toggleSlideDeckPopup(event.id, eventSlug, popupVisible);
+      const result = await toggleSlideDeckPopup(event.id, eventSlug, popupVisible, adminCode);
       if (result.error) {
         setError(result.error);
         router.refresh(); // Revert on error
@@ -337,7 +337,7 @@ export function SlideDeckAdminClient({
                   showControls={true}
                   initialPage={deck.current_page || 1}
                   onPageChange={(page) => {
-                    updateSlideCurrentPage(event.id, page);
+                    updateSlideCurrentPage(event.id, page, adminCode);
                   }}
                 />
               </div>

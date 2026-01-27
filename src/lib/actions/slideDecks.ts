@@ -4,13 +4,29 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 
-export async function removeSlideDeck(eventId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
+// Helper to validate admin access via session or admin code
+async function validateAdminAccess(eventId: string, adminCode?: string) {
+  const supabase = await createServiceClient();
+
+  // If admin code provided, validate it
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true, supabase };
+    }
+    return { valid: false, error: "Invalid admin code" };
   }
 
-  const supabase = await createServiceClient();
+  // Fall back to session auth
+  const session = await getSession();
+  if (!session) {
+    return { valid: false, error: "Not authenticated" };
+  }
 
   const { data: user } = await supabase
     .from("users")
@@ -19,8 +35,19 @@ export async function removeSlideDeck(eventId: string, eventSlug: string) {
     .single();
 
   if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+    return { valid: false, error: "Not authorized" };
   }
+
+  return { valid: true, supabase };
+}
+
+export async function removeSlideDeck(eventId: string, eventSlug: string, adminCode?: string) {
+  const auth = await validateAdminAccess(eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error };
+  }
+
+  const supabase = auth.supabase!;
 
   const { data: deck } = await supabase
     .from("slide_decks")
@@ -50,26 +77,15 @@ export async function removeSlideDeck(eventId: string, eventSlug: string) {
 export async function toggleSlideDeckLive(
   eventId: string,
   eventSlug: string,
-  isLive: boolean
+  isLive: boolean,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
+  const auth = await validateAdminAccess(eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error };
   }
 
-  const supabase = await createServiceClient();
-
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
-
-  const { error } = await supabase
+  const { error } = await auth.supabase!
     .from("slide_decks")
     .update({ is_live: isLive })
     .eq("event_id", eventId);
@@ -88,26 +104,15 @@ export async function toggleSlideDeckLive(
 export async function toggleSlideDeckPopup(
   eventId: string,
   eventSlug: string,
-  popupVisible: boolean
+  popupVisible: boolean,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
+  const auth = await validateAdminAccess(eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error };
   }
 
-  const supabase = await createServiceClient();
-
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
-
-  const { error } = await supabase
+  const { error } = await auth.supabase!
     .from("slide_decks")
     .update({ popup_visible: popupVisible })
     .eq("event_id", eventId);
@@ -124,26 +129,15 @@ export async function toggleSlideDeckPopup(
 
 export async function updateSlideCurrentPage(
   eventId: string,
-  pageNumber: number
+  pageNumber: number,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
+  const auth = await validateAdminAccess(eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error };
   }
 
-  const supabase = await createServiceClient();
-
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
-
-  const { error } = await supabase
+  const { error } = await auth.supabase!
     .from("slide_decks")
     .update({ current_page: pageNumber })
     .eq("event_id", eventId);
