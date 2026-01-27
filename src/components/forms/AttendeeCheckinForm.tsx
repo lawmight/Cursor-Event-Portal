@@ -19,7 +19,6 @@ import type {
   IntakeGoalTag,
   IntakeOfferTag,
   AttendeeRoleCategory,
-  CareerStage,
   FounderStage,
   DegreeType,
   CursorExperience,
@@ -74,12 +73,6 @@ const ROLE_OPTIONS: { value: AttendeeRoleCategory; label: string }[] = [
   { value: "founder", label: "Founder" },
   { value: "professional", label: "Professional" },
   { value: "student", label: "Student" },
-  { value: "other", label: "Other" },
-];
-
-const STAGE_OPTIONS: { value: CareerStage; label: string }[] = [
-  { value: "student", label: "Student" },
-  { value: "professional", label: "Professional" },
   { value: "other", label: "Other" },
 ];
 

@@ -13,6 +13,7 @@ import { EventStatusBar } from "@/components/staff/EventStatusBar";
 interface CheckInClientProps {
   event: Event;
   eventSlug: string;
+  adminCode?: string;
   initialRegistrations: Registration[];
   stats: { registered: number; checkedIn: number };
   initialAgendaItems: AgendaItem[];
@@ -39,10 +40,15 @@ const SIGNAL_LABELS: Record<string, string> = {
 export function CheckInClient({
   event,
   eventSlug,
+  adminCode,
   initialRegistrations,
   stats,
   initialAgendaItems,
 }: CheckInClientProps) {
+  // Determine back link based on whether we have adminCode
+  const backLink = adminCode
+    ? `/admin/${eventSlug}/${adminCode}`
+    : `/admin/${eventSlug}`;
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -182,7 +188,7 @@ export function CheckInClient({
       <header className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-3xl">
         <div className="max-w-2xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link
-            href={`/admin/${event.slug}`}
+            href={backLink}
             className="flex items-center gap-2 text-gray-600 hover:text-white transition-all group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

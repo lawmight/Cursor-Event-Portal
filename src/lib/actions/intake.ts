@@ -49,11 +49,17 @@ export async function submitIntake(
       offers: formData.offers,
       offers_other: formData.offersOther || null,
       role_category: formData.roleCategory || null,
-      career_stage: formData.careerStage || null,
       founder_stage: formData.founderStage || null,
       years_experience: formData.yearsExperience ?? null,
       degree_type: formData.degreeType || null,
-      socials: formData.socials || null,
+      linkedin: formData.linkedin || null,
+      github: formData.github || null,
+      website: formData.website || null,
+      intent: formData.intent || null,
+      followup_consent:
+        typeof formData.followupConsent === "boolean"
+          ? formData.followupConsent
+          : null,
       cursor_experience: formData.cursorExperience || null,
       skipped: false,
     });
@@ -76,11 +82,17 @@ export async function submitIntake(
         offers: formData.offers,
         offers_other: formData.offersOther || null,
         role_category: formData.roleCategory || null,
-        career_stage: formData.careerStage || null,
         founder_stage: formData.founderStage || null,
         years_experience: formData.yearsExperience ?? null,
         degree_type: formData.degreeType || null,
-        socials: formData.socials || null,
+        linkedin: formData.linkedin || null,
+        github: formData.github || null,
+        website: formData.website || null,
+        intent: formData.intent || null,
+        followup_consent:
+          typeof formData.followupConsent === "boolean"
+            ? formData.followupConsent
+            : null,
         cursor_experience: formData.cursorExperience || null,
       })
       .eq("id", session.userId);
@@ -162,11 +174,14 @@ export async function skipIntake(eventId: string, eventSlug: string) {
       goals: [],
       offers: [],
       role_category: null,
-      career_stage: null,
       founder_stage: null,
       years_experience: null,
       degree_type: null,
-      socials: null,
+      linkedin: null,
+      github: null,
+      website: null,
+      intent: null,
+      followup_consent: null,
       cursor_experience: null,
       skipped: true,
     });
@@ -239,11 +254,17 @@ export async function updateUserProfile(
         offers: formData.offers,
         offers_other: formData.offersOther || null,
         role_category: formData.roleCategory || null,
-        career_stage: formData.careerStage || null,
         founder_stage: formData.founderStage || null,
         years_experience: formData.yearsExperience ?? null,
         degree_type: formData.degreeType || null,
-        socials: formData.socials || null,
+        linkedin: formData.linkedin || null,
+        github: formData.github || null,
+        website: formData.website || null,
+        intent: formData.intent || null,
+        followup_consent:
+          typeof formData.followupConsent === "boolean"
+            ? formData.followupConsent
+            : null,
         cursor_experience: formData.cursorExperience || null,
       })
       .eq("id", userId);
@@ -271,11 +292,17 @@ export async function updateUserProfile(
           offers: formData.offers,
           offers_other: formData.offersOther || null,
           role_category: formData.roleCategory || null,
-          career_stage: formData.careerStage || null,
           founder_stage: formData.founderStage || null,
           years_experience: formData.yearsExperience ?? null,
           degree_type: formData.degreeType || null,
-          socials: formData.socials || null,
+          linkedin: formData.linkedin || null,
+          github: formData.github || null,
+          website: formData.website || null,
+          intent: formData.intent || null,
+          followup_consent:
+            typeof formData.followupConsent === "boolean"
+              ? formData.followupConsent
+              : null,
           cursor_experience: formData.cursorExperience || null,
           skipped: false,
         })
@@ -295,11 +322,17 @@ export async function updateUserProfile(
         offers: formData.offers,
         offers_other: formData.offersOther || null,
         role_category: formData.roleCategory || null,
-        career_stage: formData.careerStage || null,
         founder_stage: formData.founderStage || null,
         years_experience: formData.yearsExperience ?? null,
         degree_type: formData.degreeType || null,
-        socials: formData.socials || null,
+        linkedin: formData.linkedin || null,
+        github: formData.github || null,
+        website: formData.website || null,
+        intent: formData.intent || null,
+        followup_consent:
+          typeof formData.followupConsent === "boolean"
+            ? formData.followupConsent
+            : null,
         cursor_experience: formData.cursorExperience || null,
         skipped: false,
       });

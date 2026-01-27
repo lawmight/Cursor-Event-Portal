@@ -53,6 +53,7 @@ export default async function AdminCheckInPage({ params }: AdminCheckInPageProps
     <CheckInClient
       event={event}
       eventSlug={eventSlug}
+      adminCode={adminCode}
       initialRegistrations={registrations}
       stats={stats}
       initialAgendaItems={agendaItems}
