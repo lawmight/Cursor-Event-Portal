@@ -35,15 +35,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is admin
-    if (user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Not authorized. Admin access required." },
-        { status: 403 }
-      );
-    }
+    const isAdmin = user.role === "admin";
 
-    // Find an event they're registered for (or any active event)
+    // Find an event they're registered for (admins can fall back to any active event)
     const { data: registration } = await supabase
       .from("registrations")
       .select("event_id, events(slug, admin_code)")
@@ -63,8 +57,8 @@ export async function POST(request: NextRequest) {
         : registration.events;
       eventSlug = (eventData as { slug: string; admin_code: string }).slug;
       adminCode = (eventData as { slug: string; admin_code: string }).admin_code;
-    } else {
-      // Find any event (published, active, or draft - admins can access all)
+    } else if (isAdmin) {
+      // Admin fallback: find any event (published, active, or draft)
       const { data: anyEvent } = await supabase
         .from("events")
         .select("id, slug, admin_code")
@@ -91,6 +85,11 @@ export async function POST(request: NextRequest) {
         source: "link",
         checked_in_at: new Date().toISOString(),
       }, { onConflict: "event_id,user_id", ignoreDuplicates: true });
+    } else {
+      return NextResponse.json(
+        { error: "No registration found for this user." },
+        { status: 403 }
+      );
     }
 
     // Set session cookie with exp field for getSession() compatibility
@@ -103,7 +102,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       eventSlug,
-      adminCode,
+      adminCode: isAdmin ? adminCode : null,
       user: {
         id: user.id,
         name: user.name,
