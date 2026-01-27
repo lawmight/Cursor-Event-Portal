@@ -168,7 +168,39 @@ export function AttendeeCheckinForm({
       setStep("success");
       return;
     }
-    setStep("guest");
+
+    // Directly check in (no guest option)
+    if (!foundAttendee) return;
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          attendeeId: foundAttendee.id,
+          guest: null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Sign-in failed");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Go to success step (with intake option)
+      setStep("success");
+      setIsSubmitting(false);
+    } catch (err) {
+      setError("Network error. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -377,14 +409,26 @@ export function AttendeeCheckinForm({
             </div>
           </div>
 
+          {error && (
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 animate-fade-in">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-light">{error}</p>
+            </div>
+          )}
+
           <div className="space-y-4">
             <button
               onClick={handleConfirm}
-              className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
             >
-              <span className="text-sm font-bold uppercase tracking-[0.2em]">
-                {alreadyCheckedIn ? "Continue" : "Yes, That's Me"}
-              </span>
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="text-sm font-bold uppercase tracking-[0.2em]">
+                  {alreadyCheckedIn ? "Continue" : "Yes, That's Me"}
+                </span>
+              )}
             </button>
 
             <button
@@ -393,7 +437,8 @@ export function AttendeeCheckinForm({
                 setFoundAttendee(null);
                 setError("");
               }}
-              className="w-full h-12 rounded-[24px] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="w-full h-12 rounded-[24px] border border-white/10 text-gray-400 hover:text-white hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
               <span className="text-xs font-medium uppercase tracking-[0.15em]">
