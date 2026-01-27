@@ -933,7 +933,7 @@ export function AttendeeCheckinForm({
 
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
-                Contact After The Event?
+                Commitment
               </label>
               <select
                 value={followupConsent === null ? "" : followupConsent ? "yes" : "no"}
@@ -948,8 +948,8 @@ export function AttendeeCheckinForm({
                 className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
               >
                 <option value="" className="bg-black">Select</option>
-                <option value="yes" className="bg-black">Yes, you may contact me</option>
-                <option value="no" className="bg-black">No, please don't contact me</option>
+                <option value="yes" className="bg-black">I want to be contacted after the event</option>
+                <option value="no" className="bg-black">Do not contact me after the event</option>
               </select>
             </div>
 
