@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventId, attendeeId, guest } = body;
+    const { eventId, attendeeId, guest, skipCheckIn } = body;
 
     if (!eventId || !attendeeId) {
       return NextResponse.json(
@@ -45,13 +45,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update registration to checked in
-    await supabase
-      .from("registrations")
-      .update({
-        checked_in_at: new Date().toISOString(),
-      })
-      .eq("id", registration.id);
+    const shouldSkipCheckIn = !!skipCheckIn || !!registration.checked_in_at;
+
+    // Update registration to checked in (only if not already checked in and not skipping)
+    if (!shouldSkipCheckIn) {
+      await supabase
+        .from("registrations")
+        .update({
+          checked_in_at: new Date().toISOString(),
+        })
+        .eq("id", registration.id);
+    }
 
     // If bringing a guest, create a guest registration
     if (guest && guest.name) {

@@ -163,13 +163,6 @@ export function AttendeeCheckinForm({
   };
 
   const handleConfirm = async () => {
-    if (alreadyCheckedIn) {
-      // Already checked in - go to success screen with intake option
-      setStep("success");
-      return;
-    }
-
-    // Directly check in (no guest option)
     if (!foundAttendee) return;
 
     setIsSubmitting(true);
@@ -183,6 +176,7 @@ export function AttendeeCheckinForm({
           eventId,
           attendeeId: foundAttendee.id,
           guest: null,
+          skipCheckIn: alreadyCheckedIn,
         }),
       });
 
