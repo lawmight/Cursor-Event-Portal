@@ -146,7 +146,7 @@ export function AttendeeCheckinForm({
 
       if (!data.found) {
         setError(
-          "No registration found for this email. This event is registration-only."
+          "No registration found for this email. Please use your Luma registration email."
         );
         setIsLooking(false);
         return;
@@ -305,10 +305,10 @@ export function AttendeeCheckinForm({
         <div className="space-y-8">
           <div className="text-center space-y-2">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
-              Registration Only Event
+              Cursor Calgary Portal
             </p>
             <p className="text-gray-500 text-sm font-light">
-              Enter your registered email to check in
+              Enter your registered email to access the portal
             </p>
           </div>
 
@@ -371,7 +371,7 @@ export function AttendeeCheckinForm({
               </p>
               {alreadyCheckedIn && (
                 <p className="text-green-400/80 text-sm font-light">
-                  Already checked in
+                  Already signed in
                 </p>
               )}
             </div>
@@ -416,7 +416,7 @@ export function AttendeeCheckinForm({
           <div className="flex items-center justify-between group">
             <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
-                Checking in as
+                Entering as
               </p>
               <p className="text-2xl font-light text-white leading-tight">
                 {foundAttendee?.name}
@@ -515,7 +515,7 @@ export function AttendeeCheckinForm({
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <span className="text-sm font-bold uppercase tracking-[0.2em]">
-                    Check In
+                    Enter Portal
                   </span>
                 )}
               </button>
@@ -538,10 +538,10 @@ export function AttendeeCheckinForm({
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl font-light text-white tracking-tight">
-                You're In!
+                Welcome!
               </h2>
               <p className="text-gray-500 text-sm font-light max-w-xs mx-auto">
-                Welcome to Cursor Calgary, {foundAttendee?.name?.split(" ")[0]}!
+                You're now in the Cursor Calgary Portal, {foundAttendee?.name?.split(" ")[0]}!
               </p>
             </div>
           </div>
