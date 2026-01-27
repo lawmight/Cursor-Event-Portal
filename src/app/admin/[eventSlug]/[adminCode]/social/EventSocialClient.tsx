@@ -16,7 +16,7 @@ interface EventSocialClientProps {
   event: Event;
   eventSlug: string;
   adminCode: string;
-  userId: string;
+  userId?: string;
   initialQuestions: Question[];
   initialPolls: Poll[];
   initialAnnouncements: Announcement[];

@@ -15,7 +15,7 @@ interface AdminQAClientProps {
   initialQuestions: Question[];
   eventSlug: string;
   adminCode?: string;
-  userId: string;
+  userId?: string;
   sortBy: "new" | "trending";
   statusFilter: "all" | "open" | "answered" | "pinned" | "hidden";
   isEmbedded?: boolean;
