@@ -4,6 +4,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { RegistrationFormData } from "@/types";
+import { revalidatePath } from "next/cache";
 
 export async function registerForEvent(
   eventId: string,
@@ -386,4 +387,80 @@ export async function addRegistrationByEmail(
   revalidatePath(`/staff/${eventSlug}/checkin`);
 
   return { success: true, registration };
+}
+
+export async function clearEventRegistrations(
+  eventId: string,
+  eventSlug: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  if (adminCode) {
+    const { data: event, error } = await supabase
+      .from("events")
+      .select("id, admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (error || !event || event.admin_code !== adminCode) {
+      return { error: "Not authorized" };
+    }
+  } else {
+    const session = await getSession();
+    if (!session) {
+      return { error: "Not authenticated" };
+    }
+
+    const { data: staffUser } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.userId)
+      .single();
+
+    if (!staffUser || !["staff", "admin"].includes(staffUser.role)) {
+      return { error: "Not authorized" };
+    }
+  }
+
+  const { data: groupIds } = await supabase
+    .from("suggested_groups")
+    .select("id")
+    .eq("event_id", eventId);
+
+  const groupIdList = (groupIds || []).map((group) => group.id);
+  if (groupIdList.length > 0) {
+    await supabase
+      .from("suggested_group_members")
+      .delete()
+      .in("group_id", groupIdList);
+  }
+
+  await supabase
+    .from("suggested_groups")
+    .delete()
+    .eq("event_id", eventId);
+
+  await supabase
+    .from("attendee_intakes")
+    .delete()
+    .eq("event_id", eventId);
+
+  const { error: deleteError } = await supabase
+    .from("registrations")
+    .delete()
+    .eq("event_id", eventId);
+
+  if (deleteError) {
+    return { error: deleteError.message || "Failed to clear registrations" };
+  }
+
+  revalidatePath(`/staff/${eventSlug}/checkin`);
+  revalidatePath(`/admin/${eventSlug}`);
+  if (adminCode) {
+    revalidatePath(`/admin/${eventSlug}/${adminCode}/checkin`);
+    revalidatePath(`/admin/${eventSlug}/${adminCode}`);
+  }
+
+  return { success: true };
 }

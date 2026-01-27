@@ -143,7 +143,7 @@ export async function getDetailedAttendeeData(eventId: string) {
       github: intake?.github || user?.github || "",
       website: intake?.website || user?.website || "",
       intent: intake?.intent || user?.intent || "",
-      followup_consent:
+      commitment:
         typeof intake?.followup_consent === "boolean"
           ? intake.followup_consent
             ? "Yes"

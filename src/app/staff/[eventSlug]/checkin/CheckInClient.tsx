@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
-import { checkIn, undoCheckIn, deregister, addRegistrationByEmail } from "@/lib/actions/registration";
+import { checkIn, undoCheckIn, deregister, addRegistrationByEmail, clearEventRegistrations } from "@/lib/actions/registration";
 import type { Event, Registration, AgendaItem } from "@/types";
 import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -55,6 +55,7 @@ export function CheckInClient({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeregisterId, setConfirmDeregisterId] = useState<string | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
   const [addEmail, setAddEmail] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState<{
@@ -182,6 +183,21 @@ export function CheckInClient({
     }
   };
 
+  const handleClearAll = async () => {
+    setError(null);
+    setConfirmClearAll(false);
+    startTransition(async () => {
+      const result = await clearEventRegistrations(event.id, event.slug, adminCode);
+      if (result.success) {
+        setRegistrations([]);
+        setSearchQuery("");
+        setConfirmDeregisterId(null);
+      } else {
+        setError(result.error || "Failed to clear registrations");
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-black-gradient text-white pb-20">
       {/* Header */}
@@ -219,6 +235,33 @@ export function CheckInClient({
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">Checked In</p>
             <p className="text-4xl font-light tracking-tighter text-white">{checkedInCount}</p>
           </div>
+        </div>
+
+        <div className="flex justify-end">
+          {confirmClearAll ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleClearAll}
+                disabled={isPending}
+                className="h-11 px-5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/30 transition-all disabled:opacity-50"
+              >
+                {isPending ? "..." : "Confirm Remove All"}
+              </button>
+              <button
+                onClick={() => setConfirmClearAll(false)}
+                className="h-11 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmClearAll(true)}
+              className="h-11 px-5 rounded-2xl bg-white/[0.02] border border-white/10 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:border-red-500/30 hover:bg-red-500/10 transition-all"
+            >
+              Remove All
+            </button>
+          )}
         </div>
 
         {/* Event Status Bar */}

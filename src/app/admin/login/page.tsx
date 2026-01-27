@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
 
       if (data.user) {
         // Redirect to admin dashboard
-        router.push("/admin/cursor-workshop");
+        router.push("/admin/calgary-jan-2026/admin2026");
         router.refresh();
       }
     } catch (err) {
