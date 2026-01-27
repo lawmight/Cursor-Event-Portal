@@ -133,7 +133,7 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Link href={`/staff/${eventSlug}/checkin`} className="animate-slide-up" style={{ animationDelay: "600ms" }}>
+          <Link href={`/admin/${eventSlug}/${adminCode}/checkin`} className="animate-slide-up" style={{ animationDelay: "600ms" }}>
             <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
