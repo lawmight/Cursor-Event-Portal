@@ -5,7 +5,6 @@ export type EventStatus = "draft" | "published" | "active" | "completed";
 export type QuestionStatus = "open" | "answered" | "pinned" | "hidden";
 export type RegistrationSource = "qr" | "link" | "walk-in";
 export type AttendeeRoleCategory = "founder" | "professional" | "student" | "other";
-export type CareerStage = "student" | "professional" | "other";
 export type FounderStage =
   | "idea"
   | "pre-seed"
@@ -57,11 +56,14 @@ export interface User {
   offers?: IntakeOfferTag[];
   offers_other?: string | null;
   role_category?: AttendeeRoleCategory | null;
-  career_stage?: CareerStage | null;
   founder_stage?: FounderStage | null;
   years_experience?: number | null;
   degree_type?: DegreeType | null;
-  socials?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  website?: string | null;
+  intent?: string | null;
+  followup_consent?: boolean | null;
   cursor_experience?: CursorExperience | null;
   created_at: string;
 }
@@ -226,11 +228,14 @@ export interface AttendeeIntake {
   offers: IntakeOfferTag[];
   offers_other: string | null;
   role_category?: AttendeeRoleCategory | null;
-  career_stage?: CareerStage | null;
   founder_stage?: FounderStage | null;
   years_experience?: number | null;
   degree_type?: DegreeType | null;
-  socials?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  website?: string | null;
+  intent?: string | null;
+  followup_consent?: boolean | null;
   cursor_experience?: CursorExperience | null;
   skipped: boolean;
   created_at: string;
@@ -244,11 +249,14 @@ export interface IntakeFormData {
   offers: IntakeOfferTag[];
   offersOther?: string;
   roleCategory?: AttendeeRoleCategory;
-  careerStage?: CareerStage;
   founderStage?: FounderStage;
   yearsExperience?: number;
   degreeType?: DegreeType;
-  socials?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
+  intent?: string;
+  followupConsent?: boolean;
   cursorExperience?: CursorExperience;
 }
 

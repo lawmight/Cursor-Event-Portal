@@ -156,3 +156,15 @@ export async function logout() {
   cookieStore.delete("portal_session");
   return { success: true };
 }
+
+export async function adminLogout() {
+  const supabase = await createServiceClient();
+  await supabase.auth.signOut();
+
+  // Also clear the session cookie
+  const cookieStore = await cookies();
+  cookieStore.delete("sb-access-token");
+  cookieStore.delete("sb-refresh-token");
+
+  return { success: true };
+}

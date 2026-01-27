@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 interface AdminHeaderProps {
   eventSlug: string;
@@ -11,33 +13,44 @@ interface AdminHeaderProps {
   subtitle: string;
   rightElement?: React.ReactNode;
   showBackArrow?: boolean;
+  showLogout?: boolean;
 }
 
-export function AdminHeader({ 
-  eventSlug, 
-  adminCode, 
-  title = "Calgary Cursor Meetup", 
-  subtitle, 
-  rightElement, 
-  showBackArrow = true 
+export function AdminHeader({
+  eventSlug,
+  adminCode,
+  title = "Calgary Cursor Meetup",
+  subtitle,
+  rightElement,
+  showBackArrow = true,
+  showLogout = true
 }: AdminHeaderProps) {
+  const router = useRouter();
+
   // Always use adminCode format if available, otherwise fallback to old format
   const adminPath = adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
-  
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+    router.refresh();
+  };
+
   return (
     <header className="z-10 py-12">
       <div className="max-w-4xl mx-auto px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-10">
             {showBackArrow && (
-              <Link 
+              <Link
                 href={adminPath}
                 className="text-white/40 hover:text-white transition-colors group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </Link>
             )}
-            <Link 
+            <Link
               href={adminPath}
               className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:bg-white/10 transition-all cursor-pointer group"
             >
@@ -56,6 +69,15 @@ export function AdminHeader({
           <div className="flex items-center gap-4">
             <p className="text-[12px] uppercase tracking-[0.4em] text-gray-700 font-medium">{subtitle}</p>
             {rightElement && rightElement}
+            {showLogout && (
+              <button
+                onClick={handleLogout}
+                className="ml-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>

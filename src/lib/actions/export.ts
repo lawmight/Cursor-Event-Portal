@@ -134,6 +134,15 @@ export async function getDetailedAttendeeData(eventId: string) {
       goals_other: intake?.goals_other || "",
       offers: intake?.offers?.join("; ") || "",
       offers_other: intake?.offers_other || "",
+      role_category: intake?.role_category || user?.role_category || "",
+      career_stage: intake?.career_stage || user?.career_stage || "",
+      founder_stage: intake?.founder_stage || user?.founder_stage || "",
+      years_experience:
+        intake?.years_experience ?? user?.years_experience ?? "",
+      degree_type: intake?.degree_type || user?.degree_type || "",
+      socials: intake?.socials || user?.socials || "",
+      cursor_experience:
+        intake?.cursor_experience || user?.cursor_experience || "",
       intake_skipped: intake?.skipped ? "Yes" : "No",
       intake_completed_at: intake?.created_at || "",
       // Poll votes
