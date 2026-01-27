@@ -43,8 +43,10 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
         .single();
 
       if (!error && data?.group) {
-        const group = data.group as { id: string; name: string; table_number: number; status: string };
-        if (group.status === "approved" && group.table_number) {
+        // data.group is an array from nested select, get first item
+        const groupArray = data.group as { id: string; name: string; table_number: number; status: string }[];
+        const group = groupArray[0];
+        if (group && group.status === "approved" && group.table_number) {
           const newAssignment = {
             tableNumber: group.table_number,
             groupName: group.name,
