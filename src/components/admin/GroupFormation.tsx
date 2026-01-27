@@ -43,6 +43,7 @@ const OFFER_LABELS: Record<string, string> = {
 export function GroupFormation({
   eventId,
   eventSlug,
+  adminCode,
   intakes,
   groups,
 }: GroupFormationProps) {
@@ -65,7 +66,7 @@ export function GroupFormation({
         setProgressMessage("Analyzing attendee data and generating matches... This may take 30-60 seconds.");
       }, 2000);
 
-      const result = await generateGroups(eventId, eventSlug);
+      const result = await generateGroups(eventId, eventSlug, adminCode);
 
       clearTimeout(progressTimeout);
 
@@ -118,7 +119,7 @@ export function GroupFormation({
   };
 
   const handleStatusChange = async (groupId: string, status: GroupStatus) => {
-    const result = await updateGroupStatus(groupId, status, eventSlug);
+    const result = await updateGroupStatus(groupId, status, eventSlug, adminCode);
     if (result.error) {
       setError(result.error);
     } else {
@@ -129,7 +130,7 @@ export function GroupFormation({
   };
 
   const handleMemberRemove = async (groupId: string, userId: string) => {
-    const result = await removeGroupMember(groupId, userId, eventSlug);
+    const result = await removeGroupMember(groupId, userId, eventSlug, adminCode);
     if (result.error) {
       setError(result.error);
     } else {
@@ -140,7 +141,7 @@ export function GroupFormation({
   };
 
   const handleGroupCancel = async (groupId: string) => {
-    const result = await cancelGroup(groupId, eventSlug);
+    const result = await cancelGroup(groupId, eventSlug, adminCode);
     if (result.error) {
       setError(result.error);
     } else {
@@ -343,6 +344,7 @@ export function GroupFormation({
                 key={group.id}
                 group={group}
                 eventSlug={eventSlug}
+                adminCode={adminCode}
                 onStatusChange={handleStatusChange}
                 onMemberRemove={handleMemberRemove}
                 onGroupCancel={handleGroupCancel}
@@ -358,12 +360,13 @@ export function GroupFormation({
 interface GroupCardProps {
   group: SuggestedGroup;
   eventSlug: string;
+  adminCode?: string;
   onStatusChange: (groupId: string, status: GroupStatus) => void;
   onMemberRemove: (groupId: string, userId: string) => void;
   onGroupCancel: (groupId: string) => void;
 }
 
-function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCancel }: GroupCardProps) {
+function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove, onGroupCancel }: GroupCardProps) {
   const router = useRouter();
   const [editingTableNumber, setEditingTableNumber] = useState(false);
   const [tableNumber, setTableNumber] = useState<string>(group.table_number?.toString() || "");
@@ -376,7 +379,7 @@ function GroupCard({ group, eventSlug, onStatusChange, onMemberRemove, onGroupCa
       return; // Invalid number
     }
     
-    const result = await updateGroupTableNumber(group.id, numValue, eventSlug);
+    const result = await updateGroupTableNumber(group.id, numValue, eventSlug, adminCode);
     if (result.error) {
       alert(result.error);
       setTableNumber(group.table_number?.toString() || "");

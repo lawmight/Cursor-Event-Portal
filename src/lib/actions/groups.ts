@@ -19,6 +19,47 @@ function getOpenAIClient() {
   });
 }
 
+function getAdminGroupsPath(eventSlug: string, adminCode?: string) {
+  return adminCode ? `/admin/${eventSlug}/${adminCode}/groups` : `/admin/${eventSlug}/groups`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true as const };
+    }
+
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return { valid: false as const, error: "Not authenticated" };
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  return { valid: true as const };
+}
+
 async function generateGroupSuggestions(intakes: AttendeeIntake[]) {
   // Prepare intake summaries for the LLM
   const attendeeSummaries = intakes.map((intake) => ({
@@ -215,14 +256,8 @@ Remember: Use actual names from the attendees list in matchReasons, NOT user IDs
   }
 }
 
-export async function generateGroups(eventId: string, eventSlug: string) {
+export async function generateGroups(eventId: string, eventSlug: string, adminCode?: string) {
   console.log("[generateGroups] Starting group generation for event:", eventId);
-  
-  const session = await getSession();
-  if (!session) {
-    console.log("[generateGroups] Not authenticated");
-    return { error: "Not authenticated" };
-  }
 
   // Verify admin role
   let supabase;
@@ -233,15 +268,10 @@ export async function generateGroups(eventId: string, eventSlug: string) {
     return { error: "Failed to connect to database. Please try again." };
   }
 
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
     console.log("[generateGroups] Not authorized");
-    return { error: "Not authorized" };
+    return { error: auth.error || "Not authorized" };
   }
 
   // Get all intakes
@@ -426,7 +456,7 @@ export async function generateGroups(eventId: string, eventSlug: string) {
 
   // Revalidate the path to show new groups
   try {
-    revalidatePath(`/admin/${eventSlug}/groups`);
+    revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
     console.log("[generateGroups] Path revalidated successfully");
   } catch (error) {
     console.error("[generateGroups] Error revalidating path:", error);
@@ -458,23 +488,10 @@ export async function generateGroups(eventId: string, eventSlug: string) {
 export async function updateGroupStatus(
   groupId: string,
   status: GroupStatus,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
-
   const supabase = await createServiceClient();
-
-  // Verify admin role
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
 
   // Get the group to find event_id
   const { data: group } = await supabase
@@ -485,6 +502,11 @@ export async function updateGroupStatus(
 
   if (!group) {
     return { error: "Group not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, group.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -512,7 +534,7 @@ export async function updateGroupStatus(
     }
   }
 
-  revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/agenda`);
   revalidatePath(`/${eventSlug}/`);
   return { success: true };
@@ -521,22 +543,25 @@ export async function updateGroupStatus(
 export async function updateGroupTableNumber(
   groupId: string,
   tableNumber: number | null,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
-
   const supabase = await createServiceClient();
 
-  // Verify admin role
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  // Get the group to find event_id
+  const { data: group } = await supabase
+    .from("suggested_groups")
+    .select("event_id")
+    .eq("id", groupId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!group) {
+    return { error: "Group not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, group.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -546,29 +571,32 @@ export async function updateGroupTableNumber(
 
   if (error) return { error: "Failed to update table number" };
 
-  revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
   return { success: true };
 }
 
 export async function removeGroupMember(
   groupId: string,
   userId: string,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
-
   const supabase = await createServiceClient();
 
-  // Verify admin role
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  // Get the group to find event_id
+  const { data: group } = await supabase
+    .from("suggested_groups")
+    .select("event_id")
+    .eq("id", groupId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!group) {
+    return { error: "Group not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, group.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   // Check how many members the group has
@@ -593,26 +621,12 @@ export async function removeGroupMember(
     return { error: "Failed to remove member from group" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
   return { success: true };
 }
 
-export async function cancelGroup(groupId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) return { error: "Not authenticated" };
-
+export async function cancelGroup(groupId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
-
-  // Verify admin role
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
 
   // Get the group to find event_id
   const { data: group } = await supabase
@@ -623,6 +637,11 @@ export async function cancelGroup(groupId: string, eventSlug: string) {
 
   if (!group) {
     return { error: "Group not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, group.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   // Delete the group members first (due to foreign key constraint)
@@ -662,7 +681,7 @@ export async function cancelGroup(groupId: string, eventSlug: string) {
       .eq("id", group.event_id);
   }
 
-  revalidatePath(`/admin/${eventSlug}/groups`);
+  revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/agenda`);
   revalidatePath(`/${eventSlug}/`);
   return { success: true };
