@@ -60,7 +60,7 @@ export function SlideDeckAdminClient({
       // Read file into memory first to avoid ERR_UPLOAD_FILE_CHANGED errors
       // This happens when antivirus, OneDrive, or Windows indexing touches the file
       setUploadProgress("Reading file...");
-      let memoryFile: File;
+      let memoryFile: File = file;
       try {
         const arrayBuffer = await file.arrayBuffer();
         const blob = new Blob([arrayBuffer], { type: "application/pdf" });
@@ -75,16 +75,15 @@ export function SlideDeckAdminClient({
           readMessage.toLowerCase().includes("not found");
 
         if (isNotFoundLike) {
-          setError(
-            `Windows couldn't access "${file.name}" while reading it. Try copying it to a different local folder (for example, your Desktop), renaming it, and uploading again.`
-          );
+          // Fall back to uploading the original file directly.
+          setUploadProgress("Uploading slide deck...");
         } else {
           setError(
             `Could not read file "${file.name}". The file may be locked, corrupted, or temporarily inaccessible. Try closing any programs that have it open.`
           );
+          setUploading(false);
+          return;
         }
-        setUploading(false);
-        return;
       }
 
       setUploadProgress("Uploading slide deck...");
