@@ -44,6 +44,11 @@ npm run dev
 
 This project is configured for deployment on Render. See `render.yaml` for configuration.
 
+### Production URLs
+
+- **Portal**: https://cursor-popup-portal.onrender.com/calgary-jan-2026
+- **Admin**: https://cursor-popup-portal.onrender.com/admin/calgary-jan-2026/admin2026
+
 ## Database Schema
 
 See `supabase/schema.sql` for the complete database schema.
