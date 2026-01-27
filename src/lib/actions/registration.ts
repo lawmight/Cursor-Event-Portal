@@ -286,20 +286,44 @@ export async function addRegistrationByEmail(
   eventSlug: string,
   email: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
   const supabase = await createServiceClient();
 
-  const { data: staffUser } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
+  // Check for portal session first
+  const session = await getSession();
+  let isAuthorized = false;
 
-  if (!staffUser || !["staff", "admin"].includes(staffUser.role)) {
+  if (session) {
+    const { data: staffUser } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.userId)
+      .single();
+
+    if (staffUser && ["staff", "admin"].includes(staffUser.role)) {
+      isAuthorized = true;
+    }
+  }
+
+  // Also check Supabase auth for admin users
+  if (!isAuthorized) {
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabaseAuth = await createClient();
+    const { data: { user: authUser } } = await supabaseAuth.auth.getUser();
+
+    if (authUser) {
+      const { data: adminUser } = await supabase
+        .from("users")
+        .select("role")
+        .eq("email", authUser.email)
+        .single();
+
+      if (adminUser && adminUser.role === "admin") {
+        isAuthorized = true;
+      }
+    }
+  }
+
+  if (!isAuthorized) {
     return { error: "Not authorized" };
   }
 
@@ -395,7 +419,9 @@ export async function clearEventRegistrations(
   adminCode?: string
 ) {
   const supabase = await createServiceClient();
+  let isAuthorized = false;
 
+  // Check adminCode first
   if (adminCode) {
     const { data: event, error } = await supabase
       .from("events")
@@ -403,24 +429,48 @@ export async function clearEventRegistrations(
       .eq("id", eventId)
       .single();
 
-    if (error || !event || event.admin_code !== adminCode) {
-      return { error: "Not authorized" };
+    if (!error && event && event.admin_code === adminCode) {
+      isAuthorized = true;
     }
-  } else {
+  }
+
+  // Check portal session
+  if (!isAuthorized) {
     const session = await getSession();
-    if (!session) {
-      return { error: "Not authenticated" };
-    }
+    if (session) {
+      const { data: staffUser } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.userId)
+        .single();
 
-    const { data: staffUser } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.userId)
-      .single();
-
-    if (!staffUser || !["staff", "admin"].includes(staffUser.role)) {
-      return { error: "Not authorized" };
+      if (staffUser && ["staff", "admin"].includes(staffUser.role)) {
+        isAuthorized = true;
+      }
     }
+  }
+
+  // Check Supabase auth for admin users
+  if (!isAuthorized) {
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabaseAuth = await createClient();
+    const { data: { user: authUser } } = await supabaseAuth.auth.getUser();
+
+    if (authUser) {
+      const { data: adminUser } = await supabase
+        .from("users")
+        .select("role")
+        .eq("email", authUser.email)
+        .single();
+
+      if (adminUser && adminUser.role === "admin") {
+        isAuthorized = true;
+      }
+    }
+  }
+
+  if (!isAuthorized) {
+    return { error: "Not authorized" };
   }
 
   const { data: groupIds } = await supabase
