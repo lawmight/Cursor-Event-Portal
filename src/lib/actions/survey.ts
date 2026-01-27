@@ -4,6 +4,47 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 
+function getAdminSurveysPath(eventSlug: string, adminCode?: string) {
+  return adminCode ? `/admin/${eventSlug}/${adminCode}/surveys` : `/admin/${eventSlug}/surveys`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true as const };
+    }
+
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return { valid: false as const, error: "Not authenticated" };
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  return { valid: true as const, userId: session.userId };
+}
+
 export async function submitSurveyResponse(
   surveyId: string,
   eventSlug: string,
@@ -31,24 +72,14 @@ export async function createSurvey(
   eventId: string,
   eventSlug: string,
   title: string,
-  schema: { fields: Array<{ id: string; type: string; label: string; required: boolean; options?: string[] }> }
+  schema: { fields: Array<{ id: string; type: string; label: string; required: boolean; options?: string[] }> },
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { data, error } = await supabase
@@ -65,28 +96,12 @@ export async function createSurvey(
     return { error: "Failed to create survey" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
   return { success: true, surveyId: data.id };
 }
 
-export async function publishSurvey(surveyId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function publishSurvey(surveyId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
-
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
-  }
 
   // Unpublish any other published surveys for this event
   const { data: survey } = await supabase
@@ -94,6 +109,15 @@ export async function publishSurvey(surveyId: string, eventSlug: string) {
     .select("event_id")
     .eq("id", surveyId)
     .single();
+
+  if (!survey) {
+    return { error: "Survey not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, survey.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
 
   if (survey) {
     await supabase
@@ -112,28 +136,27 @@ export async function publishSurvey(surveyId: string, eventSlug: string) {
     return { error: "Failed to publish survey" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/feedback`);
   return { success: true };
 }
 
-export async function unpublishSurvey(surveyId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function unpublishSurvey(surveyId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: survey } = await supabase
+    .from("surveys")
+    .select("event_id")
+    .eq("id", surveyId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!survey) {
+    return { error: "Survey not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, survey.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -145,28 +168,27 @@ export async function unpublishSurvey(surveyId: string, eventSlug: string) {
     return { error: "Failed to unpublish survey" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/feedback`);
   return { success: true };
 }
 
-export async function deleteSurvey(surveyId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function deleteSurvey(surveyId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: survey } = await supabase
+    .from("surveys")
+    .select("event_id")
+    .eq("id", surveyId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!survey) {
+    return { error: "Survey not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, survey.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -178,28 +200,17 @@ export async function deleteSurvey(surveyId: string, eventSlug: string) {
     return { error: "Failed to delete survey" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/feedback`);
   return { success: true };
 }
 
-export async function createDefaultSurvey(eventId: string, eventSlug: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function createDefaultSurvey(eventId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   // Check if a survey already exists
@@ -265,28 +276,27 @@ export async function createDefaultSurvey(eventId: string, eventSlug: string) {
     return { error: "Failed to create default survey" };
   }
 
-  revalidatePath(`/admin/${eventSlug}/surveys`);
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/feedback`);
   return { success: true, surveyId: data.id };
 }
 
-export async function exportSurveyResponses(surveyId: string) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
-  }
-
+export async function exportSurveyResponses(surveyId: string, adminCode?: string) {
   const supabase = await createServiceClient();
 
-  // Verify user is admin
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: survey } = await supabase
+    .from("surveys")
+    .select("event_id")
+    .eq("id", surveyId)
     .single();
 
-  if (!user || user.role !== "admin") {
-    return { error: "Not authorized" };
+  if (!survey) {
+    return { error: "Survey not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, survey.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
   }
 
   const { data: responses, error } = await supabase

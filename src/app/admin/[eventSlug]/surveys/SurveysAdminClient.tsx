@@ -34,7 +34,7 @@ export function SurveysAdminClient({
   const handlePublish = async (surveyId: string) => {
     setError(null);
     startTransition(async () => {
-      const result = await publishSurvey(surveyId, eventSlug);
+      const result = await publishSurvey(surveyId, eventSlug, adminCode);
       if (result.success) {
         setSurveys((prev) =>
           prev.map((s) =>
@@ -53,7 +53,7 @@ export function SurveysAdminClient({
   const handleUnpublish = async (surveyId: string) => {
     setError(null);
     startTransition(async () => {
-      const result = await unpublishSurvey(surveyId, eventSlug);
+      const result = await unpublishSurvey(surveyId, eventSlug, adminCode);
       if (result.success) {
         setSurveys((prev) =>
           prev.map((s) =>
@@ -72,7 +72,7 @@ export function SurveysAdminClient({
 
     setError(null);
     startTransition(async () => {
-      const result = await deleteSurvey(surveyId, eventSlug);
+      const result = await deleteSurvey(surveyId, eventSlug, adminCode);
       if (result.success) {
         setSurveys((prev) => prev.filter((s) => s.id !== surveyId));
         router.refresh();
@@ -85,7 +85,7 @@ export function SurveysAdminClient({
   const handleCreate = async (data: { title: string; schema: { fields: SurveyField[] } }) => {
     setError(null);
     startTransition(async () => {
-      const result = await createSurvey(event.id, eventSlug, data.title, data.schema);
+      const result = await createSurvey(event.id, eventSlug, data.title, data.schema, adminCode);
       if (result.success) {
         router.refresh();
         setShowCreateModal(false);
@@ -98,7 +98,7 @@ export function SurveysAdminClient({
   const handleCreateDefault = async () => {
     setError(null);
     startTransition(async () => {
-      const result = await createDefaultSurvey(event.id, eventSlug);
+      const result = await createDefaultSurvey(event.id, eventSlug, adminCode);
       if (result.success) {
         router.refresh();
       } else {
@@ -520,4 +520,3 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
     </div>
   );
 }
-
