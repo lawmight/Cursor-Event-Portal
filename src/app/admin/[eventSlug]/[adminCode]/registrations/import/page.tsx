@@ -1,8 +1,5 @@
-import { notFound, redirect } from "next/navigation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { createClient } from "@/lib/supabase/server";
 import { getEventRegistrations } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
 import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 import { validateAdminCode } from "@/lib/utils/admin";
 
@@ -15,23 +12,8 @@ export default async function ImportRegistrationsPage({
 }: ImportRegistrationsPageProps) {
   const { eventSlug, adminCode } = await params;
 
-  // Validate admin code and get event
+  // Validate admin code and get event (this is sufficient for admin access)
   const event = await validateAdminCode(eventSlug, adminCode);
-
-  // Check if admin
-  const session = await getSession();
-  if (!session) redirect(`/${eventSlug}`);
-
-  const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
-  }
 
   const existing = await getEventRegistrations(event.id);
 

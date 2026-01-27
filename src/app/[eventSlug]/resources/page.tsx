@@ -137,7 +137,7 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
         ))}
       </main>
 
-      <EventNavWrapper eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} userId={session.userId} />
     </div>
   );
 }

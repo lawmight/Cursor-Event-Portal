@@ -69,7 +69,7 @@ export default async function PollsPage({ params }: PollsPageProps) {
         </div>
       </main>
 
-      <EventNavWrapper eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} userId={session.userId} />
     </div>
   );
 }

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getSeenItemIds, markMultipleItemsAsSeen } from "@/lib/supabase/seenItems";
 import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
 import { SlideDeckPopup } from "@/components/slides/SlideDeckPopup";
 import type { Event } from "@/types";
@@ -13,6 +14,7 @@ import type { Event } from "@/types";
 interface EventNavProps {
   eventSlug: string;
   event?: Event;
+  userId?: string; // Optional: if provided, uses Supabase for seen tracking
 }
 
 const navItems = [
@@ -23,7 +25,7 @@ const navItems = [
   { href: "resources", label: "Resources", icon: FolderOpen },
 ];
 
-export function EventNav({ eventSlug, event }: EventNavProps) {
+export function EventNav({ eventSlug, event, userId }: EventNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [hasActivePolls, setHasActivePolls] = useState(false);
@@ -31,6 +33,26 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
   const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
   const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [seenPollIds, setSeenPollIds] = useState<Set<string>>(new Set());
+
+  // Load seen poll IDs from Supabase
+  const loadSeenPollIds = useCallback(async () => {
+    if (!userId || !event) return;
+    
+    try {
+      const seenIds = await getSeenItemIds(userId, event.id, 'poll');
+      setSeenPollIds(new Set(seenIds));
+    } catch (error) {
+      console.error("[EventNav] Error loading seen polls:", error);
+    }
+  }, [userId, event]);
+
+  // Load seen IDs on mount
+  useEffect(() => {
+    if (userId && event) {
+      loadSeenPollIds();
+    }
+  }, [userId, event, loadSeenPollIds]);
 
   // Subscribe to lockout status changes
   useEffect(() => {
@@ -99,43 +121,46 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
     };
   }, [event]);
 
-  // Get seen poll IDs from localStorage
-  const getSeenPollIds = (): string[] => {
-    if (typeof window === "undefined") return [];
-    const seen = localStorage.getItem(`polls-seen-${eventSlug}`);
-    return seen ? JSON.parse(seen) : [];
-  };
-
   // Mark polls as seen when visiting polls page
   useEffect(() => {
-    if (pathname.includes("/polls")) {
+    if (pathname.includes("/polls") && userId && event) {
       const markPollsAsSeen = async () => {
         const supabase = createClient();
         const { data } = await supabase
           .from("polls")
           .select("id")
+          .eq("event_id", event.id)
           .eq("is_active", true);
 
         if (data && data.length > 0) {
-          const seenIds = getSeenPollIds();
-          const allIds = [...seenIds, ...data.map((p) => p.id)];
-          const newSeenIds = Array.from(new Set(allIds));
-          localStorage.setItem(`polls-seen-${eventSlug}`, JSON.stringify(newSeenIds));
+          const pollIds = data.map((p) => p.id);
+          
+          // Use Supabase tracking
+          await markMultipleItemsAsSeen(userId, event.id, 'poll', pollIds);
+          
+          setSeenPollIds(prev => {
+            const updated = new Set(prev);
+            pollIds.forEach(id => updated.add(id));
+            return updated;
+          });
           setPollAlertVisible(false);
         }
       };
 
-      markPollsAsSeen();
+      markPollsAsSeen().catch(err => console.error("[EventNav] Error marking polls as seen:", err));
     }
-  }, [pathname, eventSlug]);
+  }, [pathname, userId, event]);
 
   // Check for active polls and subscribe to changes
   useEffect(() => {
+    if (!event) return;
+
     const checkActivePolls = async () => {
       const supabase = createClient();
       const { data } = await supabase
         .from("polls")
         .select("id")
+        .eq("event_id", event.id)
         .eq("is_active", true);
 
       if (!data) {
@@ -149,8 +174,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
 
       // Only show alert if there are active polls that haven't been seen
       if (hasPolls && !pathname.includes("/polls")) {
-        const seenIds = getSeenPollIds();
-        const unseenPolls = data.filter((p) => !seenIds.includes(p.id));
+        const unseenPolls = data.filter((p) => !seenPollIds.has(p.id));
         setPollAlertVisible(unseenPolls.length > 0);
       } else {
         setPollAlertVisible(false);
@@ -162,10 +186,10 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
     // Subscribe to poll changes
     const supabase = createClient();
     const channel = supabase
-      .channel("polls-nav")
+      .channel(`polls-nav-${event.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "polls" },
+        { event: "*", schema: "public", table: "polls", filter: `event_id=eq.${event.id}` },
         () => {
           checkActivePolls();
         }
@@ -175,7 +199,7 @@ export function EventNav({ eventSlug, event }: EventNavProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [pathname, eventSlug]);
+  }, [pathname, event, seenPollIds]);
 
   // Close mobile menu when navigating
   const handleNavClick = () => {

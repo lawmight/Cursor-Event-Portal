@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasUserSeenItem, markItemAsSeen } from "@/lib/supabase/seenItems";
 import type { Event } from "@/types";
 import { MapPin, Sparkles } from "lucide-react";
 
@@ -13,6 +14,7 @@ interface SeatAssignmentBannerProps {
 interface TableAssignment {
   tableNumber: number;
   groupName: string;
+  groupId: string;
 }
 
 export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProps) {
@@ -41,27 +43,35 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
         .single();
 
       if (!error && data?.group) {
-        const group = data.group as any;
+        const group = data.group as { id: string; name: string; table_number: number; status: string };
         if (group.status === "approved" && group.table_number) {
           const newAssignment = {
             tableNumber: group.table_number,
             groupName: group.name,
+            groupId: group.id,
           };
           setAssignment(newAssignment);
 
-          // Check if this is the first time seeing this assignment
-          const seenKey = `seat-seen-${event.id}-${userId}-${group.table_number}`;
-          const hasSeen = localStorage.getItem(seenKey);
+          // Check if this is the first time seeing this assignment (using Supabase)
+          try {
+            const hasSeen = await hasUserSeenItem(userId, 'table_assignment', group.id);
+            
+            if (!hasSeen && !hasMarkedAsSeen.current) {
+              setIsFirstView(true);
+              hasMarkedAsSeen.current = true;
 
-          if (!hasSeen && !hasMarkedAsSeen.current) {
-            setIsFirstView(true);
-            hasMarkedAsSeen.current = true;
-
-            // Mark as seen after the animation completes (5 seconds)
-            setTimeout(() => {
-              localStorage.setItem(seenKey, "true");
-              setIsFirstView(false);
-            }, 5000);
+              // Mark as seen after the animation completes (5 seconds)
+              setTimeout(async () => {
+                try {
+                  await markItemAsSeen(userId, event.id, 'table_assignment', group.id);
+                } catch (err) {
+                  console.error("[SeatAssignmentBanner] Error marking as seen:", err);
+                }
+                setIsFirstView(false);
+              }, 5000);
+            }
+          } catch (err) {
+            console.error("[SeatAssignmentBanner] Error checking seen status:", err);
           }
         }
       }
@@ -218,4 +228,3 @@ export function useSeatLockout(event: Event) {
 
   return isLockoutActive;
 }
-

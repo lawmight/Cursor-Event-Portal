@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle, ClipboardCheck, Vote, Megaphone, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getSeenItemIds, markMultipleItemsAsSeen } from "@/lib/supabase/seenItems";
 import type { Event, Question } from "@/types";
 
 interface EventSocialProps {
@@ -14,26 +15,7 @@ interface EventSocialProps {
   initialOpenQuestions: number;
   initialQuestions: Question[];
   surveyResponses: number;
-}
-
-// Helper functions for localStorage tracking
-function getSeenQuestionIds(): string[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem("seen-question-ids");
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
-}
-
-function markAllQuestionsAsSeen(questionIds: string[]) {
-  if (typeof window === "undefined") return;
-  const seen = getSeenQuestionIds();
-  const updated = Array.from(new Set([...seen, ...questionIds]));
-  const trimmed = updated.slice(-100);
-  localStorage.setItem("seen-question-ids", JSON.stringify(trimmed));
+  userId?: string; // Optional: if provided, uses Supabase for seen tracking
 }
 
 type TabType = "qa" | "surveys" | "polls" | "announcements";
@@ -72,12 +54,33 @@ export function EventSocial({
   initialOpenQuestions,
   initialQuestions,
   surveyResponses,
+  userId,
 }: EventSocialProps) {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<TabType>("qa");
   const [openQuestions, setOpenQuestions] = useState(initialOpenQuestions);
   const [questions, setQuestions] = useState(initialQuestions);
   const [newQuestionAlert, setNewQuestionAlert] = useState(false);
+  const [seenQuestionIds, setSeenQuestionIds] = useState<Set<string>>(new Set());
+
+  // Load seen question IDs from Supabase
+  const loadSeenQuestionIds = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const seenIds = await getSeenItemIds(userId, event.id, 'question');
+      setSeenQuestionIds(new Set(seenIds));
+    } catch (error) {
+      console.error("[EventSocial] Error loading seen questions:", error);
+    }
+  }, [userId, event.id]);
+
+  // Load seen IDs on mount
+  useEffect(() => {
+    if (userId) {
+      loadSeenQuestionIds();
+    }
+  }, [userId, loadSeenQuestionIds]);
 
   // Check for new questions and subscribe to changes
   useEffect(() => {
@@ -101,8 +104,7 @@ export function EventSocial({
 
       // Only show alert if there are open questions that haven't been seen
       if (openQ > 0 && !pathname.includes("/qa")) {
-        const seenIds = getSeenQuestionIds();
-        const unseenQuestions = data.filter((q) => !seenIds.includes(q.id));
+        const unseenQuestions = data.filter((q) => !seenQuestionIds.has(q.id));
         setNewQuestionAlert(unseenQuestions.length > 0);
       } else {
         setNewQuestionAlert(false);
@@ -148,7 +150,7 @@ export function EventSocial({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id, pathname]);
+  }, [event.id, pathname, seenQuestionIds]);
 
   // Mark questions as seen when on Q&A page
   useEffect(() => {
@@ -156,12 +158,24 @@ export function EventSocial({
       const openQuestionIds = questions
         .filter((q) => q.status === "open")
         .map((q) => q.id);
+      
       if (openQuestionIds.length > 0) {
-        markAllQuestionsAsSeen(openQuestionIds);
+        if (userId) {
+          // Use Supabase tracking
+          markMultipleItemsAsSeen(userId, event.id, 'question', openQuestionIds)
+            .then(() => {
+              setSeenQuestionIds(prev => {
+                const updated = new Set(prev);
+                openQuestionIds.forEach(id => updated.add(id));
+                return updated;
+              });
+            })
+            .catch(err => console.error("[EventSocial] Error marking questions as seen:", err));
+        }
         setNewQuestionAlert(false);
       }
     }
-  }, [pathname, questions]);
+  }, [pathname, questions, userId, event.id]);
 
   const getTabStats = (tab: TabType) => {
     switch (tab) {

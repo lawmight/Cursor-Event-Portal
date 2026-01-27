@@ -1,7 +1,4 @@
-import { notFound, redirect } from "next/navigation";
 import { getEventIntakes, getSuggestedGroups } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
-import { createClient } from "@/lib/supabase/server";
 import { GroupFormation } from "@/components/admin/GroupFormation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { validateAdminCode } from "@/lib/utils/admin";
@@ -13,25 +10,8 @@ interface AdminGroupsPageProps {
 export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) {
   const { eventSlug, adminCode } = await params;
 
-  // Validate admin code and get event
+  // Validate admin code and get event (this is sufficient for admin access)
   const event = await validateAdminCode(eventSlug, adminCode);
-
-  // Verify admin access
-  const session = await getSession();
-  if (!session) {
-    redirect(`/${eventSlug}`);
-  }
-
-  const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
-  }
 
   const [intakes, groups] = await Promise.all([
     getEventIntakes(event.id),

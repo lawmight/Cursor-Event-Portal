@@ -1,7 +1,3 @@
-import { notFound, redirect } from "next/navigation";
-import { getEventBySlug } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
-import { createClient } from "@/lib/supabase/server";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AnalyticsClient } from "./AnalyticsClient";
 import { validateAdminCode } from "@/lib/utils/admin";
@@ -19,25 +15,8 @@ interface AnalyticsPageProps {
 export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const { eventSlug, adminCode } = await params;
 
-  // Validate admin code and get event
+  // Validate admin code and get event (this is sufficient for admin access)
   const event = await validateAdminCode(eventSlug, adminCode);
-
-  // Check if admin
-  const session = await getSession();
-  if (!session) {
-    redirect(`/${eventSlug}`);
-  }
-
-  const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
-  }
 
   // Fetch all analytics data
   const [checkInCurve, qaAnalytics, pollParticipation, intakeAnalytics] = await Promise.all([

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { MessageCircle, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getSeenItemIds } from "@/lib/supabase/seenItems";
 import type { Event, Question } from "@/types";
 
 interface EventSocialCardProps {
@@ -13,18 +13,7 @@ interface EventSocialCardProps {
   adminCode: string;
   initialOpenQuestions: number;
   initialQuestions: Question[];
-}
-
-// Helper functions for localStorage tracking
-function getSeenQuestionIds(): string[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem("seen-question-ids");
-  if (!stored) return [];
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return [];
-  }
+  userId?: string; // Optional: if provided, uses Supabase for seen tracking
 }
 
 export function EventSocialCard({
@@ -33,11 +22,31 @@ export function EventSocialCard({
   adminCode,
   initialOpenQuestions,
   initialQuestions,
+  userId,
 }: EventSocialCardProps) {
-  const pathname = usePathname();
   const [openQuestions, setOpenQuestions] = useState(initialOpenQuestions);
   const [questions, setQuestions] = useState(initialQuestions);
   const [newQuestionAlert, setNewQuestionAlert] = useState(false);
+  const [seenQuestionIds, setSeenQuestionIds] = useState<Set<string>>(new Set());
+
+  // Load seen question IDs from Supabase
+  const loadSeenQuestionIds = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const seenIds = await getSeenItemIds(userId, event.id, 'question');
+      setSeenQuestionIds(new Set(seenIds));
+    } catch (error) {
+      console.error("[EventSocialCard] Error loading seen questions:", error);
+    }
+  }, [userId, event.id]);
+
+  // Load seen IDs on mount
+  useEffect(() => {
+    if (userId) {
+      loadSeenQuestionIds();
+    }
+  }, [userId, loadSeenQuestionIds]);
 
   // Check for new questions and subscribe to changes
   useEffect(() => {
@@ -60,8 +69,7 @@ export function EventSocialCard({
       setOpenQuestions(openQ);
 
       // Only show alert if there are open questions that haven't been seen
-      const seenIds = getSeenQuestionIds();
-      const unseenQuestions = data.filter((q) => !seenIds.includes(q.id));
+      const unseenQuestions = data.filter((q) => !seenQuestionIds.has(q.id));
       setNewQuestionAlert(unseenQuestions.length > 0);
 
       // Update questions state - filter to open questions only
@@ -98,7 +106,7 @@ export function EventSocialCard({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id]);
+  }, [event.id, seenQuestionIds]);
 
   return (
     <Link href={`/admin/${eventSlug}/${adminCode}/social`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>

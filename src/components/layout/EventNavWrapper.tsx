@@ -12,8 +12,9 @@ const EventNav = dynamic(
 interface EventNavWrapperProps {
   eventSlug: string;
   event?: Event;
+  userId?: string;
 }
 
-export function EventNavWrapper({ eventSlug, event }: EventNavWrapperProps) {
-  return <EventNav eventSlug={eventSlug} event={event} />;
+export function EventNavWrapper({ eventSlug, event, userId }: EventNavWrapperProps) {
+  return <EventNav eventSlug={eventSlug} event={event} userId={userId} />;
 }

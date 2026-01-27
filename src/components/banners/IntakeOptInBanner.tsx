@@ -1,27 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasDismissed, recordDismissal } from "@/lib/supabase/seenItems";
 
 interface IntakeOptInBannerProps {
   eventSlug: string;
+  eventId: string;
+  userId?: string; // Optional: if provided, uses Supabase for dismissal tracking
   onDismiss?: () => void;
 }
 
-export function IntakeOptInBanner({ eventSlug, onDismiss }: IntakeOptInBannerProps) {
+export function IntakeOptInBanner({ eventSlug, eventId, userId, onDismiss }: IntakeOptInBannerProps) {
   const [dismissed, setDismissed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleDismiss = () => {
+  // Check if already dismissed (from Supabase)
+  useEffect(() => {
+    async function checkDismissed() {
+      if (userId) {
+        try {
+          const isDismissed = await hasDismissed(userId, eventId, 'intake_banner');
+          setDismissed(isDismissed);
+        } catch (error) {
+          console.error("[IntakeOptInBanner] Error checking dismissal:", error);
+        }
+      }
+      setLoading(false);
+    }
+
+    checkDismissed();
+  }, [userId, eventId]);
+
+  const handleDismiss = async () => {
     setDismissed(true);
     if (onDismiss) onDismiss();
-    // Store dismissal in localStorage so it doesn't reappear
-    localStorage.setItem(`intake-banner-dismissed-${eventSlug}`, "true");
+    
+    // Record dismissal in Supabase
+    if (userId) {
+      try {
+        await recordDismissal(userId, eventId, 'intake_banner');
+      } catch (error) {
+        console.error("[IntakeOptInBanner] Error recording dismissal:", error);
+      }
+    }
   };
 
-  // Check if already dismissed
-  if (dismissed) return null;
+  // Don't render while loading or if dismissed
+  if (loading || dismissed) return null;
   
   return (
     <div className={cn(
@@ -71,4 +99,3 @@ export function IntakeOptInBanner({ eventSlug, onDismiss }: IntakeOptInBannerPro
     </div>
   );
 }
-

@@ -83,7 +83,7 @@ export default async function SlidesPage({ params }: SlidesPageProps) {
         )}
       </main>
 
-      <EventNavWrapper eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} userId={session.userId} />
     </div>
   );
 }

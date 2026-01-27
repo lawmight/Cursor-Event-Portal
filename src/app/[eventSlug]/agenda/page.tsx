@@ -78,7 +78,7 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
         </div>
       </main>
 
-      <EventNavWrapper eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} userId={session.userId} />
     </div>
   );
 }

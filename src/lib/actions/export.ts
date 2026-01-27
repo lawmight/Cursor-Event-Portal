@@ -3,6 +3,10 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 
+// ============================================================================
+// ATTENDEE DATA EXPORT
+// ============================================================================
+
 export async function getDetailedAttendeeData(eventId: string) {
   const session = await getSession();
   if (!session) {
@@ -152,4 +156,309 @@ export async function getDetailedAttendeeData(eventId: string) {
   });
 
   return { success: true, data: detailedData };
+}
+
+// ============================================================================
+// ANALYTICS DATA EXPORT
+// ============================================================================
+
+export async function getAnalyticsExport(eventId: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Check if user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Fetch page views
+  const { data: pageViews } = await supabase
+    .from("page_views")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  // Fetch feature interactions
+  const { data: featureInteractions } = await supabase
+    .from("feature_interactions")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  // Fetch question views
+  const { data: questionViews } = await supabase
+    .from("question_views")
+    .select(`
+      *,
+      question:questions(id, content, event_id)
+    `)
+    .order("viewed_at", { ascending: false });
+
+  // Filter to this event's questions
+  const eventQuestionViews = (questionViews || []).filter(
+    (v) => v.question && (v.question as any).event_id === eventId
+  );
+
+  // Fetch poll views
+  const { data: pollViews } = await supabase
+    .from("poll_views")
+    .select(`
+      *,
+      poll:polls(id, question, event_id)
+    `)
+    .order("viewed_at", { ascending: false });
+
+  // Filter to this event's polls
+  const eventPollViews = (pollViews || []).filter(
+    (v) => v.poll && (v.poll as any).event_id === eventId
+  );
+
+  // Fetch slide views
+  const { data: slideViews } = await supabase
+    .from("slide_views")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("viewed_at", { ascending: false });
+
+  // Fetch admin audit log
+  const { data: auditLog } = await supabase
+    .from("admin_audit_log")
+    .select(`
+      *,
+      admin_user:users!admin_audit_log_admin_user_id_fkey(id, name, email)
+    `)
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  // Fetch error logs
+  const { data: errorLogs } = await supabase
+    .from("error_logs")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  // Fetch user seen items
+  const { data: seenItems } = await supabase
+    .from("user_seen_items")
+    .select("*")
+    .eq("event_id", eventId);
+
+  // Fetch UI dismissals
+  const { data: dismissals } = await supabase
+    .from("ui_dismissals")
+    .select("*")
+    .eq("event_id", eventId);
+
+  return {
+    success: true,
+    data: {
+      pageViews: pageViews || [],
+      featureInteractions: featureInteractions || [],
+      questionViews: eventQuestionViews,
+      pollViews: eventPollViews,
+      slideViews: slideViews || [],
+      auditLog: auditLog || [],
+      errorLogs: errorLogs || [],
+      seenItems: seenItems || [],
+      dismissals: dismissals || [],
+    },
+  };
+}
+
+// ============================================================================
+// ANALYTICS SUMMARY EXPORT (Aggregated metrics)
+// ============================================================================
+
+export async function getAnalyticsSummary(eventId: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Check if user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Page views by type
+  const { data: pageViews } = await supabase
+    .from("page_views")
+    .select("page_type, user_id")
+    .eq("event_id", eventId);
+
+  const pageViewsByType: Record<string, { total: number; uniqueUsers: number }> = {};
+  const pageViewUsers: Record<string, Set<string>> = {};
+
+  (pageViews || []).forEach((pv) => {
+    if (!pageViewsByType[pv.page_type]) {
+      pageViewsByType[pv.page_type] = { total: 0, uniqueUsers: 0 };
+      pageViewUsers[pv.page_type] = new Set();
+    }
+    pageViewsByType[pv.page_type].total++;
+    if (pv.user_id) {
+      pageViewUsers[pv.page_type].add(pv.user_id);
+    }
+  });
+
+  Object.keys(pageViewsByType).forEach((type) => {
+    pageViewsByType[type].uniqueUsers = pageViewUsers[type].size;
+  });
+
+  // Feature interactions by type
+  const { data: featureInteractions } = await supabase
+    .from("feature_interactions")
+    .select("feature_type, user_id")
+    .eq("event_id", eventId);
+
+  const featuresByType: Record<string, { total: number; uniqueUsers: number }> = {};
+  const featureUsers: Record<string, Set<string>> = {};
+
+  (featureInteractions || []).forEach((fi) => {
+    if (!featuresByType[fi.feature_type]) {
+      featuresByType[fi.feature_type] = { total: 0, uniqueUsers: 0 };
+      featureUsers[fi.feature_type] = new Set();
+    }
+    featuresByType[fi.feature_type].total++;
+    if (fi.user_id) {
+      featureUsers[fi.feature_type].add(fi.user_id);
+    }
+  });
+
+  Object.keys(featuresByType).forEach((type) => {
+    featuresByType[type].uniqueUsers = featureUsers[type].size;
+  });
+
+  // Error summary
+  const { data: errors } = await supabase
+    .from("error_logs")
+    .select("error_type")
+    .eq("event_id", eventId);
+
+  const errorsByType: Record<string, number> = {};
+  (errors || []).forEach((e) => {
+    errorsByType[e.error_type] = (errorsByType[e.error_type] || 0) + 1;
+  });
+
+  return {
+    success: true,
+    data: {
+      totalPageViews: pageViews?.length || 0,
+      pageViewsByType,
+      totalFeatureInteractions: featureInteractions?.length || 0,
+      featuresByType,
+      totalErrors: errors?.length || 0,
+      errorsByType,
+    },
+  };
+}
+
+// ============================================================================
+// FULL EVENT EXPORT (Everything in one file)
+// ============================================================================
+
+export async function getFullEventExport(eventId: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  // Check if user is admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  // Fetch event details
+  const { data: event } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", eventId)
+    .single();
+
+  // Fetch all attendee data
+  const attendeeResult = await getDetailedAttendeeData(eventId);
+  const analyticsResult = await getAnalyticsExport(eventId);
+  const summaryResult = await getAnalyticsSummary(eventId);
+
+  // Fetch all questions
+  const { data: questions } = await supabase
+    .from("questions")
+    .select("*, user:users(name, email)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  // Fetch all polls with votes
+  const { data: polls } = await supabase
+    .from("polls")
+    .select("*")
+    .eq("event_id", eventId);
+
+  const { data: pollVotes } = await supabase
+    .from("poll_votes")
+    .select("*, user:users(name, email)")
+    .in("poll_id", (polls || []).map((p) => p.id));
+
+  // Fetch survey responses
+  const { data: surveys } = await supabase
+    .from("surveys")
+    .select("*")
+    .eq("event_id", eventId);
+
+  const { data: surveyResponses } = await supabase
+    .from("survey_responses")
+    .select("*, user:users(name, email)")
+    .in("survey_id", (surveys || []).map((s) => s.id));
+
+  // Fetch groups
+  const { data: groups } = await supabase
+    .from("suggested_groups")
+    .select(`
+      *,
+      members:suggested_group_members(
+        user:users(id, name, email)
+      )
+    `)
+    .eq("event_id", eventId);
+
+  return {
+    success: true,
+    data: {
+      event,
+      attendees: attendeeResult.success ? attendeeResult.data : [],
+      analytics: analyticsResult.success ? analyticsResult.data : {},
+      summary: summaryResult.success ? summaryResult.data : {},
+      questions: questions || [],
+      polls: polls || [],
+      pollVotes: pollVotes || [],
+      surveys: surveys || [],
+      surveyResponses: surveyResponses || [],
+      groups: groups || [],
+      exportedAt: new Date().toISOString(),
+    },
+  };
 }

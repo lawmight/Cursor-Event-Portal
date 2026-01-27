@@ -8,6 +8,7 @@ import type { Event, Announcement } from "@/types";
 import { cn } from "@/lib/utils";
 import { EventTimer } from "@/components/timer/EventTimer";
 import { createClient } from "@/lib/supabase/client";
+import { hasUserSeenItem, markItemAsSeen } from "@/lib/supabase/seenItems";
 import { MapPin } from "lucide-react";
 
 interface EventHeaderProps {
@@ -20,6 +21,7 @@ interface EventHeaderProps {
 interface TableAssignment {
   tableNumber: number;
   groupName: string;
+  groupId: string;
 }
 
 export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true, userId }: EventHeaderProps) {
@@ -167,29 +169,35 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
         .single();
 
       if (!error && data?.group) {
-        const group = data.group as any;
+        const group = data.group as { id: string; name: string; table_number: number; status: string };
         if (group.status === "approved" && group.table_number) {
           const newAssignment = {
             tableNumber: group.table_number,
             groupName: group.name,
+            groupId: group.id,
           };
           setTableAssignment(newAssignment);
 
-          // Check if this is the first time seeing this assignment
-          const seenKey = `table-seen-${event.id}-${userId}-${group.table_number}`;
-          const hasSeen = typeof window !== "undefined" ? localStorage.getItem(seenKey) : null;
+          // Check if this is the first time seeing this assignment (using Supabase)
+          try {
+            const hasSeen = await hasUserSeenItem(userId!, 'table_assignment', group.id);
 
-          if (!hasSeen && !hasMarkedAsSeen.current) {
-            setIsFirstView(true);
-            hasMarkedAsSeen.current = true;
+            if (!hasSeen && !hasMarkedAsSeen.current) {
+              setIsFirstView(true);
+              hasMarkedAsSeen.current = true;
 
-            // Mark as seen after the animation completes (5 seconds)
-            setTimeout(() => {
-              if (typeof window !== "undefined") {
-                localStorage.setItem(seenKey, "true");
-              }
-              setIsFirstView(false);
-            }, 5000);
+              // Mark as seen after the animation completes (5 seconds)
+              setTimeout(async () => {
+                try {
+                  await markItemAsSeen(userId!, event.id, 'table_assignment', group.id);
+                } catch (err) {
+                  console.error("[EventHeader] Error marking as seen:", err);
+                }
+                setIsFirstView(false);
+              }, 5000);
+            }
+          } catch (err) {
+            console.error("[EventHeader] Error checking seen status:", err);
           }
         }
       }

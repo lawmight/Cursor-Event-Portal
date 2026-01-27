@@ -111,7 +111,7 @@ export default async function QAPage({ params, searchParams }: QAPageProps) {
         />
       </main>
 
-      <EventNavWrapper eventSlug={eventSlug} event={event} />
+      <EventNavWrapper eventSlug={eventSlug} event={event} userId={session.userId} />
     </div>
   );
 }

@@ -1,7 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getEventBySlug, getQuestionsForAdmin, getAllPolls, getAnnouncements, getAllSurveys } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
-import { createClient } from "@/lib/supabase/server";
 import { EventSocialClient } from "./EventSocialClient";
 
 interface EventSocialPageProps {
@@ -13,26 +11,10 @@ export default async function EventSocialPage({ params, searchParams }: EventSoc
   const { eventSlug, adminCode } = await params;
   const { sort, status, tab } = await searchParams;
 
+  // Validate admin code (this is sufficient for admin access)
   const event = await getEventBySlug(eventSlug);
   if (!event || event.admin_code !== adminCode) {
     notFound();
-  }
-
-  // Check if admin
-  const session = await getSession();
-  if (!session) {
-    redirect(`/${eventSlug}`);
-  }
-
-  const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
   }
 
   const sortBy = sort === "new" ? "new" : "trending";
@@ -52,7 +34,7 @@ export default async function EventSocialPage({ params, searchParams }: EventSoc
       event={event}
       eventSlug={eventSlug} 
       adminCode={adminCode}
-      userId={session.userId}
+      userId={undefined}
       initialQuestions={questions}
       initialPolls={polls}
       initialAnnouncements={announcements}

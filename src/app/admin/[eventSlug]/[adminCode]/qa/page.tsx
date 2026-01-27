@@ -1,7 +1,4 @@
-import { notFound, redirect } from "next/navigation";
 import { getQuestionsForAdmin } from "@/lib/supabase/queries";
-import { getSession } from "@/lib/actions/registration";
-import { createClient } from "@/lib/supabase/server";
 import { AdminQAClient } from "../../../[eventSlug]/qa/AdminQAClient";
 import { validateAdminCode } from "@/lib/utils/admin";
 
@@ -14,25 +11,8 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
   const { eventSlug, adminCode } = await params;
   const { sort, status } = await searchParams;
 
-  // Validate admin code and get event
+  // Validate admin code and get event (this is sufficient for admin access)
   const event = await validateAdminCode(eventSlug, adminCode);
-
-  // Check if admin
-  const session = await getSession();
-  if (!session) {
-    redirect(`/${eventSlug}`);
-  }
-
-  const supabase = await createClient();
-  const { data: user } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-
-  if (!user || user.role !== "admin") {
-    redirect(`/${eventSlug}/agenda`);
-  }
 
   const sortBy = sort === "new" ? "new" : "trending";
   const statusFilter = status === "answered" ? "answered" : status === "hidden" ? "hidden" : status === "pinned" ? "pinned" : status === "open" ? "open" : "all";
@@ -52,7 +32,7 @@ export default async function AdminQAPage({ params, searchParams }: AdminQAPageP
       initialQuestions={questions}
       eventSlug={eventSlug}
       adminCode={adminCode}
-      userId={session.userId}
+      userId={undefined}
       sortBy={sortBy}
       statusFilter={statusFilter}
     />
