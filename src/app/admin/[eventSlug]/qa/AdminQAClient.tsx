@@ -244,6 +244,7 @@ export function AdminQAClient({
                 key={question.id}
                 question={question}
                 eventSlug={eventSlug}
+                adminCode={adminCode}
                 userRole="admin"
                 userId={userId}
               />
@@ -276,4 +277,3 @@ export function AdminQAClient({
     </div>
   );
 }
-

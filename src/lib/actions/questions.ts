@@ -5,6 +5,61 @@ import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 import type { QuestionFormData, AnswerFormData, QuestionStatus } from "@/types";
 
+function getAdminQAPath(eventSlug: string, adminCode?: string) {
+  return adminCode ? `/admin/${eventSlug}/${adminCode}/qa` : `/admin/${eventSlug}/qa`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      // Prefer a real session userId when available; otherwise fall back to any admin user.
+      const session = await getSession();
+      let userId = session?.userId;
+
+      if (!userId) {
+        const { data: adminUser } = await supabase
+          .from("users")
+          .select("id")
+          .eq("role", "admin")
+          .limit(1)
+          .maybeSingle();
+        userId = adminUser?.id;
+      }
+
+      return { valid: true as const, userId };
+    }
+
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return { valid: false as const, error: "Not authenticated" };
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || !["staff", "admin", "facilitator"].includes(user.role)) {
+    return { valid: false as const, error: "Not authorized" };
+  }
+
+  return { valid: true as const, userId: session.userId };
+}
+
 export async function createQuestion(
   eventId: string,
   eventSlug: string,
@@ -48,7 +103,7 @@ export async function createQuestion(
     console.log("[createQuestion] Question created successfully:", data?.[0]?.id);
 
     revalidatePath(`/${eventSlug}/qa`);
-    revalidatePath(`/admin/${eventSlug}/qa`);
+    revalidatePath(getAdminQAPath(eventSlug));
     return { success: true };
   } catch (error) {
     console.error("[createQuestion] Exception creating question:", error);
@@ -99,29 +154,47 @@ export async function upvoteQuestion(questionId: string, eventSlug: string) {
   }
 
   revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
+  revalidatePath(getAdminQAPath(eventSlug));
   return { success: true };
 }
 
 export async function createAnswer(
   questionId: string,
   eventSlug: string,
-  formData: AnswerFormData
+  formData: AnswerFormData,
+  adminCode?: string
 ) {
-  console.log("[createAnswer] Called with:", { questionId, eventSlug, contentLength: formData.content?.length });
-  
-  const session = await getSession();
-  if (!session) {
-    console.log("[createAnswer] No session found");
-    return { error: "Not authenticated" };
-  }
-  console.log("[createAnswer] Session found:", session.userId);
+  console.log("[createAnswer] Called with:", {
+    questionId,
+    eventSlug,
+    contentLength: formData.content?.length,
+    hasAdminCode: !!adminCode,
+  });
 
   const supabase = await createServiceClient();
 
+  const { data: question } = await supabase
+    .from("questions")
+    .select("event_id")
+    .eq("id", questionId)
+    .single();
+
+  if (!question) {
+    return { error: "Question not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, question.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
+
+  if (!auth.userId) {
+    return { error: "No admin user available to post replies" };
+  }
+
   const { data, error } = await supabase.from("answers").insert({
     question_id: questionId,
-    user_id: session.userId,
+    user_id: auth.userId,
     content: formData.content,
   }).select();
 
@@ -132,38 +205,39 @@ export async function createAnswer(
 
   console.log("[createAnswer] Successfully created answer:", data?.[0]?.id);
   revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
+  revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
 
 export async function updateQuestionStatus(
   questionId: string,
   status: QuestionStatus,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  console.log("[updateQuestionStatus] Called with:", { questionId, status, eventSlug });
-  
-  const session = await getSession();
-  if (!session) {
-    console.log("[updateQuestionStatus] No session found");
-    return { error: "Not authenticated" };
-  }
-  console.log("[updateQuestionStatus] Session found:", session.userId);
+  console.log("[updateQuestionStatus] Called with:", {
+    questionId,
+    status,
+    eventSlug,
+    hasAdminCode: !!adminCode,
+  });
 
   const supabase = await createServiceClient();
 
-  // Verify user is staff/admin
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: question } = await supabase
+    .from("questions")
+    .select("event_id")
+    .eq("id", questionId)
     .single();
 
-  console.log("[updateQuestionStatus] User role check:", { role: user?.role, error: userError?.message });
+  if (!question) {
+    return { error: "Question not found" };
+  }
 
-  if (!user || !["staff", "admin", "facilitator"].includes(user.role)) {
-    console.log("[updateQuestionStatus] Not authorized - role:", user?.role);
-    return { error: "Not authorized" };
+  const auth = await validateAdminAccess(supabase, question.event_id, adminCode);
+  if (!auth.valid) {
+    console.log("[updateQuestionStatus] Not authorized");
+    return { error: auth.error || "Not authorized" };
   }
 
   const { error } = await supabase
@@ -178,37 +252,37 @@ export async function updateQuestionStatus(
 
   console.log("[updateQuestionStatus] Successfully updated question status to:", status);
   revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
+  revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
 
 export async function deleteQuestion(
   questionId: string,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  console.log("[deleteQuestion] Called with:", { questionId, eventSlug });
-  
-  const session = await getSession();
-  if (!session) {
-    console.log("[deleteQuestion] No session found");
-    return { error: "Not authenticated" };
-  }
-  console.log("[deleteQuestion] Session found:", session.userId);
+  console.log("[deleteQuestion] Called with:", {
+    questionId,
+    eventSlug,
+    hasAdminCode: !!adminCode,
+  });
 
   const supabase = await createServiceClient();
 
-  // Verify user is staff/admin
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
+  const { data: question } = await supabase
+    .from("questions")
+    .select("event_id")
+    .eq("id", questionId)
     .single();
 
-  console.log("[deleteQuestion] User role check:", { role: user?.role, error: userError?.message });
+  if (!question) {
+    return { error: "Question not found" };
+  }
 
-  if (!user || !["staff", "admin", "facilitator"].includes(user.role)) {
-    console.log("[deleteQuestion] Not authorized - role:", user?.role);
-    return { error: "Not authorized" };
+  const auth = await validateAdminAccess(supabase, question.event_id, adminCode);
+  if (!auth.valid) {
+    console.log("[deleteQuestion] Not authorized");
+    return { error: auth.error || "Not authorized" };
   }
 
   // Delete the question (CASCADE will handle related answers and upvotes)
@@ -224,21 +298,32 @@ export async function deleteQuestion(
 
   console.log("[deleteQuestion] Successfully deleted question:", questionId);
   revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
+  revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
 
 export async function acceptAnswer(
   answerId: string,
   questionId: string,
-  eventSlug: string
+  eventSlug: string,
+  adminCode?: string
 ) {
-  const session = await getSession();
-  if (!session) {
-    return { error: "Not authenticated" };
+  const supabase = await createServiceClient();
+
+  const { data: question } = await supabase
+    .from("questions")
+    .select("event_id")
+    .eq("id", questionId)
+    .single();
+
+  if (!question) {
+    return { error: "Question not found" };
   }
 
-  const supabase = await createServiceClient();
+  const auth = await validateAdminAccess(supabase, question.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
 
   // Reset all answers for this question
   await supabase
@@ -263,6 +348,6 @@ export async function acceptAnswer(
     .eq("id", questionId);
 
   revalidatePath(`/${eventSlug}/qa`);
-  revalidatePath(`/admin/${eventSlug}/qa`);
+  revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }

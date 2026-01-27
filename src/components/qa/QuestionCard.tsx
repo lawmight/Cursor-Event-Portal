@@ -15,11 +15,12 @@ import toast from "react-hot-toast";
 interface QuestionCardProps {
   question: Question;
   eventSlug: string;
+  adminCode?: string;
   userRole?: UserRole;
   userId?: string;
 }
 
-export function QuestionCard({ question, eventSlug, userRole, userId }: QuestionCardProps) {
+export function QuestionCard({ question, eventSlug, adminCode, userRole, userId }: QuestionCardProps) {
   const router = useRouter();
   const [showAnswerForm, setShowAnswerForm] = useState(false);
   const [answerContent, setAnswerContent] = useState("");
@@ -40,7 +41,7 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
   const handleSubmitAnswer = async () => {
     if (!answerContent.trim()) return;
     setLoading(true);
-    const result = await createAnswer(question.id, eventSlug, { content: answerContent.trim() });
+    const result = await createAnswer(question.id, eventSlug, { content: answerContent.trim() }, adminCode);
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -54,7 +55,7 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
 
   const handleStatusChange = async (status: "answered" | "pinned" | "open") => {
     setLoading(true);
-    const result = await updateQuestionStatus(question.id, status, eventSlug);
+    const result = await updateQuestionStatus(question.id, status, eventSlug, adminCode);
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -73,7 +74,7 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
       return;
     }
     setLoading(true);
-    const result = await deleteQuestion(question.id, eventSlug);
+    const result = await deleteQuestion(question.id, eventSlug, adminCode);
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -85,7 +86,7 @@ export function QuestionCard({ question, eventSlug, userRole, userId }: Question
 
   const handleAcceptAnswer = async (answerId: string) => {
     setLoading(true);
-    const result = await acceptAnswer(answerId, question.id, eventSlug);
+    const result = await acceptAnswer(answerId, question.id, eventSlug, adminCode);
     if (result.error) {
       toast.error(result.error);
     } else {
