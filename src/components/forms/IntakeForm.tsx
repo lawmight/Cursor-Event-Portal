@@ -12,7 +12,6 @@ import type {
   IntakeGoalTag,
   IntakeOfferTag,
   AttendeeRoleCategory,
-  CareerStage,
   FounderStage,
   DegreeType,
   CursorExperience,
@@ -55,12 +54,6 @@ const ROLE_OPTIONS: { value: AttendeeRoleCategory; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-const STAGE_OPTIONS: { value: CareerStage; label: string }[] = [
-  { value: "student", label: "Student" },
-  { value: "professional", label: "Professional" },
-  { value: "other", label: "Other" },
-];
-
 const FOUNDER_STAGE_OPTIONS: { value: FounderStage; label: string }[] = [
   { value: "idea", label: "Idea" },
   { value: "pre-seed", label: "Pre-Seed" },
@@ -92,11 +85,14 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
   const router = useRouter();
   const [step, setStep] = useState<"profile" | "goals" | "offers">("profile");
   const [roleCategory, setRoleCategory] = useState<AttendeeRoleCategory>("professional");
-  const [careerStage, setCareerStage] = useState<CareerStage>("professional");
   const [founderStage, setFounderStage] = useState<FounderStage | "">("");
   const [yearsExperience, setYearsExperience] = useState<string>("");
   const [degreeType, setDegreeType] = useState<DegreeType | "">("");
-  const [socials, setSocials] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [github, setGithub] = useState("");
+  const [website, setWebsite] = useState("");
+  const [intent, setIntent] = useState("");
+  const [followupConsent, setFollowupConsent] = useState<boolean | null>(null);
   const [cursorExperience, setCursorExperience] = useState<CursorExperience>("none");
   const [goals, setGoals] = useState<IntakeGoalTag[]>([]);
   const [goalsOther, setGoalsOther] = useState("");
@@ -142,13 +138,16 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
       offers,
       offersOther: offers.includes("other") ? offersOther : undefined,
       roleCategory,
-      careerStage,
       founderStage: roleCategory === "founder" ? (founderStage || undefined) : undefined,
       yearsExperience: roleCategory === "professional" && yearsExperience
         ? Number(yearsExperience)
         : undefined,
       degreeType: roleCategory === "student" ? (degreeType || undefined) : undefined,
-      socials: socials.trim() ? socials.trim() : undefined,
+      linkedin: linkedin.trim() ? linkedin.trim() : undefined,
+      github: github.trim() ? github.trim() : undefined,
+      website: website.trim() ? website.trim() : undefined,
+      intent: intent.trim() ? intent.trim() : undefined,
+      followupConsent: typeof followupConsent === "boolean" ? followupConsent : undefined,
       cursorExperience,
     });
 
