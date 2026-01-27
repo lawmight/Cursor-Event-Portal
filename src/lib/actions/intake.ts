@@ -48,6 +48,13 @@ export async function submitIntake(
       goals_other: formData.goalsOther || null,
       offers: formData.offers,
       offers_other: formData.offersOther || null,
+      role_category: formData.roleCategory || null,
+      career_stage: formData.careerStage || null,
+      founder_stage: formData.founderStage || null,
+      years_experience: formData.yearsExperience ?? null,
+      degree_type: formData.degreeType || null,
+      socials: formData.socials || null,
+      cursor_experience: formData.cursorExperience || null,
       skipped: false,
     });
 
@@ -68,6 +75,13 @@ export async function submitIntake(
         goals_other: formData.goalsOther || null,
         offers: formData.offers,
         offers_other: formData.offersOther || null,
+        role_category: formData.roleCategory || null,
+        career_stage: formData.careerStage || null,
+        founder_stage: formData.founderStage || null,
+        years_experience: formData.yearsExperience ?? null,
+        degree_type: formData.degreeType || null,
+        socials: formData.socials || null,
+        cursor_experience: formData.cursorExperience || null,
       })
       .eq("id", session.userId);
 
@@ -147,6 +161,13 @@ export async function skipIntake(eventId: string, eventSlug: string) {
       user_id: session.userId,
       goals: [],
       offers: [],
+      role_category: null,
+      career_stage: null,
+      founder_stage: null,
+      years_experience: null,
+      degree_type: null,
+      socials: null,
+      cursor_experience: null,
       skipped: true,
     });
 
@@ -217,6 +238,13 @@ export async function updateUserProfile(
         goals_other: formData.goalsOther || null,
         offers: formData.offers,
         offers_other: formData.offersOther || null,
+        role_category: formData.roleCategory || null,
+        career_stage: formData.careerStage || null,
+        founder_stage: formData.founderStage || null,
+        years_experience: formData.yearsExperience ?? null,
+        degree_type: formData.degreeType || null,
+        socials: formData.socials || null,
+        cursor_experience: formData.cursorExperience || null,
       })
       .eq("id", userId);
 
@@ -242,6 +270,13 @@ export async function updateUserProfile(
           goals_other: formData.goalsOther || null,
           offers: formData.offers,
           offers_other: formData.offersOther || null,
+          role_category: formData.roleCategory || null,
+          career_stage: formData.careerStage || null,
+          founder_stage: formData.founderStage || null,
+          years_experience: formData.yearsExperience ?? null,
+          degree_type: formData.degreeType || null,
+          socials: formData.socials || null,
+          cursor_experience: formData.cursorExperience || null,
           skipped: false,
         })
         .eq("id", existingIntake.id);
@@ -259,6 +294,13 @@ export async function updateUserProfile(
         goals_other: formData.goalsOther || null,
         offers: formData.offers,
         offers_other: formData.offersOther || null,
+        role_category: formData.roleCategory || null,
+        career_stage: formData.careerStage || null,
+        founder_stage: formData.founderStage || null,
+        years_experience: formData.yearsExperience ?? null,
+        degree_type: formData.degreeType || null,
+        socials: formData.socials || null,
+        cursor_experience: formData.cursorExperience || null,
         skipped: false,
       });
 

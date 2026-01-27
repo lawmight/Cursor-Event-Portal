@@ -15,7 +15,15 @@ import {
 } from "lucide-react";
 import { submitIntake, skipIntake } from "@/lib/actions/intake";
 import { submitSurveyConsent } from "@/lib/actions/consent";
-import type { IntakeGoalTag, IntakeOfferTag } from "@/types";
+import type {
+  IntakeGoalTag,
+  IntakeOfferTag,
+  AttendeeRoleCategory,
+  CareerStage,
+  FounderStage,
+  DegreeType,
+  CursorExperience,
+} from "@/types";
 
 interface Attendee {
   id: string;
@@ -35,6 +43,7 @@ type Step =
   | "submitting"
   | "success"
   | "consent"
+  | "intake-profile"
   | "intake-goals"
   | "intake-offers"
   | "complete";
@@ -61,6 +70,46 @@ const OFFER_OPTIONS: { value: IntakeOfferTag; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+const ROLE_OPTIONS: { value: AttendeeRoleCategory; label: string }[] = [
+  { value: "founder", label: "Founder" },
+  { value: "professional", label: "Professional" },
+  { value: "student", label: "Student" },
+  { value: "other", label: "Other" },
+];
+
+const STAGE_OPTIONS: { value: CareerStage; label: string }[] = [
+  { value: "student", label: "Student" },
+  { value: "professional", label: "Professional" },
+  { value: "other", label: "Other" },
+];
+
+const FOUNDER_STAGE_OPTIONS: { value: FounderStage; label: string }[] = [
+  { value: "idea", label: "Idea" },
+  { value: "pre-seed", label: "Pre-Seed" },
+  { value: "seed", label: "Seed" },
+  { value: "series-a", label: "Series A" },
+  { value: "series-b-plus", label: "Series B+" },
+  { value: "bootstrapped", label: "Bootstrapped" },
+  { value: "other", label: "Other" },
+];
+
+const DEGREE_OPTIONS: { value: DegreeType; label: string }[] = [
+  { value: "high-school", label: "High School" },
+  { value: "bachelors", label: "Bachelor's" },
+  { value: "masters", label: "Master's" },
+  { value: "phd", label: "PhD" },
+  { value: "bootcamp", label: "Bootcamp" },
+  { value: "other", label: "Other" },
+];
+
+const CURSOR_EXPERIENCE_OPTIONS: { value: CursorExperience; label: string }[] = [
+  { value: "none", label: "Never used" },
+  { value: "curious", label: "Heard of it" },
+  { value: "trialed", label: "Tried it" },
+  { value: "active", label: "Use weekly" },
+  { value: "power", label: "Daily user" },
+];
+
 export function AttendeeCheckinForm({
   eventId,
   eventSlug,
@@ -84,6 +133,13 @@ export function AttendeeCheckinForm({
   const [offers, setOffers] = useState<IntakeOfferTag[]>([]);
   const [offersOther, setOffersOther] = useState("");
   const [intakeLoading, setIntakeLoading] = useState(false);
+  const [roleCategory, setRoleCategory] = useState<AttendeeRoleCategory>("professional");
+  const [careerStage, setCareerStage] = useState<CareerStage>("professional");
+  const [founderStage, setFounderStage] = useState<FounderStage | "">("");
+  const [yearsExperience, setYearsExperience] = useState<string>("");
+  const [degreeType, setDegreeType] = useState<DegreeType | "">("");
+  const [socials, setSocials] = useState("");
+  const [cursorExperience, setCursorExperience] = useState<CursorExperience>("none");
 
   // Consent state
   const [consentChecked, setConsentChecked] = useState(false);
@@ -270,6 +326,11 @@ export function AttendeeCheckinForm({
   };
 
   const handleIntakeSubmit = async () => {
+    if (step === "intake-profile") {
+      setStep("intake-goals");
+      return;
+    }
+
     if (step === "intake-goals") {
       setStep("intake-offers");
       return;
@@ -283,6 +344,15 @@ export function AttendeeCheckinForm({
       goalsOther: goals.includes("other") ? goalsOther : undefined,
       offers,
       offersOther: offers.includes("other") ? offersOther : undefined,
+      roleCategory,
+      careerStage,
+      founderStage: roleCategory === "founder" ? (founderStage || undefined) : undefined,
+      yearsExperience: roleCategory === "professional" && yearsExperience
+        ? Number(yearsExperience)
+        : undefined,
+      degreeType: roleCategory === "student" ? (degreeType || undefined) : undefined,
+      socials: socials.trim() ? socials.trim() : undefined,
+      cursorExperience,
     });
 
     if (result.error) {
@@ -313,10 +383,10 @@ export function AttendeeCheckinForm({
       if (result.error) {
         setError(result.error);
         setConsentLoading(false);
-      } else {
-        setConsentLoading(false);
-        setStep("intake-goals");
-      }
+    } else {
+      setConsentLoading(false);
+      setStep("intake-profile");
+    }
     } catch (err) {
       setError("Something went wrong. Please try again.");
       setConsentLoading(false);
@@ -713,7 +783,176 @@ export function AttendeeCheckinForm({
     );
   }
 
-  // Step 6 & 7: Intake form (goals and offers)
+  // Step 6: Intake profile details
+  if (step === "intake-profile") {
+    return (
+      <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+              Step 01
+            </p>
+            <button
+              onClick={handleSkipIntake}
+              disabled={intakeLoading}
+              className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.3em] hover:text-white transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+
+          <h3 className="text-2xl font-light text-white tracking-tight leading-tight">
+            Tell us about your background
+          </h3>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                Role
+              </label>
+              <select
+                value={roleCategory}
+                onChange={(e) => setRoleCategory(e.target.value as AttendeeRoleCategory)}
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+              >
+                {ROLE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value} className="bg-black">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                Stage
+              </label>
+              <select
+                value={careerStage}
+                onChange={(e) => setCareerStage(e.target.value as CareerStage)}
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+              >
+                {STAGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value} className="bg-black">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {roleCategory === "founder" && (
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Company Stage
+                </label>
+                <select
+                  value={founderStage}
+                  onChange={(e) => setFounderStage(e.target.value as FounderStage)}
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                >
+                  <option value="" className="bg-black">Select stage</option>
+                  {FOUNDER_STAGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value} className="bg-black">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {roleCategory === "professional" && (
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Years of Experience
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={yearsExperience}
+                  onChange={(e) => setYearsExperience(e.target.value)}
+                  placeholder="e.g. 5"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                />
+              </div>
+            )}
+
+            {roleCategory === "student" && (
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  Degree Type
+                </label>
+                <select
+                  value={degreeType}
+                  onChange={(e) => setDegreeType(e.target.value as DegreeType)}
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                >
+                  <option value="" className="bg-black">Select degree</option>
+                  {DEGREE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value} className="bg-black">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                Socials or Website
+              </label>
+              <input
+                type="text"
+                value={socials}
+                onChange={(e) => setSocials(e.target.value)}
+                placeholder="LinkedIn, website, or handle"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                Experience with Cursor
+              </label>
+              <select
+                value={cursorExperience}
+                onChange={(e) => setCursorExperience(e.target.value as CursorExperience)}
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+              >
+                {CURSOR_EXPERIENCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value} className="bg-black">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-center p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 text-[10px] font-medium uppercase tracking-widest animate-fade-in">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-4">
+            <button
+              className="flex-1 h-16 rounded-[32px] bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-[0.98]"
+              onClick={handleIntakeSubmit}
+              disabled={intakeLoading}
+            >
+              {intakeLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : (
+                "Continue"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 7 & 8: Intake form (goals and offers)
   if (step === "intake-goals" || step === "intake-offers") {
     const isGoals = step === "intake-goals";
     const options = isGoals ? GOAL_OPTIONS : OFFER_OPTIONS;
@@ -726,7 +965,7 @@ export function AttendeeCheckinForm({
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
-              {isGoals ? "Step 01" : "Step 02"}
+              {isGoals ? "Step 02" : "Step 03"}
             </p>
             <button
               onClick={handleSkipIntake}
@@ -798,6 +1037,15 @@ export function AttendeeCheckinForm({
             {!isGoals && (
               <button
                 onClick={() => setStep("intake-goals")}
+                disabled={intakeLoading}
+                className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </button>
+            )}
+            {isGoals && (
+              <button
+                onClick={() => setStep("intake-profile")}
                 disabled={intakeLoading}
                 className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
               >
