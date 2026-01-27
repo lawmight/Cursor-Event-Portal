@@ -57,8 +57,16 @@ export function SlideDeckAdminClient({
         return;
       }
 
+      // Read file into memory first to avoid ERR_UPLOAD_FILE_CHANGED errors
+      // This happens when antivirus, OneDrive, or Windows indexing touches the file
+      setUploadProgress("Reading file...");
+      const arrayBuffer = await file.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      const memoryFile = new File([blob], file.name, { type: "application/pdf" });
+
+      setUploadProgress("Uploading slide deck...");
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", memoryFile);
       formData.append("eventId", event.id);
 
       const uploadResponse = await fetch("/api/admin/upload-deck", {
