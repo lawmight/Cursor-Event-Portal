@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 
+function sanitizeFileName(fileName: string, maxBaseLength = 80) {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  const hasExtension = lastDotIndex > 0 && lastDotIndex < fileName.length - 1;
+  const extension = hasExtension ? fileName.slice(lastDotIndex).toLowerCase() : ".pdf";
+  const baseName = hasExtension ? fileName.slice(0, lastDotIndex) : fileName;
+
+  // Replace unsafe characters and collapse repeated underscores.
+  const safeBase = baseName
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const truncatedBase =
+    safeBase.length > maxBaseLength ? safeBase.slice(0, maxBaseLength) : safeBase;
+
+  // Ensure we always return something usable.
+  const finalBase = truncatedBase.length > 0 ? truncatedBase : "deck";
+  return `${finalBase}${extension}`;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServiceClient();
@@ -90,7 +110,7 @@ export async function POST(request: NextRequest) {
       await supabase.storage.from("slide-decks").remove([existingDeck.storage_path]);
     }
 
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const safeFileName = sanitizeFileName(file.name);
     const filePath = `${eventId}/${Date.now()}-${safeFileName}`;
 
     const { error: uploadError } = await supabase.storage

@@ -57,6 +57,14 @@ export function SlideDeckAdminClient({
         return;
       }
 
+      const maxSize = 100 * 1024 * 1024; // 100MB (must match server limit)
+      if (file.size > maxSize) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        setError(`This PDF is ${sizeMb}MB. The limit is 100MB.`);
+        setUploading(false);
+        return;
+      }
+
       // Read file into memory first to avoid ERR_UPLOAD_FILE_CHANGED errors
       // This happens when antivirus, OneDrive, or Windows indexing touches the file
       setUploadProgress("Reading file...");
