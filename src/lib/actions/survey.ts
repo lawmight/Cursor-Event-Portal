@@ -281,6 +281,29 @@ export async function createDefaultSurvey(eventId: string, eventSlug: string, ad
   return { success: true, surveyId: data.id };
 }
 
+export async function toggleSurveyPopup(eventId: string, eventSlug: string, visible: boolean, adminCode?: string) {
+  const supabase = await createServiceClient();
+
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("events")
+    .update({ survey_popup_visible: visible })
+    .eq("id", eventId);
+
+  if (error) {
+    return { error: "Failed to update survey popup visibility" };
+  }
+
+  revalidatePath(getAdminSurveysPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  return { success: true };
+}
+
 export async function exportSurveyResponses(surveyId: string, adminCode?: string) {
   const supabase = await createServiceClient();
 

@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { getSeenItemIds, markMultipleItemsAsSeen } from "@/lib/supabase/seenItems";
 import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
 import { SlideDeckPopup } from "@/components/slides/SlideDeckPopup";
-import type { Event } from "@/types";
+import { SurveyPopupAlert } from "@/components/survey/SurveyPopupAlert";
+import type { Event, Survey } from "@/types";
 
 interface EventNavProps {
   eventSlug: string;
@@ -34,6 +35,7 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
   const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [seenPollIds, setSeenPollIds] = useState<Set<string>>(new Set());
+  const [publishedSurvey, setPublishedSurvey] = useState<Survey | null>(null);
 
   // Load seen poll IDs from Supabase
   const loadSeenPollIds = useCallback(async () => {
@@ -150,6 +152,43 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
       markPollsAsSeen().catch(err => console.error("[EventNav] Error marking polls as seen:", err));
     }
   }, [pathname, userId, event]);
+
+  // Check for published survey
+  useEffect(() => {
+    if (!event) return;
+
+    const checkPublishedSurvey = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("surveys")
+        .select("*")
+        .eq("event_id", event.id)
+        .not("published_at", "is", null)
+        .limit(1)
+        .single();
+
+      setPublishedSurvey(data || null);
+    };
+
+    checkPublishedSurvey();
+
+    // Subscribe to survey changes
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`surveys-nav-${event.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "surveys", filter: `event_id=eq.${event.id}` },
+        () => {
+          checkPublishedSurvey();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event]);
 
   // Check for active polls and subscribe to changes
   useEffect(() => {
@@ -311,6 +350,15 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
       {event && <LiveSlidePopup eventId={event.id} eventSlug={eventSlug} />}
       {/* Slide Deck Popup - shows on right side when popup is enabled */}
       {event && <SlideDeckPopup eventId={event.id} eventSlug={eventSlug} />}
+      {/* Survey Popup Alert - shows when survey popup is enabled */}
+      {event && (
+        <SurveyPopupAlert
+          event={event}
+          eventSlug={eventSlug}
+          initialSurvey={publishedSurvey}
+          userId={userId}
+        />
+      )}
 
       {/* Desktop Nav - hidden on mobile */}
       <nav className="hidden md:block fixed left-6 top-1/2 -translate-y-1/2 z-50 p-4 pointer-events-none">

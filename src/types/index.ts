@@ -39,6 +39,7 @@ export interface Event {
   end_time: string | null;
   status: EventStatus;
   seat_lockout_active: boolean;
+  survey_popup_visible: boolean;
   timezone: string;
   admin_code: string;
   data_retention_days: number;

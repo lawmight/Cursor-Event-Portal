@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { createSurvey, publishSurvey, unpublishSurvey, deleteSurvey, createDefaultSurvey } from "@/lib/actions/survey";
+import { createSurvey, publishSurvey, unpublishSurvey, deleteSurvey, createDefaultSurvey, toggleSurveyPopup } from "@/lib/actions/survey";
 import type { Event, Survey, SurveyField } from "@/types";
-import { ArrowLeft, Plus, Eye, EyeOff, Trash2, CheckCircle, ClipboardCheck } from "lucide-react";
+import { ArrowLeft, Plus, Eye, EyeOff, Trash2, CheckCircle, ClipboardCheck, Bell, BellOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -30,6 +30,21 @@ export function SurveysAdminClient({
   const [isPending, startTransition] = useTransition();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [popupVisible, setPopupVisible] = useState(event.survey_popup_visible ?? false);
+
+  const handleTogglePopup = async () => {
+    const newValue = !popupVisible;
+    setPopupVisible(newValue); // Optimistic update
+    setError(null);
+    startTransition(async () => {
+      const result = await toggleSurveyPopup(event.id, eventSlug, newValue, adminCode);
+      if (!result.success) {
+        setPopupVisible(!newValue); // Revert on failure
+        setError(result.error || "Failed to toggle survey popup");
+      }
+      router.refresh();
+    });
+  };
 
   const handlePublish = async (surveyId: string) => {
     setError(null);
@@ -122,6 +137,36 @@ export function SurveysAdminClient({
       {/* Published Survey */}
       {publishedSurvey && (
         <div className="glass rounded-[40px] p-10 border-green-500/20 bg-green-500/5">
+          {/* Survey Popup Toggle */}
+          <div className="flex items-center justify-between mb-8 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${popupVisible ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-600'}`}>
+                {popupVisible ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+              </div>
+              <div>
+                <p className="text-sm text-white font-medium">Survey Alert</p>
+                <p className="text-[10px] text-gray-600">
+                  {popupVisible ? 'Attendees see a popup to fill survey' : 'Popup hidden from attendees'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleTogglePopup}
+              disabled={isPending}
+              className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                popupVisible
+                  ? 'bg-green-500/30 border border-green-500/50'
+                  : 'bg-white/5 border border-white/10'
+              }`}
+            >
+              <div className={`absolute top-1 w-6 h-6 rounded-full transition-all duration-300 ${
+                popupVisible
+                  ? 'left-7 bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]'
+                  : 'left-1 bg-gray-600'
+              }`} />
+            </button>
+          </div>
+
           <div className="flex items-start justify-between gap-6 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
