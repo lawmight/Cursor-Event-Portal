@@ -202,11 +202,11 @@ export function GroupFormation({
                 className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <button
                 onClick={handleGenerate}
                 disabled={generating || intakes.length < 2}
-                className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 relative overflow-hidden group/btn ${
+                className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 overflow-hidden ${
                   generating || intakes.length < 2
                     ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
                     : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
@@ -214,16 +214,11 @@ export function GroupFormation({
               >
                 {generating ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    <span className="animate-pulse">{progressMessage ? "Generating..." : "Processing..."}</span>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin flex-shrink-0" />
+                    <span className="animate-pulse truncate">{progressMessage ? "Generating..." : "Processing..."}</span>
                   </>
                 ) : (
                   <span>Synthesize Groups</span>
-                )}
-                
-                {/* Subtle shimmer effect on hover */}
-                {!generating && intakes.length >= 2 && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover/btn:animate-shimmer pointer-events-none" />
                 )}
               </button>
             </div>
