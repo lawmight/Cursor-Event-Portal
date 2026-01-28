@@ -1147,13 +1147,13 @@ export function AttendeeCheckinForm({
                 <div className="flex items-center gap-2 mt-1">
                   <Clock className="w-3.5 h-3.5 text-gray-500" />
                   <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
-                    Seating assigned at 6:30 PM
+                  Seating assigned at 5:30 PM
                   </p>
                 </div>
               </div>
             </div>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              At 6:30, you'll receive your table and seat number—optimized by AI
+              At 5:30, you'll receive your table and seat number—optimized by AI
               based on everyone's goals and expertise. Get ready for great
               conversations!
             </p>
@@ -1164,7 +1164,7 @@ export function AttendeeCheckinForm({
             className="w-full h-16 rounded-[32px] bg-white text-black hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-[0.98]"
           >
             <span className="text-sm font-bold uppercase tracking-[0.2em]">
-              View Event Agenda
+              Enter Event Portal
             </span>
           </button>
         </div>

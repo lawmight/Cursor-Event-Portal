@@ -22,8 +22,13 @@ export function SurveyPopupAlert({
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
-  const [survey, setSurvey] = useState(initialSurvey);
-  const [popupEnabled, setPopupEnabled] = useState(event.survey_popup_visible);
+  const [survey, setSurvey] = useState<Survey | null>(initialSurvey);
+  const [popupEnabled, setPopupEnabled] = useState(event.survey_popup_visible ?? false);
+
+  // Sync survey from prop when it changes
+  useEffect(() => {
+    setSurvey(initialSurvey);
+  }, [initialSurvey]);
 
   // Check if user has already completed the survey
   useEffect(() => {
@@ -109,7 +114,7 @@ export function SurveyPopupAlert({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-sm z-50 animate-slide-up">
+    <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-sm z-40 animate-slide-up">
       <div className="glass rounded-3xl p-5 border border-green-500/20 bg-green-500/5 shadow-[0_0_40px_rgba(74,222,128,0.1)]">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">

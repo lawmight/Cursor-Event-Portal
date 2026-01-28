@@ -424,17 +424,30 @@ export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]
 
   const checkedInUsers = (checkedInRegs || [])
     .map((reg) => {
+      if (!reg.user_id) return null;
       const user = Array.isArray(reg.user) ? reg.user[0] : reg.user;
-      if (!user || typeof user !== "object") return null;
+      if (user && typeof user === "object") {
+        return {
+          user_id: String(reg.user_id),
+          created_at: String(reg.created_at),
+          user: {
+            id: String(user.id),
+            name: String(user.name),
+            email: user.email ? String(user.email) : null,
+            role: user.role as UserRole,
+            created_at: user.created_at ? String(user.created_at) : "",
+          },
+        };
+      }
       return {
         user_id: String(reg.user_id),
         created_at: String(reg.created_at),
         user: {
-          id: String(user.id),
-          name: String(user.name),
-          email: user.email ? String(user.email) : null,
-          role: user.role as UserRole,
-          created_at: user.created_at ? String(user.created_at) : "",
+          id: String(reg.user_id),
+          name: "Unknown Attendee",
+          email: null,
+          role: "attendee" as UserRole,
+          created_at: "",
         },
       };
     })
