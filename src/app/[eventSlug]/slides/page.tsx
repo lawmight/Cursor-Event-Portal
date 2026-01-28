@@ -3,7 +3,7 @@ import { getEventBySlug, getAnnouncements, getSlideDeck } from "@/lib/supabase/q
 import { getSession } from "@/lib/actions/registration";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
-import { SyncedSlideViewer } from "@/components/slides/SyncedSlideViewer";
+import { FullscreenSlideViewer } from "@/components/slides/FullscreenSlideViewer";
 
 interface SlidesPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -66,20 +66,7 @@ export default async function SlidesPage({ params }: SlidesPageProps) {
             </p>
           </div>
         ) : (
-          <div className="glass rounded-[40px] p-6 border border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[9px] text-gray-500 uppercase tracking-wider">
-                Synced with presenter
-              </p>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <p className="text-[9px] text-green-400 uppercase tracking-wider">Live</p>
-              </div>
-            </div>
-            <div className="aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/5">
-              <SyncedSlideViewer slideDeck={slideDeck} className="w-full h-full" />
-            </div>
-          </div>
+          <FullscreenSlideViewer slideDeck={slideDeck} />
         )}
       </main>
 
