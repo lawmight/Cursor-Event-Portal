@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { submitSurveyResponse } from "@/lib/actions/survey";
 import type { Survey, SurveyField } from "@/types";
-import { CheckCircle, ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronRight, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SurveyFormProps {
@@ -62,6 +59,15 @@ export function SurveyForm({ survey, eventSlug }: SurveyFormProps) {
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold">
           Contribution acknowledged
         </p>
+        <div className="pt-8">
+          <Link
+            href={`/${eventSlug}/agenda`}
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Portal
+          </Link>
+        </div>
       </div>
     );
   }

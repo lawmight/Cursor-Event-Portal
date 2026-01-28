@@ -3,6 +3,7 @@ import { getSession } from "@/lib/actions/registration";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SeatAssignmentBanner } from "@/components/seating/SeatAssignmentBanner";
+import { PageTracker } from "@/components/analytics/PageTracker";
 
 interface EventLayoutProps {
   children: React.ReactNode;
@@ -38,6 +39,9 @@ export default async function EventLayout({ children, params }: EventLayoutProps
 
   return (
     <>
+      {/* Analytics - track page views */}
+      <PageTracker eventId={event.id} />
+
       {/* Seat Assignment Banner - shows table assignment at top when lockout is active */}
       {session?.userId && (
         <SeatAssignmentBanner event={event} userId={session.userId} />
