@@ -237,19 +237,19 @@ export function CheckInClient({
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="w-full">
           {confirmClearAll ? (
             <div className="flex items-center gap-3">
               <button
                 onClick={handleClearAll}
                 disabled={isPending}
-                className="h-11 px-5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/30 transition-all disabled:opacity-50"
+                className="flex-1 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-red-500/30 transition-all disabled:opacity-50"
               >
                 {isPending ? "..." : "Confirm Remove All"}
               </button>
               <button
                 onClick={() => setConfirmClearAll(false)}
-                className="h-11 px-4 rounded-2xl bg-white/5 border border-white/10 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white transition-all"
+                className="h-12 px-6 rounded-2xl bg-white/5 border border-white/10 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white transition-all"
               >
                 Cancel
               </button>
@@ -257,7 +257,7 @@ export function CheckInClient({
           ) : (
             <button
               onClick={() => setConfirmClearAll(true)}
-              className="h-11 px-5 rounded-2xl bg-white/[0.02] border border-white/10 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:border-red-500/30 hover:bg-red-500/10 transition-all"
+              className="w-full h-12 rounded-2xl bg-white/[0.02] border border-white/10 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:border-red-500/30 hover:bg-red-500/10 transition-all"
             >
               Remove All
             </button>
