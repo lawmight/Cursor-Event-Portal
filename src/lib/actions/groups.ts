@@ -76,7 +76,9 @@ async function generateGroupSuggestions(intakes: AttendeeIntake[]) {
     skipped: intake.skipped,
   }));
 
-  const targetGroupSize = Math.min(5, Math.max(3, Math.ceil(intakes.length / 3)));
+  // Aim for tables of 5 wherever possible, allow up to 6 when needed
+  const targetGroupSize = 5;
+  const targetGroupCount = Math.max(1, Math.ceil(attendeeSummaries.length / targetGroupSize));
 
   const prompt = `You are an expert at creating high-value networking opportunities at tech events. Your goal is to form groups where each person can meet others who can genuinely help them achieve their goals.
 
@@ -92,12 +94,13 @@ Attendees:
 ${JSON.stringify(attendeeSummaries, null, 2)}
 
 Your task:
-Create ${Math.ceil(attendeeSummaries.length / targetGroupSize)} groups of ${targetGroupSize}-${targetGroupSize + 1} people each, where:
+Create ${targetGroupCount} groups. Aim for groups of exactly 5 people wherever possible. Groups can have up to 6 people only when necessary to accommodate all attendees. Where:
 1. When goals are provided, each person's GOALS are matched with at least one other person's OFFERS in the same group
 2. Groups enable multiple mutual benefit connections (Person A helps Person B, Person B helps Person C, Person C helps Person A, etc.)
 3. Each group has a clear theme based on the primary value exchange opportunities
 4. Every attendee is placed in exactly one group
 5. Groups are balanced - avoid putting all similar people together; create complementary skill/interest diversity
+6. Prefer groups of exactly 5 people; only use 6 when needed to fit everyone
 
 For each group, explain:
 - The primary theme and why these people benefit from meeting each other

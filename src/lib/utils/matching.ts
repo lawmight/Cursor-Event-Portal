@@ -249,10 +249,17 @@ async function calculateGroupScore(
     score += matchRatio * 30;
   }
   
-  // Bonus for group size (prefer 3-5 people)
+  // Bonus/penalty for group size:
+  // - Prefer tables of 5 wherever possible
+  // - Allow 6 when needed
+  // - Penalize very small or oversized groups
   const groupSize = memberProfiles.length;
-  if (groupSize >= 3 && groupSize <= 5) {
-    score += 10;
+  if (groupSize === 5) {
+    score += 15;
+  } else if (groupSize === 6) {
+    score += 8;
+  } else if (groupSize === 4) {
+    score += 5;
   } else if (groupSize < 3 || groupSize > 6) {
     score -= 20;
   }
@@ -329,7 +336,9 @@ export async function generateHybridGroupMatches(
   
   // Use LLM for initial grouping, then refine with constraints
   const openai = getOpenAIClient();
-  const targetGroupSize = Math.min(5, Math.max(3, Math.ceil(profiles.length / 3)));
+  // Aim for tables of 5 wherever possible
+  const targetGroupSize = 5;
+  const targetGroupCount = Math.max(1, Math.ceil(profiles.length / targetGroupSize));
   
   const attendeeSummaries = profiles.map((p) => ({
     id: p.id,
@@ -338,7 +347,7 @@ export async function generateHybridGroupMatches(
     offers: p.offers.length > 0 ? p.offers : ["open to connect"],
   }));
   
-  const prompt = `Create ${Math.ceil(profiles.length / targetGroupSize)} groups of ${targetGroupSize}-${targetGroupSize + 1} people for networking.
+  const prompt = `Create ${targetGroupCount} groups for networking. Aim for groups of 5 people wherever possible. Groups can have up to 6 people only when necessary to accommodate all attendees.
 
 Attendees:
 ${JSON.stringify(attendeeSummaries, null, 2)}
@@ -349,6 +358,7 @@ Rules:
 3. Ensure diversity of skills in each group
 4. Create groups that enable mutual value exchange
 5. Every attendee should be in exactly one group
+6. Prefer groups of exactly 5 people; only use 6 when needed to fit everyone
 
 Respond ONLY with valid JSON:
 {
@@ -385,14 +395,22 @@ Respond ONLY with valid JSON:
     llmGroups = result.groups || [];
   } catch (error) {
     console.error("[generateHybridGroupMatches] LLM error, using fallback:", error);
-    // Fallback: simple grouping
+    // Fallback: simple grouping with preference for groups of 5
     llmGroups = [];
-    for (let i = 0; i < profiles.length; i += targetGroupSize) {
+    let remaining = [...profiles];
+    let groupIndex = 1;
+    
+    while (remaining.length > 0) {
+      // Prefer groups of 5, but allow 6 if needed
+      const groupSize = remaining.length >= 5 ? 5 : remaining.length;
+      const groupMembers = remaining.splice(0, groupSize);
+      
       llmGroups.push({
-        name: `Group ${Math.floor(i / targetGroupSize) + 1}`,
+        name: `Group ${groupIndex}`,
         description: "Networking group",
-        memberIds: profiles.slice(i, i + targetGroupSize).map((p) => p.id),
+        memberIds: groupMembers.map((p) => p.id),
       });
+      groupIndex++;
     }
   }
   
@@ -422,18 +440,38 @@ Respond ONLY with valid JSON:
   if (missedProfiles.length > 0) {
     console.log(`[generateHybridGroupMatches] Distributing ${missedProfiles.length} missed attendees`);
     
-    // If we have existing groups, distribute them
+    // If we have existing groups, distribute them while:
+    // - Filling up to 5 wherever possible
+    // - Only going to 6 when needed
     if (preProcessedGroups.length > 0) {
       missedProfiles.forEach((p, index) => {
-        // Add to the group with the fewest members to keep them balanced
-        const targetGroup = preProcessedGroups.reduce((prev, curr) => 
-          prev.memberIds.length <= curr.memberIds.length ? prev : curr
-        );
-        targetGroup.memberIds.push(p.id);
-        assignedGlobal.add(p.id);
+        // 1) Prefer groups with < 5 members
+        let candidateGroups = preProcessedGroups.filter(g => g.memberIds.length < 5);
+
+        // 2) If all groups already have 5, allow up to 6
+        if (candidateGroups.length === 0) {
+          candidateGroups = preProcessedGroups.filter(g => g.memberIds.length < 6);
+        }
+
+        if (candidateGroups.length > 0) {
+          const targetGroup = candidateGroups.reduce((prev, curr) =>
+            prev.memberIds.length <= curr.memberIds.length ? prev : curr
+          );
+          targetGroup.memberIds.push(p.id);
+          assignedGlobal.add(p.id);
+        } else {
+          // 3) All groups are already at 6 – start a new group for overflow
+          const newGroup = {
+            name: `Overflow Group ${preProcessedGroups.length + 1}`,
+            description: "Additional attendees assigned when all tables reached capacity",
+            memberIds: [p.id],
+          };
+          preProcessedGroups.push(newGroup);
+          assignedGlobal.add(p.id);
+        }
       });
     } else {
-      // Create a new group if none exist
+      // Create new groups if none exist
       preProcessedGroups.push({
         name: "Networking Group",
         description: "General networking group for remaining attendees",
@@ -443,10 +481,36 @@ Respond ONLY with valid JSON:
     }
   }
   
+  // 3. Normalize group sizes so no table exceeds 6 people.
+  //    This enforces the hard cap of 6 per table while keeping
+  //    as many tables at size 5 as possible based on earlier steps.
+  const sizeAdjustedGroups: Array<{ name: string; description: string; memberIds: string[] }> = [];
+
+  for (const group of preProcessedGroups) {
+    const members = [...group.memberIds];
+
+    if (members.length <= 6) {
+      sizeAdjustedGroups.push(group);
+      continue;
+    }
+
+    // Split oversized groups into chunks of at most 6
+    let chunkIndex = 0;
+    while (members.length > 0) {
+      const chunk = members.splice(0, 6);
+      sizeAdjustedGroups.push({
+        name: chunkIndex === 0 ? group.name : `${group.name} (split ${chunkIndex + 1})`,
+        description: group.description,
+        memberIds: chunk,
+      });
+      chunkIndex++;
+    }
+  }
+  
   // Refine groups with constraints and scoring
   const refinedGroups: MatchingResult["groups"] = [];
   
-  for (const group of preProcessedGroups) {
+  for (const group of sizeAdjustedGroups) {
     const constraints = checkConstraints(profiles, group.memberIds, groupCounts);
     
     // Filter out groups with hard constraint violations
