@@ -137,7 +137,7 @@ export function SlideDeckPopup({ eventId, eventSlug }: SlideDeckPopupProps) {
   }
 
   return (
-    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 w-[368px] glass rounded-[32px] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] animate-fade-in overflow-hidden">
+    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 w-[424px] glass rounded-[32px] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] animate-fade-in overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
         <div className="flex items-center gap-2">
