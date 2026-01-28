@@ -43,7 +43,7 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
               setIsFirstView(true);
               hasMarkedAsSeen.current = true;
 
-              // Mark as seen after the animation completes (5 seconds)
+              // Mark as seen after the animation completes (15 seconds)
               setTimeout(async () => {
                 try {
                   await markItemAsSeen(userId, event.id, "table_assignment", newAssignment.groupId);
@@ -51,7 +51,7 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
                   console.error("[SeatAssignmentBanner] Error marking as seen:", err);
                 }
                 setIsFirstView(false);
-              }, 5000);
+              }, 15000);
             }
           } catch (err) {
             console.error("[SeatAssignmentBanner] Error checking seen status:", err);

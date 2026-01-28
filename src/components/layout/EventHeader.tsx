@@ -170,7 +170,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               setIsFirstView(true);
               hasMarkedAsSeen.current = true;
 
-              // Mark as seen after the animation completes (5 seconds)
+              // Mark as seen after the animation completes (15 seconds)
               setTimeout(async () => {
                 try {
                   await markItemAsSeen(userId!, event.id, "table_assignment", newAssignment.groupId);
@@ -178,7 +178,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                   console.error("[EventHeader] Error marking as seen:", err);
                 }
                 setIsFirstView(false);
-              }, 5000);
+              }, 15000);
             }
           } catch (err) {
             console.error("[EventHeader] Error checking seen status:", err);
@@ -252,7 +252,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                   ? "text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]"
                   : "text-gray-400 group-hover:text-white"
               )} />
-              <div className="flex flex-col">
+              <div className="flex flex-col items-center text-center">
                 <span className={cn(
                   "text-[10px] uppercase tracking-[0.2em] font-bold transition-colors duration-500",
                   isFirstView ? "text-white/90" : "text-gray-500"

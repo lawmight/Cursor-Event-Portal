@@ -63,7 +63,7 @@ export function GroupFormation({
     try {
       // Set progress messages at different stages
       const progressTimeout = setTimeout(() => {
-        setProgressMessage("Analyzing attendee data and generating matches... This may take 30-60 seconds.");
+        setProgressMessage("Analyzing attendee data and generating matches... This will take 5-10 seconds.");
       }, 2000);
 
       const result = await generateGroups(eventId, eventSlug, adminCode);
