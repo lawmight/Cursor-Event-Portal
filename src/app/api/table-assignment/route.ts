@@ -18,9 +18,11 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceClient();
 
-    const { data, error } = await supabase
+    // First get all group memberships for this user
+    const { data: memberships, error } = await supabase
       .from("suggested_group_members")
       .select(`
+        group_id,
         group:suggested_groups(
           id,
           name,
@@ -29,26 +31,39 @@ export async function GET(request: NextRequest) {
           event_id
         )
       `)
-      .eq("user_id", session.userId)
-      .eq("group.event_id", eventId)
-      .single();
+      .eq("user_id", session.userId);
 
-    if (error || !data?.group) {
+    if (error || !memberships || memberships.length === 0) {
       return NextResponse.json({ assignment: null });
     }
 
-    const groupArray = data.group as {
+    // Find the group that matches the event and is approved with a table number
+    let matchingGroup: {
       id: string;
       name: string;
       table_number: number | null;
       status: string;
       event_id: string;
-    }[];
-    const group = groupArray[0];
+    } | null = null;
 
-    if (!group || group.status !== "approved" || !group.table_number) {
+    for (const membership of memberships) {
+      const groupData = membership.group;
+      if (!groupData) continue;
+
+      // Handle both array and object formats from Supabase
+      const group = Array.isArray(groupData) ? groupData[0] : groupData;
+
+      if (group && group.event_id === eventId && group.status === "approved" && group.table_number) {
+        matchingGroup = group;
+        break;
+      }
+    }
+
+    if (!matchingGroup) {
       return NextResponse.json({ assignment: null });
     }
+
+    const group = matchingGroup;
 
     return NextResponse.json({
       assignment: {
