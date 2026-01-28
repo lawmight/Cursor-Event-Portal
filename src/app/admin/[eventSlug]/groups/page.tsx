@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
+// Force dynamic rendering to always show fresh checked-in data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface AdminGroupsPageProps {
   params: Promise<{ eventSlug: string }>;
 }

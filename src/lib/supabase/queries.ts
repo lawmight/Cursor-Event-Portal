@@ -1,5 +1,6 @@
 import { createClient, createServiceClient } from "./server";
 import { createClient as createDirectClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 import type {
   Event,
   User,
@@ -407,6 +408,7 @@ export async function getAttendeeIntake(
 }
 
 export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]> {
+  noStore(); // Always fetch fresh data - must sync with checked-in attendees
   const supabase = await createServiceClient();
 
   // First get all checked-in registrations with user info
@@ -501,6 +503,7 @@ export async function getEventIntakes(eventId: string): Promise<AttendeeIntake[]
 
 // Group queries
 export async function getSuggestedGroups(eventId: string): Promise<SuggestedGroup[]> {
+  noStore(); // Always fetch fresh data - must sync with checked-in attendees
   // Use service client to bypass RLS since groups are created by service client
   const supabase = await createServiceClient();
   console.log("[getSuggestedGroups] Fetching groups for event:", eventId);

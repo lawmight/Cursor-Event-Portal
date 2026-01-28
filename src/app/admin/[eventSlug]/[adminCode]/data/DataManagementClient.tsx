@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Upload, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck, Lock, X } from "lucide-react";
+import { Download, Upload, FileSpreadsheet, FileText, Users, MessageCircle, ClipboardCheck, UserCheck, Lock, X, Activity } from "lucide-react";
 import type { Event, Registration, Question, Survey, SurveyResponse } from "@/types";
-import { getDetailedAttendeeData } from "@/lib/actions/export";
+import { getDetailedAttendeeData, getAnalyticsExport } from "@/lib/actions/export";
 import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 
 const DOWNLOAD_PASSWORD = "CursorCalgary2026";
@@ -156,6 +156,55 @@ export function DataManagementClient({
     }
   };
 
+  const exportAnalytics = async () => {
+    setExporting("analytics");
+    try {
+      const result = await getAnalyticsExport(event.id);
+      if (result.error) {
+        alert(result.error);
+        setExporting(null);
+        return;
+      }
+      if (result.data) {
+        // Create a combined analytics CSV with page views and interactions
+        const pageViewsData = (result.data.pageViews || []).map((pv: any) => ({
+          type: "page_view",
+          user_id: pv.user_id || "anonymous",
+          page_path: pv.page_path,
+          page_type: pv.page_type,
+          device_type: pv.device_type || "",
+          duration_ms: pv.duration_ms || "",
+          timestamp: pv.created_at,
+        }));
+
+        const interactionsData = (result.data.featureInteractions || []).map((fi: any) => ({
+          type: "interaction",
+          user_id: fi.user_id,
+          page_path: "",
+          page_type: fi.feature_type,
+          device_type: "",
+          duration_ms: "",
+          timestamp: fi.created_at,
+        }));
+
+        const combinedData = [...pageViewsData, ...interactionsData].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        if (combinedData.length > 0) {
+          exportToCSV(combinedData, `${event.slug}-analytics`);
+        } else {
+          alert("No analytics data to export yet");
+        }
+      }
+    } catch (err) {
+      alert("Failed to export analytics data");
+      console.error(err);
+    } finally {
+      setTimeout(() => setExporting(null), 1000);
+    }
+  };
+
   const existingEmails = registrations
     .map((r) => r.user?.email?.toLowerCase())
     .filter(Boolean) as string[];
@@ -294,6 +343,42 @@ export function DataManagementClient({
                 }`}
               >
                 {exporting === "detailed" ? (
+                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Download CSV
+              </button>
+            </div>
+          </div>
+
+          {/* Analytics & Engagement */}
+          <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+            <div className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-6 flex-1">
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                  <Activity className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-light tracking-tight text-white/90">Engagement Analytics</h3>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-gray-800 font-medium">
+                    Page Views & Interactions
+                  </p>
+                  <p className="text-[9px] text-gray-700 mt-2 tracking-tight">
+                    Export user page views, time on page, clicks, and feature interactions
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => requirePassword(exportAnalytics)}
+                disabled={exporting !== null}
+                className={`px-8 py-4 rounded-2xl font-medium text-sm transition-all flex items-center gap-3 ${
+                  exporting !== null
+                    ? "bg-white/5 text-white/20 cursor-not-allowed"
+                    : "bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                }`}
+              >
+                {exporting === "analytics" ? (
                   <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />

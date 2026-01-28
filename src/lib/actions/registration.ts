@@ -151,7 +151,7 @@ export async function getSession() {
   }
 }
 
-export async function checkIn(registrationId: string) {
+export async function checkIn(registrationId: string, eventSlug?: string) {
   const supabase = await createServiceClient();
 
   const { error } = await supabase
@@ -161,6 +161,11 @@ export async function checkIn(registrationId: string) {
 
   if (error) {
     return { error: "Failed to check in" };
+  }
+
+  // Revalidate groups page to sync checked-in attendees
+  if (eventSlug) {
+    revalidatePath(`/admin/${eventSlug}/groups`);
   }
 
   return { success: true };
@@ -185,10 +190,10 @@ export async function undoCheckIn(registrationId: string, eventSlug?: string) {
     await cleanupAttendeeData(supabase, registration.event_id, registration.user_id);
   }
 
-  // Revalidate the check-in page if eventSlug is provided
+  // Revalidate pages if eventSlug is provided
   if (eventSlug) {
-    const { revalidatePath } = await import("next/cache");
     revalidatePath(`/staff/${eventSlug}/checkin`);
+    revalidatePath(`/admin/${eventSlug}/groups`);
   }
 
   console.log("Successfully undid check-in for registration:", registrationId);
@@ -233,10 +238,10 @@ export async function deregister(registrationId: string, eventSlug?: string) {
   // If user has no other registrations and is not an admin, optionally delete them
   // For now, we'll keep the user record but remove the registration
 
-  // Revalidate the check-in page if eventSlug is provided
+  // Revalidate pages if eventSlug is provided
   if (eventSlug) {
-    const { revalidatePath } = await import("next/cache");
     revalidatePath(`/staff/${eventSlug}/checkin`);
+    revalidatePath(`/admin/${eventSlug}/groups`);
   }
 
   console.log("Successfully deregistered registration:", registrationId);

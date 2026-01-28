@@ -3,6 +3,10 @@ import { GroupFormation } from "@/components/admin/GroupFormation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { validateAdminCode } from "@/lib/utils/admin";
 
+// Force dynamic rendering to always show fresh checked-in data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface AdminGroupsPageProps {
   params: Promise<{ eventSlug: string; adminCode: string }>;
 }
