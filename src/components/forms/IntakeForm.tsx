@@ -219,13 +219,13 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
       )}
       <div className="glass rounded-[40px] p-10 space-y-10 max-w-lg mx-auto relative overflow-hidden animate-slide-up">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
+        <p className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.4em]">
           {step === "profile" ? "Step 01" : step === "goals" ? "Step 02" : "Step 03"}
         </p>
         <button 
           onClick={handleSkip} 
           disabled={loading}
-          className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.3em] hover:text-white transition-colors"
+          className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.3em] hover:text-white transition-colors"
         >
           Skip for Now
         </button>
@@ -250,7 +250,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   Role
                 </label>
                 <select
@@ -268,7 +268,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
 
               {roleCategory === "founder" && (
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                     Company Stage
                   </label>
                   <select
@@ -288,7 +288,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
 
               {roleCategory === "professional" && (
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                     Years of Experience
                   </label>
                   <input
@@ -297,14 +297,14 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                     value={yearsExperience}
                     onChange={(e) => setYearsExperience(e.target.value)}
                     placeholder="e.g. 5"
-                    className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                    className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
                   />
                 </div>
               )}
 
               {roleCategory === "student" && (
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                     Degree Type
                   </label>
                   <select
@@ -323,7 +323,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
               )}
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   LinkedIn
                 </label>
                 <input
@@ -331,12 +331,12 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)}
                   placeholder="https://linkedin.com/in/..."
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   GitHub
                 </label>
                 <input
@@ -344,12 +344,12 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={github}
                   onChange={(e) => setGithub(e.target.value)}
                   placeholder="https://github.com/username"
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   Personal Website
                 </label>
                 <input
@@ -357,12 +357,12 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://yourname.com"
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   Intent
                 </label>
                 <textarea
@@ -370,12 +370,12 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   onChange={(e) => setIntent(e.target.value)}
                   placeholder="Short answer"
                   rows={2}
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none"
                 />
               </div>
 
               <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+              <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                 Commitment
               </label>
                 <select
@@ -397,7 +397,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-700 font-medium">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                   Experience with Cursor
                 </label>
                 <select
@@ -463,7 +463,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   }
                   rows={2}
                   disabled={loading}
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
                 />
               </div>
             )}
