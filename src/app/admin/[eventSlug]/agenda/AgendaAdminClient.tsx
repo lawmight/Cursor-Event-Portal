@@ -252,6 +252,47 @@ interface CreateEditModalProps {
   isPending: boolean;
 }
 
+// Convert UTC ISO string to datetime-local format in MST
+function utcToMstLocal(utcString: string): string {
+  const date = new Date(utcString);
+  // Format for datetime-local input in Mountain timezone
+  const mstDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Edmonton" }));
+  const year = mstDate.getFullYear();
+  const month = String(mstDate.getMonth() + 1).padStart(2, "0");
+  const day = String(mstDate.getDate()).padStart(2, "0");
+  const hours = String(mstDate.getHours()).padStart(2, "0");
+  const minutes = String(mstDate.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Convert datetime-local value (assumed MST) to UTC ISO string
+function mstLocalToUtc(localString: string): string {
+  // Parse the local datetime string
+  const [datePart, timePart] = localString.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+
+  // Create a date in MST by using the Intl API to get the offset
+  const mstDate = new Date(year, month - 1, day, hours, minutes);
+  const utcString = mstDate.toLocaleString("en-US", { timeZone: "America/Edmonton" });
+  const utcDate = new Date(utcString);
+
+  // Calculate the offset between local interpretation and MST
+  const localDate = new Date(year, month - 1, day, hours, minutes);
+  const mstOffset = localDate.getTime() - utcDate.getTime();
+
+  // Adjust to get actual UTC
+  const actualUtc = new Date(localDate.getTime() + getTimezoneOffset("America/Edmonton", localDate));
+  return actualUtc.toISOString();
+}
+
+// Get timezone offset in milliseconds for a given timezone
+function getTimezoneOffset(timezone: string, date: Date): number {
+  const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
+  const tzDate = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+  return utcDate.getTime() - tzDate.getTime();
+}
+
 function CreateEditModal({
   item,
   eventId,
@@ -265,10 +306,10 @@ function CreateEditModal({
   const [location, setLocation] = useState(item?.location || "");
   const [speaker, setSpeaker] = useState(item?.speaker || "");
   const [startTime, setStartTime] = useState(
-    item?.start_time ? new Date(item.start_time).toISOString().slice(0, 16) : ""
+    item?.start_time ? utcToMstLocal(item.start_time) : ""
   );
   const [endTime, setEndTime] = useState(
-    item?.end_time ? new Date(item.end_time).toISOString().slice(0, 16) : ""
+    item?.end_time ? utcToMstLocal(item.end_time) : ""
   );
   const [imageUrl, setImageUrl] = useState(item?.image_url || "");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -322,13 +363,37 @@ function CreateEditModal({
       return;
     }
 
+    // Convert MST local times to UTC for storage
+    let startTimeUtc: string | undefined;
+    let endTimeUtc: string | undefined;
+
+    if (startTime) {
+      // Parse datetime-local value as MST and convert to UTC
+      const [datePart, timePart] = startTime.split("T");
+      const [year, month, day] = datePart.split("-").map(Number);
+      const [hours, minutes] = timePart.split(":").map(Number);
+      // Create date assuming the input is in MST
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      const offset = getTimezoneOffset("America/Edmonton", localDate);
+      startTimeUtc = new Date(localDate.getTime() + offset).toISOString();
+    }
+
+    if (endTime) {
+      const [datePart, timePart] = endTime.split("T");
+      const [year, month, day] = datePart.split("-").map(Number);
+      const [hours, minutes] = timePart.split(":").map(Number);
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      const offset = getTimezoneOffset("America/Edmonton", localDate);
+      endTimeUtc = new Date(localDate.getTime() + offset).toISOString();
+    }
+
     const data = {
       title: title.trim(),
       description: description.trim() || undefined,
       location: location.trim() || undefined,
       speaker: speaker.trim() || undefined,
-      start_time: startTime ? new Date(startTime).toISOString() : undefined,
-      end_time: endTime ? new Date(endTime).toISOString() : undefined,
+      start_time: startTimeUtc,
+      end_time: endTimeUtc,
       image_url: imageUrl.trim() || undefined,
     };
 
