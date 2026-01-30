@@ -628,6 +628,148 @@ export async function removeGroupMember(
   return { success: true };
 }
 
+export async function addMemberToGroup(
+  groupId: string,
+  userId: string,
+  eventSlug: string,
+  matchReason?: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const { data: group } = await supabase
+    .from("suggested_groups")
+    .select("event_id, name, status")
+    .eq("id", groupId)
+    .single();
+
+  if (!group) {
+    return { error: "Group not found" };
+  }
+
+  const auth = await validateAdminAccess(supabase, group.event_id, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
+
+  // Check if user is already in this group
+  const { data: existing } = await supabase
+    .from("suggested_group_members")
+    .select("id")
+    .eq("group_id", groupId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    return { error: "User is already in this group" };
+  }
+
+  // Check group size (max 6)
+  const { data: members } = await supabase
+    .from("suggested_group_members")
+    .select("id")
+    .eq("group_id", groupId);
+
+  if (members && members.length >= 6) {
+    return { error: "Group is full (max 6 members)" };
+  }
+
+  const { error } = await supabase
+    .from("suggested_group_members")
+    .insert({
+      group_id: groupId,
+      user_id: userId,
+      match_reason: matchReason || "Late arrival — added to this table after group formation",
+    });
+
+  if (error) {
+    console.error("[addMemberToGroup] Error:", error);
+    return { error: "Failed to add member to group" };
+  }
+
+  console.log(`[addMemberToGroup] Added user ${userId} to group "${group.name}"`);
+  revalidatePath(getAdminGroupsPath(eventSlug, adminCode));
+  return { success: true };
+}
+
+/**
+ * Auto-assign a late-arriving attendee to the least-full approved group.
+ * Called during check-in when seat_lockout_active is true.
+ * Returns the assigned group info or null if no groups available.
+ */
+export async function autoAssignLateArrival(
+  eventId: string,
+  userId: string
+): Promise<{ groupId: string; groupName: string; tableNumber: number | null } | null> {
+  const supabase = await createServiceClient();
+
+  // Check if seat lockout is active and approved groups exist
+  const { data: event } = await supabase
+    .from("events")
+    .select("seat_lockout_active")
+    .eq("id", eventId)
+    .single();
+
+  if (!event?.seat_lockout_active) return null;
+
+  // Check if user is already assigned
+  const { data: existingMembership } = await supabase
+    .from("suggested_group_members")
+    .select("group_id, group:suggested_groups(event_id, status)")
+    .eq("user_id", userId);
+
+  const alreadyAssigned = (existingMembership || []).some((m: any) => {
+    const g = Array.isArray(m.group) ? m.group[0] : m.group;
+    return g?.event_id === eventId && g?.status === "approved";
+  });
+
+  if (alreadyAssigned) return null;
+
+  // Get all approved groups with member counts for this event
+  const { data: approvedGroups } = await supabase
+    .from("suggested_groups")
+    .select("id, name, table_number, members:suggested_group_members(id)")
+    .eq("event_id", eventId)
+    .eq("status", "approved")
+    .order("table_number", { ascending: true });
+
+  if (!approvedGroups || approvedGroups.length === 0) return null;
+
+  // Find the least-full group that isn't at capacity (6)
+  const groupsWithCounts = approvedGroups
+    .map((g) => ({ ...g, memberCount: (g.members || []).length }))
+    .filter((g) => g.memberCount < 6)
+    .sort((a, b) => a.memberCount - b.memberCount);
+
+  if (groupsWithCounts.length === 0) {
+    console.log("[autoAssignLateArrival] All groups full, cannot auto-assign user", userId);
+    return null;
+  }
+
+  const target = groupsWithCounts[0];
+
+  // Insert membership
+  const { error } = await supabase
+    .from("suggested_group_members")
+    .insert({
+      group_id: target.id,
+      user_id: userId,
+      match_reason: "Late arrival — automatically assigned to this table",
+    });
+
+  if (error) {
+    console.error("[autoAssignLateArrival] Error:", error);
+    return null;
+  }
+
+  console.log(`[autoAssignLateArrival] Auto-assigned user ${userId} to "${target.name}" (Table ${target.table_number})`);
+  return {
+    groupId: target.id,
+    groupName: target.name,
+    tableNumber: target.table_number,
+  };
+}
+
 export async function cancelGroup(groupId: string, eventSlug: string, adminCode?: string) {
   const supabase = await createServiceClient();
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
+import { autoAssignLateArrival } from "@/lib/actions/groups";
 
 export async function POST(request: NextRequest) {
   try {
@@ -144,6 +145,17 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
       path: "/",
     });
+
+    // Auto-assign late arrivals to a table if seat lockout is active
+    try {
+      const assignment = await autoAssignLateArrival(eventId, attendeeId);
+      if (assignment) {
+        console.log(`[checkin] Late arrival auto-assigned: ${user.name} → ${assignment.groupName} (Table ${assignment.tableNumber})`);
+      }
+    } catch (assignErr) {
+      // Non-fatal — check-in still succeeds even if auto-assign fails
+      console.error("[checkin] Auto-assign failed (non-fatal):", assignErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
