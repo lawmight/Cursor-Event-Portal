@@ -3,28 +3,23 @@
 import OpenAI from "openai";
 import type { AttendeeIntake } from "@/types";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 interface AttendeeProfile {
   id: string;
   name: string;
   email: string | null;
   goals: string[];
   offers: string[];
-  company?: string;
-  domain?: string; // Email domain
-}
-
-interface MatchConstraint {
-  type: "company" | "domain" | "mutual_benefit" | "dominator";
-  severity: "hard" | "soft";
-  value: any;
-}
-
-interface GroupMatch {
-  memberIds: string[];
-  score: number;
-  constraints: MatchConstraint[];
-  mutualBenefitEdges: Array<{ from: string; to: string; reason: string }>;
-  rationale: string;
+  roleCategory: string | null;
+  founderStage: string | null;
+  yearsExperience: number | null;
+  cursorExperience: string | null;
+  intent: string | null;
+  domain: string | null;
+  skipped: boolean;
 }
 
 interface MatchingResult {
@@ -38,557 +33,597 @@ interface MatchingResult {
   }>;
 }
 
+interface MatchConstraint {
+  type: "company" | "domain" | "mutual_benefit" | "dominator";
+  severity: "hard" | "soft";
+  value: any;
+}
+
+/** Pairwise semantic similarity between two attendees' goals↔offers */
+interface PairScore {
+  a: string; // user id
+  b: string; // user id
+  goalToOfferSim: number; // how well A's goals match B's offers
+  offerToGoalSim: number; // how well A's offers match B's goals
+  avgSim: number;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function getOpenAIClient() {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not set");
-  }
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
   return new OpenAI({ apiKey });
 }
 
-// Extract domain from email
 function extractDomain(email: string | null | undefined): string | null {
   if (!email) return null;
   const match = email.match(/@(.+)/);
   return match ? match[1].toLowerCase() : null;
 }
 
-// Generate embeddings for goals/offers
+const GOAL_LABELS: Record<string, string> = {
+  "learn-ai": "Learn AI/ML",
+  "learn-coding": "Learn Coding",
+  networking: "Networking",
+  "find-cofounders": "Find Co-founders",
+  "hire-talent": "Hire Talent",
+  "find-job": "Job Search",
+  "explore-tools": "Explore Tools",
+  other: "Other",
+};
+
+const OFFER_LABELS: Record<string, string> = {
+  "ai-expertise": "AI/ML Expertise",
+  "software-dev": "Software Development",
+  design: "Design",
+  "business-strategy": "Business Strategy",
+  "funding-investment": "Funding & Investment",
+  mentorship: "Mentorship",
+  collaboration: "Collaboration",
+  other: "Other",
+};
+
+function humanGoals(tags: string[], other: string | null): string[] {
+  const out = tags.map((t) => GOAL_LABELS[t] || t).filter(Boolean);
+  if (other) out.push(other);
+  return out.length > 0 ? out : ["General networking"];
+}
+
+function humanOffers(tags: string[], other: string | null): string[] {
+  const out = tags.map((t) => OFFER_LABELS[t] || t).filter(Boolean);
+  if (other) out.push(other);
+  return out.length > 0 ? out : ["Open to connect"];
+}
+
+function roleLabel(cat: string | null): string | null {
+  if (!cat) return null;
+  const map: Record<string, string> = {
+    founder: "Founder",
+    professional: "Professional",
+    student: "Student",
+    other: "Other",
+  };
+  return map[cat] ?? cat;
+}
+
+function founderLabel(stage: string | null): string | null {
+  if (!stage) return null;
+  const map: Record<string, string> = {
+    idea: "Idea stage",
+    "pre-seed": "Pre-seed",
+    seed: "Seed",
+    "series-a": "Series A",
+    "series-b-plus": "Series B+",
+    bootstrapped: "Bootstrapped",
+    other: "Other stage",
+  };
+  return map[stage] ?? stage;
+}
+
+function cursorLabel(exp: string | null): string | null {
+  if (!exp) return null;
+  const map: Record<string, string> = {
+    none: "No Cursor experience",
+    curious: "Cursor-curious",
+    trialed: "Has trialed Cursor",
+    active: "Active Cursor user",
+    power: "Power Cursor user",
+  };
+  return map[exp] ?? exp;
+}
+
+// ---------------------------------------------------------------------------
+// Embeddings & Semantic Compatibility Matrix
+// ---------------------------------------------------------------------------
+
 async function generateEmbeddings(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
-  
   const openai = getOpenAIClient();
   const response = await openai.embeddings.create({
     model: "text-embedding-3-small",
     input: texts,
   });
-  
   return response.data.map((item) => item.embedding);
 }
 
-// Calculate cosine similarity
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) return 0;
-  
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  
+  let dot = 0, nA = 0, nB = 0;
   for (let i = 0; i < a.length; i++) {
-    dotProduct += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+    dot += a[i] * b[i];
+    nA += a[i] * a[i];
+    nB += b[i] * b[i];
   }
-  
-  if (normA === 0 || normB === 0) return 0;
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  if (nA === 0 || nB === 0) return 0;
+  return dot / (Math.sqrt(nA) * Math.sqrt(nB));
 }
 
-// Check constraints for a potential group
+/**
+ * Build a semantic compatibility matrix between all attendee pairs.
+ * For each pair (A,B) we compute:
+ *   - How well A's goals align with B's offers (would B help A?)
+ *   - How well A's offers align with B's goals (would A help B?)
+ * Returns sorted list of pair scores.
+ */
+async function buildCompatibilityMatrix(
+  profiles: AttendeeProfile[]
+): Promise<PairScore[]> {
+  // Build a single embedding for each person's goals-blob and offers-blob
+  const goalTexts = profiles.map(
+    (p) => p.goals.join(", ") + (p.intent ? `. Intent: ${p.intent}` : "")
+  );
+  const offerTexts = profiles.map((p) => p.offers.join(", "));
+
+  const [goalEmbeds, offerEmbeds] = await Promise.all([
+    generateEmbeddings(goalTexts),
+    generateEmbeddings(offerTexts),
+  ]);
+
+  const pairs: PairScore[] = [];
+  for (let i = 0; i < profiles.length; i++) {
+    for (let j = i + 1; j < profiles.length; j++) {
+      const gToO = cosineSimilarity(goalEmbeds[i], offerEmbeds[j]); // A's goals ↔ B's offers
+      const oToG = cosineSimilarity(offerEmbeds[i], goalEmbeds[j]); // A's offers ↔ B's goals
+      pairs.push({
+        a: profiles[i].id,
+        b: profiles[j].id,
+        goalToOfferSim: gToO,
+        offerToGoalSim: oToG,
+        avgSim: (gToO + oToG) / 2,
+      });
+    }
+  }
+
+  pairs.sort((x, y) => y.avgSim - x.avgSim);
+  return pairs;
+}
+
+// ---------------------------------------------------------------------------
+// Constraint checking (deterministic post-processing)
+// ---------------------------------------------------------------------------
+
 function checkConstraints(
   profiles: AttendeeProfile[],
-  memberIds: string[],
-  existingGroupCounts: Map<string, number>,
-  maxGroupsPerPerson: number = 1
+  memberIds: string[]
 ): MatchConstraint[] {
   const constraints: MatchConstraint[] = [];
-  const memberProfiles = profiles.filter((p) => memberIds.includes(p.id));
-  
-  // Check for same company/domain clustering
-  const companies = new Map<string, number>();
+  const members = profiles.filter((p) => memberIds.includes(p.id));
+
+  // Domain clustering
   const domains = new Map<string, number>();
-  
-  memberProfiles.forEach((profile) => {
-    if (profile.company) {
-      companies.set(profile.company, (companies.get(profile.company) || 0) + 1);
-    }
-    if (profile.domain) {
-      domains.set(profile.domain, (domains.get(profile.domain) || 0) + 1);
-    }
+  members.forEach((p) => {
+    if (p.domain) domains.set(p.domain, (domains.get(p.domain) || 0) + 1);
   });
-  
-  // Soft constraint: more than 2 people from same company
-  companies.forEach((count, company) => {
-    if (count > 2) {
-      constraints.push({
-        type: "company",
-        severity: "soft",
-        value: { company, count },
-      });
-    }
-  });
-  
-  // Soft constraint: more than 2 people from same domain
   domains.forEach((count, domain) => {
     if (count > 2) {
-      constraints.push({
-        type: "domain",
-        severity: "soft",
-        value: { domain, count },
-      });
+      constraints.push({ type: "domain", severity: "soft", value: { domain, count } });
     }
   });
-  
-  // Check for mutual benefit edges
-  let mutualBenefitCount = 0;
-  for (let i = 0; i < memberProfiles.length; i++) {
-    for (let j = i + 1; j < memberProfiles.length; j++) {
-      const p1 = memberProfiles[i];
-      const p2 = memberProfiles[j];
-      
-      // Check if p1's offers match p2's goals or vice versa
-      const p1OffersMatchP2Goals = p1.offers.some((offer) =>
-        p2.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-      );
-      const p2OffersMatchP1Goals = p2.offers.some((offer) =>
-        p1.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-      );
-      
-      if (p1OffersMatchP2Goals || p2OffersMatchP1Goals) {
-        mutualBenefitCount++;
-      }
-    }
-  }
-  
-  // Hard constraint: need at least some mutual benefit connections
-  const minMutualBenefits = Math.floor(memberProfiles.length / 2);
-  if (mutualBenefitCount < minMutualBenefits) {
-    constraints.push({
-      type: "mutual_benefit",
-      severity: "hard",
-      value: { count: mutualBenefitCount, required: minMutualBenefits },
-    });
-  }
-  
-  // Check for dominators (people in too many groups)
-  memberIds.forEach((userId) => {
-    const currentCount = existingGroupCounts.get(userId) || 0;
-    if (currentCount >= maxGroupsPerPerson) {
-      constraints.push({
-        type: "dominator",
-        severity: "hard",
-        value: { userId, count: currentCount, max: maxGroupsPerPerson },
-      });
-    }
-  });
-  
+
   return constraints;
 }
 
-// Calculate match score for a group
-async function calculateGroupScore(
-  profiles: AttendeeProfile[],
-  memberIds: string[],
-  constraints: MatchConstraint[]
-): Promise<number> {
-  const memberProfiles = profiles.filter((p) => memberIds.includes(p.id));
-  
-  // Base score starts at 100
-  let score = 100;
-  
-  // Penalize for constraint violations
-  constraints.forEach((constraint) => {
-    if (constraint.severity === "hard") {
-      score -= 30; // Heavy penalty for hard constraints
-    } else if (constraint.severity === "soft") {
-      score -= 10; // Light penalty for soft constraints
-    }
-  });
-  
-  // Calculate mutual benefit score using embeddings
-  try {
-    const allGoals = memberProfiles.flatMap((p) => p.goals);
-    const allOffers = memberProfiles.flatMap((p) => p.offers);
-    
-    if (allGoals.length > 0 && allOffers.length > 0) {
-      const [goalEmbeddings, offerEmbeddings] = await Promise.all([
-        generateEmbeddings(allGoals),
-        generateEmbeddings(allOffers),
-      ]);
-      
-      // Find best matches between offers and goals
-      let bestMatches = 0;
-      for (let i = 0; i < offerEmbeddings.length; i++) {
-        let bestSimilarity = 0;
-        for (let j = 0; j < goalEmbeddings.length; j++) {
-          const similarity = cosineSimilarity(offerEmbeddings[i], goalEmbeddings[j]);
-          if (similarity > bestSimilarity) {
-            bestSimilarity = similarity;
-          }
-        }
-        if (bestSimilarity > 0.3) {
-          // Threshold for meaningful match
-          bestMatches++;
-        }
-      }
-      
-      // Boost score based on good matches
-      const matchRatio = bestMatches / Math.max(allOffers.length, 1);
-      score += matchRatio * 40; // Up to +40 points for good matches
-    }
-  } catch (error) {
-    console.error("[calculateGroupScore] Error calculating embeddings:", error);
-    // Fallback: use simple text matching
-    let mutualBenefitCount = 0;
-    for (let i = 0; i < memberProfiles.length; i++) {
-      for (let j = i + 1; j < memberProfiles.length; j++) {
-        const p1 = memberProfiles[i];
-        const p2 = memberProfiles[j];
-        
-        const hasMatch = p1.offers.some((offer) =>
-          p2.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-        ) || p2.offers.some((offer) =>
-          p1.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-        );
-        
-        if (hasMatch) mutualBenefitCount++;
-      }
-    }
-    
-    const matchRatio = mutualBenefitCount / Math.max((memberProfiles.length * (memberProfiles.length - 1)) / 2, 1);
-    score += matchRatio * 30;
-  }
-  
-  // Bonus/penalty for group size:
-  // - Prefer tables of 5 wherever possible
-  // - Allow 6 when needed
-  // - Penalize very small or oversized groups
-  const groupSize = memberProfiles.length;
-  if (groupSize === 5) {
-    score += 15;
-  } else if (groupSize === 6) {
-    score += 8;
-  } else if (groupSize === 4) {
-    score += 5;
-  } else if (groupSize < 3 || groupSize > 6) {
-    score -= 20;
-  }
-  
-  // Ensure score is between 0 and 100
-  return Math.max(0, Math.min(100, score));
-}
+// ---------------------------------------------------------------------------
+// Main: Intelligent Group Formation
+// ---------------------------------------------------------------------------
 
-// Generate structured rationale from constraints and matches
-function generateStructuredRationale(
-  profiles: AttendeeProfile[],
-  memberIds: string[],
-  constraints: MatchConstraint[],
-  mutualBenefitEdges: Array<{ from: string; to: string; reason: string }>
-): Record<string, string> {
-  const memberProfiles = profiles.filter((p) => memberIds.includes(p.id));
-  const profileMap = new Map(memberProfiles.map((p) => [p.id, p]));
-  
-  const matchReasons: Record<string, string> = {};
-  
-  memberIds.forEach((userId) => {
-    const profile = profileMap.get(userId);
-    if (!profile) return;
-    
-    const connections: string[] = [];
-    
-    // Find people whose offers match this person's goals
-    memberIds.forEach((otherId) => {
-      if (otherId === userId) return;
-      const otherProfile = profileMap.get(otherId);
-      if (!otherProfile) return;
-      
-      const matchingOffers = otherProfile.offers.filter((offer) =>
-        profile.goals.some((goal) =>
-          offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase())
-        )
-      );
-      
-      if (matchingOffers.length > 0) {
-        connections.push(`${otherProfile.name} (offers: ${matchingOffers.join(", ")})`);
-      }
-    });
-    
-    if (connections.length > 0) {
-      matchReasons[userId] = `Can benefit from meeting ${connections.join(" and ")} based on their goals: ${profile.goals.join(", ")}`;
-    } else {
-      matchReasons[userId] = `Placed in this group for complementary networking opportunities`;
-    }
-  });
-  
-  return matchReasons;
-}
-
-// Main matching function with hybrid approach
 export async function generateHybridGroupMatches(
   intakes: AttendeeIntake[]
 ): Promise<MatchingResult> {
-  // Build attendee profiles
-  const profiles: AttendeeProfile[] = intakes.map((intake) => {
-    const profile: AttendeeProfile = {
-      id: intake.user_id,
-      name: intake.user?.name || "Anonymous",
-      email: intake.user?.email || null,
-      goals: [...intake.goals, intake.goals_other].filter((g): g is string => typeof g === "string" && g !== null),
-      offers: [...intake.offers, intake.offers_other].filter((o): o is string => typeof o === "string" && o !== null),
-      domain: extractDomain(intake.user?.email) ?? undefined,
-    };
-    // Company could be extracted from user profile if available
-    return profile;
-  });
-  
-  // Track how many groups each person is in
-  const groupCounts = new Map<string, number>();
-  
-  // Use LLM for initial grouping, then refine with constraints
-  const openai = getOpenAIClient();
-  // Aim for tables of 5 wherever possible
+  // ── 1. Build rich attendee profiles ─────────────────────────────────────
+  const profiles: AttendeeProfile[] = intakes.map((intake) => ({
+    id: intake.user_id,
+    name: intake.user?.name || "Anonymous",
+    email: intake.user?.email || null,
+    goals: humanGoals(intake.goals, intake.goals_other),
+    offers: humanOffers(intake.offers, intake.offers_other),
+    roleCategory: intake.role_category ?? null,
+    founderStage: intake.founder_stage ?? null,
+    yearsExperience: intake.years_experience ?? null,
+    cursorExperience: intake.cursor_experience ?? null,
+    intent: intake.intent ?? null,
+    domain: extractDomain(intake.user?.email),
+    skipped: intake.skipped,
+  }));
+
+  const profileMap = new Map(profiles.map((p) => [p.id, p]));
+
+  // ── 2. Build semantic compatibility matrix ──────────────────────────────
+  let compatibilityInsight = "";
+  try {
+    const pairs = await buildCompatibilityMatrix(profiles);
+    // Summarise the top-N strongest compatibility pairs for the reasoning model
+    const topPairs = pairs.slice(0, Math.min(pairs.length, profiles.length * 3));
+    const nameOf = (id: string) => profileMap.get(id)?.name ?? id;
+
+    compatibilityInsight = `
+SEMANTIC COMPATIBILITY ANALYSIS (top connections):
+${topPairs
+  .map(
+    (p) =>
+      `  ${nameOf(p.a)} ↔ ${nameOf(p.b)}: ` +
+      `goals→offers ${(p.goalToOfferSim * 100).toFixed(0)}%, ` +
+      `offers→goals ${(p.offerToGoalSim * 100).toFixed(0)}%, ` +
+      `avg ${(p.avgSim * 100).toFixed(0)}%`
+  )
+  .join("\n")}
+`;
+    console.log("[matching] Built compatibility matrix with", pairs.length, "pairs");
+  } catch (err) {
+    console.warn("[matching] Embedding matrix failed, proceeding without:", err);
+    compatibilityInsight =
+      "\n(Semantic compatibility data unavailable — rely on stated goals/offers.)\n";
+  }
+
+  // ── 3. Build rich attendee dossiers for the reasoning model ─────────────
   const targetGroupSize = 5;
   const targetGroupCount = Math.max(1, Math.ceil(profiles.length / targetGroupSize));
-  
-  const attendeeSummaries = profiles.map((p) => ({
-    id: p.id,
-    name: p.name,
-    goals: p.goals.length > 0 ? p.goals : ["general networking"],
-    offers: p.offers.length > 0 ? p.offers : ["open to connect"],
-  }));
-  
-  const prompt = `Create ${targetGroupCount} groups for networking. Aim for groups of 5 people wherever possible. Groups can have up to 6 people only when necessary to accommodate all attendees.
 
-Attendees:
-${JSON.stringify(attendeeSummaries, null, 2)}
+  const dossiers = profiles.map((p) => {
+    const parts: string[] = [`[${p.name}] (id: ${p.id})`];
+    parts.push(`  Goals: ${p.goals.join(", ")}`);
+    parts.push(`  Offers: ${p.offers.join(", ")}`);
+    if (p.roleCategory) parts.push(`  Role: ${roleLabel(p.roleCategory)}`);
+    if (p.founderStage) parts.push(`  Founder Stage: ${founderLabel(p.founderStage)}`);
+    if (p.yearsExperience != null) parts.push(`  Experience: ${p.yearsExperience} years`);
+    if (p.cursorExperience) parts.push(`  Cursor: ${cursorLabel(p.cursorExperience)}`);
+    if (p.intent) parts.push(`  Intent: ${p.intent}`);
+    if (p.domain) parts.push(`  Email Domain: ${p.domain}`);
+    if (p.skipped) parts.push(`  (Skipped intake — limited info)`);
+    return parts.join("\n");
+  });
 
-Rules:
-1. Match people whose OFFERS align with others' GOALS
-2. Avoid putting too many people from the same company/domain together (max 2 per group)
-3. Ensure diversity of skills in each group
-4. Create groups that enable mutual value exchange
-5. Every attendee should be in exactly one group
-6. Prefer groups of exactly 5 people; only use 6 when needed to fit everyone
+  // ── 4. Call reasoning model for intelligent group formation ─────────────
+  const systemPrompt = `You are an expert networking event facilitator and group dynamics specialist. Your job is to create the BEST possible seating arrangement at a tech meetup so that every person at every table has someone they can meaningfully connect with.
+
+You will receive:
+1. Detailed attendee profiles (goals, offers, role, experience, intent)
+2. A semantic compatibility matrix showing the strongest goal↔offer alignment pairs
+
+Your task: form ${targetGroupCount} table groups of ~${targetGroupSize} people (max 6) that maximize value for every attendee.
+
+MATCHING PHILOSOPHY:
+- The #1 priority is that each person has at least one strong connection at their table
+- A "strong connection" = someone whose OFFERS directly address their GOALS, or vice versa
+- Complementary > similar: a founder seeking funding + an investor is better than two founders seeking funding
+- Mix experience levels when possible: pair mentors with learners, experienced with curious
+- Founders at similar stages can also bond, but pair them with someone who offers what they need
+- People who skipped intake should be distributed evenly, not clustered together
+- Avoid 3+ people from the same email domain at the same table
+- For people with "intent" text, treat that as their strongest signal for matching
+
+RESPONSE FORMAT — respond with ONLY this JSON, no markdown:
+{
+  "groups": [
+    {
+      "name": "Creative theme name for this table",
+      "description": "2-3 sentences: Why these people belong together. What value exchange is happening here.",
+      "memberIds": ["id1", "id2", "id3", "id4", "id5"],
+      "matchReasons": {
+        "id1": "Specific reason: who at this table helps them and how, referencing names",
+        "id2": "Specific reason: who at this table helps them and how, referencing names"
+      }
+    }
+  ]
+}
+
+CRITICAL RULES FOR matchReasons:
+- Each reason MUST reference at least one other person BY NAME at the table
+- Each reason MUST connect to this person's stated goals OR offers
+- Never use generic text like "complementary networking opportunities"
+- Keep each reason to 1-2 concise sentences
+- For skipped-intake people: mention who at the table covers the broadest range of topics`;
+
+  const userPrompt = `ATTENDEE PROFILES (${profiles.length} people → ${targetGroupCount} tables of ~${targetGroupSize}):
+
+${dossiers.join("\n\n")}
+
+${compatibilityInsight}
+
+Now create the optimal seating arrangement. Remember: every person needs a specific, named reason for being at their table. Use the compatibility data to inform your grouping decisions.`;
+
+  const openai = getOpenAIClient();
+  let aiGroups: Array<{
+    name: string;
+    description: string;
+    memberIds: string[];
+    matchReasons: Record<string, string>;
+  }>;
+
+  try {
+    console.log("[matching] Calling reasoning model for group formation...");
+    const startTime = Date.now();
+
+    const completion = await openai.chat.completions.create({
+      model: "o4-mini",
+      reasoning_effort: "high",
+      messages: [
+        { role: "developer", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_output_tokens: 16000,
+    });
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[matching] Reasoning model responded in ${elapsed}ms`);
+
+    const responseText = completion.choices[0]?.message?.content || "";
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found in reasoning model response");
+      parsed = JSON.parse(jsonMatch[0]);
+    }
+
+    aiGroups = parsed.groups || [];
+    console.log("[matching] Reasoning model produced", aiGroups.length, "groups");
+  } catch (error) {
+    console.error("[matching] Reasoning model failed, falling back to gpt-4o-mini:", error);
+    aiGroups = await fallbackGrouping(profiles, targetGroupCount, targetGroupSize, compatibilityInsight, dossiers);
+  }
+
+  // ── 5. Deterministic post-processing ────────────────────────────────────
+  // Ensure uniqueness, handle missed attendees, enforce size constraints
+  const assignedGlobal = new Set<string>();
+  const validGroups: typeof aiGroups = [];
+
+  for (const group of aiGroups) {
+    const uniqueIds = Array.from(new Set(group.memberIds)).filter(
+      (id) => !assignedGlobal.has(id) && profileMap.has(id)
+    );
+    if (uniqueIds.length > 0) {
+      validGroups.push({ ...group, memberIds: uniqueIds });
+      uniqueIds.forEach((id) => assignedGlobal.add(id));
+    }
+  }
+
+  // Distribute missed attendees
+  const missed = profiles.filter((p) => !assignedGlobal.has(p.id));
+  if (missed.length > 0) {
+    console.log(`[matching] Distributing ${missed.length} missed attendees`);
+    for (const p of missed) {
+      // Prefer groups under 5, then under 6
+      let candidates = validGroups.filter((g) => g.memberIds.length < 5);
+      if (candidates.length === 0)
+        candidates = validGroups.filter((g) => g.memberIds.length < 6);
+
+      if (candidates.length > 0) {
+        const target = candidates.reduce((prev, curr) =>
+          prev.memberIds.length <= curr.memberIds.length ? prev : curr
+        );
+        target.memberIds.push(p.id);
+        target.matchReasons[p.id] =
+          `Joined this table to connect with ${target.memberIds
+            .slice(0, 2)
+            .map((id) => profileMap.get(id)?.name ?? "a fellow attendee")
+            .join(" and ")} who cover a range of topics relevant to their interests`;
+      } else {
+        validGroups.push({
+          name: `Overflow Table ${validGroups.length + 1}`,
+          description: "Additional attendees assigned when all tables reached capacity",
+          memberIds: [p.id],
+          matchReasons: {
+            [p.id]: "Assigned to overflow seating — will be joined by others as capacity allows",
+          },
+        });
+      }
+      assignedGlobal.add(p.id);
+    }
+  }
+
+  // Split oversized groups (>6)
+  const sizedGroups: typeof validGroups = [];
+  for (const group of validGroups) {
+    if (group.memberIds.length <= 6) {
+      sizedGroups.push(group);
+    } else {
+      const members = [...group.memberIds];
+      let chunk = 0;
+      while (members.length > 0) {
+        const slice = members.splice(0, 6);
+        const reasons: Record<string, string> = {};
+        slice.forEach((id) => {
+          reasons[id] = group.matchReasons[id] ?? "Part of a split table — see group theme";
+        });
+        sizedGroups.push({
+          name: chunk === 0 ? group.name : `${group.name} (${chunk + 1})`,
+          description: group.description,
+          memberIds: slice,
+          matchReasons: reasons,
+        });
+        chunk++;
+      }
+    }
+  }
+
+  // ── 6. Score groups and build final output ──────────────────────────────
+  const results: MatchingResult["groups"] = [];
+
+  for (const group of sizedGroups) {
+    const constraints = checkConstraints(profiles, group.memberIds);
+    const score = scoreGroup(profiles, group.memberIds, constraints);
+
+    results.push({
+      name: group.name,
+      description: group.description,
+      memberIds: group.memberIds,
+      matchReasons: group.matchReasons,
+      score: Math.round(score * 100) / 100,
+      constraints,
+    });
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return { groups: results };
+}
+
+// ---------------------------------------------------------------------------
+// Scoring (deterministic, no API calls)
+// ---------------------------------------------------------------------------
+
+function scoreGroup(
+  profiles: AttendeeProfile[],
+  memberIds: string[],
+  constraints: MatchConstraint[]
+): number {
+  const members = profiles.filter((p) => memberIds.includes(p.id));
+  let score = 80; // base
+
+  // Penalty for constraint violations
+  for (const c of constraints) {
+    score -= c.severity === "hard" ? 30 : 10;
+  }
+
+  // Reward role diversity
+  const roles = new Set(members.map((m) => m.roleCategory).filter(Boolean));
+  score += Math.min(roles.size * 5, 15);
+
+  // Reward experience spread
+  const exps = members.map((m) => m.yearsExperience).filter((e): e is number => e != null);
+  if (exps.length >= 2) {
+    const spread = Math.max(...exps) - Math.min(...exps);
+    score += Math.min(spread, 10);
+  }
+
+  // Reward having both goals and offers coverage
+  const allGoals = new Set(members.flatMap((m) => m.goals));
+  const allOffers = new Set(members.flatMap((m) => m.offers));
+  score += Math.min(allGoals.size + allOffers.size, 15);
+
+  // Group size preference
+  const sz = members.length;
+  if (sz === 5) score += 10;
+  else if (sz === 6) score += 5;
+  else if (sz === 4) score += 3;
+  else if (sz < 3 || sz > 6) score -= 15;
+
+  // Penalty for too many skipped-intake members
+  const skippedCount = members.filter((m) => m.skipped).length;
+  if (skippedCount > 2) score -= (skippedCount - 2) * 5;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+// ---------------------------------------------------------------------------
+// Fallback: gpt-4o-mini if reasoning model fails
+// ---------------------------------------------------------------------------
+
+async function fallbackGrouping(
+  profiles: AttendeeProfile[],
+  targetGroupCount: number,
+  targetGroupSize: number,
+  compatibilityInsight: string,
+  dossiers: string[]
+): Promise<
+  Array<{
+    name: string;
+    description: string;
+    memberIds: string[];
+    matchReasons: Record<string, string>;
+  }>
+> {
+  const openai = getOpenAIClient();
+  const prompt = `Create ${targetGroupCount} networking groups of ~${targetGroupSize} people (max 6). Match people whose OFFERS align with others' GOALS. Every attendee in exactly one group.
+
+ATTENDEES:
+${dossiers.join("\n\n")}
+
+${compatibilityInsight}
 
 Respond ONLY with valid JSON:
 {
   "groups": [
     {
-      "name": "Group theme",
+      "name": "Theme",
       "description": "Why matched",
-      "memberIds": ["id1", "id2", "id3"]
+      "memberIds": ["id1","id2","id3","id4","id5"],
+      "matchReasons": {
+        "id1": "Specific reason referencing other members by name",
+        "id2": "Specific reason referencing other members by name"
+      }
     }
   ]
-}`;
-  
-  let llmGroups: Array<{ name: string; description: string; memberIds: string[] }>;
-  
+}
+
+CRITICAL: Each matchReason MUST name specific people at the table. Never use generic text.`;
+
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are an expert networking facilitator. Always respond with valid JSON only.",
+          content:
+            "You are an expert networking facilitator. Always respond with valid JSON only. Every matchReason must reference specific people by name.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 4000,
     });
-    
-    const responseText = completion.choices[0]?.message?.content || "";
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Failed to parse LLM response");
-    
-    const result = JSON.parse(jsonMatch[0]);
-    llmGroups = result.groups || [];
-  } catch (error) {
-    console.error("[generateHybridGroupMatches] LLM error, using fallback:", error);
-    // Fallback: simple grouping with preference for groups of 5
-    llmGroups = [];
-    let remaining = [...profiles];
-    let groupIndex = 1;
-    
+
+    const text = completion.choices[0]?.message?.content || "";
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("No JSON in fallback response");
+      parsed = JSON.parse(match[0]);
+    }
+    return parsed.groups || [];
+  } catch (err) {
+    console.error("[matching] Fallback also failed, using random grouping:", err);
+    // Last resort: random groups
+    const groups: Array<{
+      name: string;
+      description: string;
+      memberIds: string[];
+      matchReasons: Record<string, string>;
+    }> = [];
+    const remaining = [...profiles];
+    let idx = 1;
     while (remaining.length > 0) {
-      // Prefer groups of 5, but allow 6 if needed
-      const groupSize = remaining.length >= 5 ? 5 : remaining.length;
-      const groupMembers = remaining.splice(0, groupSize);
-      
-      llmGroups.push({
-        name: `Group ${groupIndex}`,
-        description: "Networking group",
-        memberIds: groupMembers.map((p) => p.id),
+      const chunk = remaining.splice(0, targetGroupSize);
+      const reasons: Record<string, string> = {};
+      chunk.forEach((p) => {
+        const others = chunk.filter((o) => o.id !== p.id);
+        reasons[p.id] = `Seated with ${others.map((o) => o.name).join(", ")} for networking`;
       });
-      groupIndex++;
+      groups.push({
+        name: `Table ${idx}`,
+        description: "Networking table",
+        memberIds: chunk.map((p) => p.id),
+        matchReasons: reasons,
+      });
+      idx++;
     }
+    return groups;
   }
-  
-  // 1. Ensure global uniqueness of member assignments across all groups
-  const assignedGlobal = new Set<string>();
-  const preProcessedGroups: Array<{ name: string; description: string; memberIds: string[] }> = [];
-
-  for (const group of llmGroups) {
-    // Filter out duplicates within the group and already assigned users
-    const uniqueMemberIds = Array.from(new Set(group.memberIds)).filter(id => {
-      if (assignedGlobal.has(id)) return false;
-      // Only include IDs that actually exist in our profiles
-      return profiles.some(p => p.id === id);
-    });
-
-    if (uniqueMemberIds.length > 0) {
-      preProcessedGroups.push({
-        ...group,
-        memberIds: uniqueMemberIds
-      });
-      uniqueMemberIds.forEach(id => assignedGlobal.add(id));
-    }
-  }
-
-  // 2. Handle attendees missed by LLM
-  const missedProfiles = profiles.filter(p => !assignedGlobal.has(p.id));
-  if (missedProfiles.length > 0) {
-    console.log(`[generateHybridGroupMatches] Distributing ${missedProfiles.length} missed attendees`);
-    
-    // If we have existing groups, distribute them while:
-    // - Filling up to 5 wherever possible
-    // - Only going to 6 when needed
-    if (preProcessedGroups.length > 0) {
-      missedProfiles.forEach((p, index) => {
-        // 1) Prefer groups with < 5 members
-        let candidateGroups = preProcessedGroups.filter(g => g.memberIds.length < 5);
-
-        // 2) If all groups already have 5, allow up to 6
-        if (candidateGroups.length === 0) {
-          candidateGroups = preProcessedGroups.filter(g => g.memberIds.length < 6);
-        }
-
-        if (candidateGroups.length > 0) {
-          const targetGroup = candidateGroups.reduce((prev, curr) =>
-            prev.memberIds.length <= curr.memberIds.length ? prev : curr
-          );
-          targetGroup.memberIds.push(p.id);
-          assignedGlobal.add(p.id);
-        } else {
-          // 3) All groups are already at 6 – start a new group for overflow
-          const newGroup = {
-            name: `Overflow Group ${preProcessedGroups.length + 1}`,
-            description: "Additional attendees assigned when all tables reached capacity",
-            memberIds: [p.id],
-          };
-          preProcessedGroups.push(newGroup);
-          assignedGlobal.add(p.id);
-        }
-      });
-    } else {
-      // Create new groups if none exist
-      preProcessedGroups.push({
-        name: "Networking Group",
-        description: "General networking group for remaining attendees",
-        memberIds: missedProfiles.map(p => p.id)
-      });
-      missedProfiles.forEach(p => assignedGlobal.add(p.id));
-    }
-  }
-  
-  // 3. Normalize group sizes so no table exceeds 6 people.
-  //    This enforces the hard cap of 6 per table while keeping
-  //    as many tables at size 5 as possible based on earlier steps.
-  const sizeAdjustedGroups: Array<{ name: string; description: string; memberIds: string[] }> = [];
-
-  for (const group of preProcessedGroups) {
-    const members = [...group.memberIds];
-
-    if (members.length <= 6) {
-      sizeAdjustedGroups.push(group);
-      continue;
-    }
-
-    // Split oversized groups into chunks of at most 6
-    let chunkIndex = 0;
-    while (members.length > 0) {
-      const chunk = members.splice(0, 6);
-      sizeAdjustedGroups.push({
-        name: chunkIndex === 0 ? group.name : `${group.name} (split ${chunkIndex + 1})`,
-        description: group.description,
-        memberIds: chunk,
-      });
-      chunkIndex++;
-    }
-  }
-  
-  // Refine groups with constraints and scoring
-  const refinedGroups: MatchingResult["groups"] = [];
-  
-  for (const group of sizeAdjustedGroups) {
-    const constraints = checkConstraints(profiles, group.memberIds, groupCounts);
-    
-    // Filter out groups with hard constraint violations
-    const hasHardViolation = constraints.some((c) => c.severity === "hard" && c.type !== "mutual_benefit");
-    if (hasHardViolation) {
-      // Try to fix by removing problematic members
-      const fixedMemberIds = group.memberIds.filter((id) => {
-        const constraint = constraints.find((c) => c.type === "dominator" && c.value?.userId === id);
-        return !constraint;
-      });
-      
-      if (fixedMemberIds.length >= 2) {
-        group.memberIds = fixedMemberIds;
-      }
-    }
-    
-    // Re-check constraints after fixes
-    const finalConstraints = checkConstraints(profiles, group.memberIds, groupCounts);
-    const score = await calculateGroupScore(profiles, group.memberIds, finalConstraints);
-    
-    // Update group counts
-    group.memberIds.forEach((id) => {
-      groupCounts.set(id, (groupCounts.get(id) || 0) + 1);
-    });
-    
-    // Generate mutual benefit edges
-    const memberProfiles = profiles.filter((p) => group.memberIds.includes(p.id));
-    const mutualBenefitEdges: Array<{ from: string; to: string; reason: string }> = [];
-    
-    for (let i = 0; i < memberProfiles.length; i++) {
-      for (let j = i + 1; j < memberProfiles.length; j++) {
-        const p1 = memberProfiles[i];
-        const p2 = memberProfiles[j];
-        
-        const p1OffersMatchP2Goals = p1.offers.filter((offer) =>
-          p2.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-        );
-        const p2OffersMatchP1Goals = p2.offers.filter((offer) =>
-          p1.goals.some((goal) => offer.toLowerCase().includes(goal.toLowerCase()) || goal.toLowerCase().includes(offer.toLowerCase()))
-        );
-        
-        if (p1OffersMatchP2Goals.length > 0) {
-          mutualBenefitEdges.push({
-            from: p1.id,
-            to: p2.id,
-            reason: `${p1.name} offers ${p1OffersMatchP2Goals.join(", ")} which matches ${p2.name}'s goals`,
-          });
-        }
-        if (p2OffersMatchP1Goals.length > 0) {
-          mutualBenefitEdges.push({
-            from: p2.id,
-            to: p1.id,
-            reason: `${p2.name} offers ${p2OffersMatchP1Goals.join(", ")} which matches ${p1.name}'s goals`,
-          });
-        }
-      }
-    }
-    
-    // Generate structured rationale
-    const matchReasons = generateStructuredRationale(
-      profiles,
-      group.memberIds,
-      finalConstraints,
-      mutualBenefitEdges
-    );
-    
-    refinedGroups.push({
-      name: group.name,
-      description: group.description,
-      memberIds: group.memberIds,
-      matchReasons,
-      score: Math.round(score * 100) / 100, // Round to 2 decimal places
-      constraints: finalConstraints,
-    });
-  }
-  
-  // Sort by score descending
-  refinedGroups.sort((a, b) => b.score - a.score);
-  
-  return { groups: refinedGroups };
 }

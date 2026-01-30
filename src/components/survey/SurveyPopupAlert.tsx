@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { ClipboardCheck, X, ChevronRight } from "lucide-react";
@@ -24,11 +24,64 @@ export function SurveyPopupAlert({
   const [hasCompleted, setHasCompleted] = useState(false);
   const [survey, setSurvey] = useState<Survey | null>(initialSurvey);
   const [popupEnabled, setPopupEnabled] = useState(event.survey_popup_visible ?? false);
+  const lastSurveyIdRef = useRef<string | null>(initialSurvey?.id ?? null);
 
-  // Sync survey from prop when it changes
+  // Fetch published survey directly from Supabase
+  const fetchPublishedSurvey = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("surveys")
+      .select("*")
+      .eq("event_id", event.id)
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (data) {
+      // If a new survey appeared, clear the dismissed state so it shows again
+      if (lastSurveyIdRef.current !== data.id) {
+        lastSurveyIdRef.current = data.id;
+        setIsDismissed(false);
+        setHasCompleted(false);
+      }
+      setSurvey(data);
+    } else {
+      setSurvey(null);
+    }
+  }, [event.id]);
+
+  // Fetch popup visibility from events table
+  const fetchPopupVisibility = useCallback(async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("events")
+      .select("survey_popup_visible")
+      .eq("id", event.id)
+      .single();
+
+    if (data) {
+      setPopupEnabled(data.survey_popup_visible);
+    }
+  }, [event.id]);
+
+  // Sync survey from prop when it changes (as backup from EventNav)
   useEffect(() => {
-    setSurvey(initialSurvey);
+    if (initialSurvey) {
+      setSurvey(initialSurvey);
+      if (lastSurveyIdRef.current !== initialSurvey.id) {
+        lastSurveyIdRef.current = initialSurvey.id;
+        setIsDismissed(false);
+        setHasCompleted(false);
+      }
+    }
   }, [initialSurvey]);
+
+  // Fetch survey and visibility on mount
+  useEffect(() => {
+    fetchPublishedSurvey();
+    fetchPopupVisibility();
+  }, [fetchPublishedSurvey, fetchPopupVisibility]);
 
   // Check if user has already completed the survey
   useEffect(() => {
@@ -54,7 +107,8 @@ export function SurveyPopupAlert({
 
   // Check localStorage for dismissal
   useEffect(() => {
-    const dismissedKey = `survey_popup_dismissed_${event.id}`;
+    if (!survey) return;
+    const dismissedKey = `survey_popup_dismissed_${event.id}_${survey.id}`;
     const dismissedAt = localStorage.getItem(dismissedKey);
     if (dismissedAt) {
       // Dismissed in the last 1 hour
@@ -63,9 +117,9 @@ export function SurveyPopupAlert({
         setIsDismissed(true);
       }
     }
-  }, [event.id]);
+  }, [event.id, survey]);
 
-  // Subscribe to real-time changes for popup visibility
+  // Subscribe to real-time changes for popup visibility AND survey changes
   useEffect(() => {
     const supabase = createClient();
 
@@ -84,12 +138,35 @@ export function SurveyPopupAlert({
           setPopupEnabled(newEvent.survey_popup_visible);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "surveys",
+          filter: `event_id=eq.${event.id}`,
+        },
+        () => {
+          // Re-fetch published survey when any survey changes
+          fetchPublishedSurvey();
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id]);
+  }, [event.id, fetchPublishedSurvey]);
+
+  // Polling fallback: check every 10s in case realtime isn't working
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPublishedSurvey();
+      fetchPopupVisibility();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [fetchPublishedSurvey, fetchPopupVisibility]);
 
   // Determine visibility
   useEffect(() => {
@@ -105,7 +182,7 @@ export function SurveyPopupAlert({
   }, [popupEnabled, survey, hasCompleted, isDismissed]);
 
   const handleDismiss = () => {
-    const dismissedKey = `survey_popup_dismissed_${event.id}`;
+    const dismissedKey = `survey_popup_dismissed_${event.id}_${survey?.id ?? "unknown"}`;
     localStorage.setItem(dismissedKey, Date.now().toString());
     setIsDismissed(true);
     setIsVisible(false);

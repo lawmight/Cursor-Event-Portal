@@ -331,9 +331,9 @@ export async function generateGroups(eventId: string, eventSlug: string, adminCo
     console.log("[generateGroups] Number of intakes:", intakes.length);
     console.log("[generateGroups] OpenAI API key present:", !!process.env.OPENAI_API_KEY);
     
-    // Set a timeout for the matching call (2 minutes max)
+    // Set a timeout for the matching call (4 minutes max — reasoning model needs more time)
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Group generation timed out after 2 minutes")), 2 * 60 * 1000);
+      setTimeout(() => reject(new Error("Group generation timed out after 4 minutes")), 4 * 60 * 1000);
     });
     
     const startTime = Date.now();
