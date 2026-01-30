@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TableQRCode } from "@/types";
-import { Upload } from "lucide-react";
+import { Upload, Trash2 } from "lucide-react";
 
 interface QRCodeManagerProps {
   eventId: string;
@@ -17,6 +17,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
   const [tableNumber, setTableNumber] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -65,6 +66,33 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRemove = async (qr: TableQRCode) => {
+    setError(null);
+    setSuccess(null);
+    setDeletingId(qr.id);
+    try {
+      const response = await fetch("/api/admin/delete-qr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          qrCodeId: qr.id,
+          ...(adminCode && { adminCode }),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Failed to remove QR code");
+        return;
+      }
+      setSuccess(`Table ${qr.table_number} QR code removed.`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to remove");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -138,10 +166,19 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
             <div key={qr.id} className="glass rounded-[32px] p-6 border-white/[0.04]">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Table {qr.table_number}</p>
-                <span className="text-[10px] text-gray-600">Stored</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(qr)}
+                  disabled={deletingId === qr.id}
+                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-red-400/80 hover:text-red-400 transition-colors disabled:opacity-50"
+                  title="Remove QR code"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Remove
+                </button>
               </div>
               {qr.qr_image_url ? (
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4">
+                <div className="w-[25%] min-w-[80px] bg-white/[0.02] border border-white/[0.05] rounded-2xl p-2">
                   <img
                     src={qr.qr_image_url}
                     alt={`Table ${qr.table_number} QR`}
