@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Mail,
   UserPlus,
@@ -108,6 +108,7 @@ export function AttendeeCheckinForm({
   eventSlug,
 }: AttendeeCheckinFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [foundAttendee, setFoundAttendee] = useState<Attendee | null>(null);
@@ -136,10 +137,20 @@ export function AttendeeCheckinForm({
   const [intent, setIntent] = useState("");
   const [followupConsent, setFollowupConsent] = useState<boolean | null>(null);
   const [cursorExperience, setCursorExperience] = useState<CursorExperience>("none");
+  const [pendingTableNumber, setPendingTableNumber] = useState<number | null>(null);
 
   // Consent state
   const [consentChecked, setConsentChecked] = useState(false);
   const [consentLoading, setConsentLoading] = useState(false);
+
+  useEffect(() => {
+    const tableParam = searchParams.get("table");
+    if (!tableParam) return;
+    const parsed = Number.parseInt(tableParam, 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      setPendingTableNumber(parsed);
+    }
+  }, [searchParams]);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -214,6 +225,26 @@ export function AttendeeCheckinForm({
     }
   };
 
+  const registerTableFromQr = async () => {
+    if (!pendingTableNumber) return;
+    try {
+      const response = await fetch("/api/qr-checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          tableNumber: pendingTableNumber,
+        }),
+      });
+
+      if (response.ok) {
+        setPendingTableNumber(null);
+      }
+    } catch (err) {
+      console.error("[AttendeeCheckinForm] QR check-in failed:", err);
+    }
+  };
+
   const handleConfirm = async () => {
     if (!foundAttendee) return;
 
@@ -239,6 +270,8 @@ export function AttendeeCheckinForm({
         setIsSubmitting(false);
         return;
       }
+
+      await registerTableFromQr();
 
       // Go to success step (with intake option)
       setStep("success");
@@ -281,6 +314,8 @@ export function AttendeeCheckinForm({
         setIsSubmitting(false);
         return;
       }
+
+      await registerTableFromQr();
 
       // Go to success step (with intake option)
       setStep("success");
@@ -1142,20 +1177,19 @@ export function AttendeeCheckinForm({
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-light text-white tracking-tight">
-                  Keep an Eye on Your Phone
+                  Your Table Is Registered
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
                   <Clock className="w-3.5 h-3.5 text-gray-500" />
                   <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
-                  Seating assigned at 5:30 PM
+                    Seating updates will appear here
                   </p>
                 </div>
               </div>
             </div>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              At 5:30, you'll receive your table and seat number—optimized by AI
-              based on everyone's goals and expertise. Get ready for great
-              conversations!
+              Scan your table QR to register your seat. If smart seating activates,
+              you will see a new table assignment highlighted in the portal.
             </p>
           </div>
 
@@ -1174,3 +1208,4 @@ export function AttendeeCheckinForm({
 
   return null;
 }
+

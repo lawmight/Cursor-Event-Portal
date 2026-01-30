@@ -18,6 +18,26 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceClient();
 
+    // QR-based table registration (default seat)
+    const { data: qrRegistration, error: qrError } = await supabase
+      .from("table_registrations")
+      .select("id, table_number")
+      .eq("event_id", eventId)
+      .eq("user_id", session.userId)
+      .maybeSingle();
+
+    if (qrError) {
+      console.error("[table-assignment] QR registration error:", qrError);
+    }
+
+    const qrAssignment = qrRegistration
+      ? {
+          id: qrRegistration.id,
+          tableNumber: qrRegistration.table_number,
+        }
+      : null;
+
+    // Smart seating assignment (AI groups)
     // First get all group memberships for this user
     const { data: memberships, error } = await supabase
       .from("suggested_group_members")
@@ -34,7 +54,7 @@ export async function GET(request: NextRequest) {
       .eq("user_id", session.userId);
 
     if (error || !memberships || memberships.length === 0) {
-      return NextResponse.json({ assignment: null });
+      return NextResponse.json({ qrAssignment, smartAssignment: null });
     }
 
     // Find the group that matches the event and is approved with a table number
@@ -60,13 +80,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (!matchingGroup) {
-      return NextResponse.json({ assignment: null });
+      return NextResponse.json({ qrAssignment, smartAssignment: null });
     }
 
     const group = matchingGroup;
 
     return NextResponse.json({
-      assignment: {
+      qrAssignment,
+      smartAssignment: {
         tableNumber: group.table_number,
         groupName: group.name,
         groupId: group.id,

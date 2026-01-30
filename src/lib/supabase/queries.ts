@@ -19,6 +19,8 @@ import type {
   PollVote,
   PollWithVotes,
   SlideDeck,
+  TableQRCode,
+  TableRegistration,
 } from "@/types";
 
 // Event queries
@@ -548,6 +550,58 @@ export async function getSuggestedGroups(eventId: string): Promise<SuggestedGrou
 
   console.log("[getSuggestedGroups] Found groups:", filteredGroups.length || 0);
   return filteredGroups;
+}
+
+// Seating QR queries
+export async function getTableQRCodes(eventId: string): Promise<TableQRCode[]> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("table_qr_codes")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("table_number", { ascending: true });
+
+  if (error) {
+    console.error("[getTableQRCodes] Error:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function getTableRegistration(
+  eventId: string,
+  userId: string
+): Promise<TableRegistration | null> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("table_registrations")
+    .select("*")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[getTableRegistration] Error:", error);
+    return null;
+  }
+  return data || null;
+}
+
+export async function getTableRegistrations(
+  eventId: string
+): Promise<TableRegistration[]> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("table_registrations")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("registered_at", { ascending: false });
+
+  if (error) {
+    console.error("[getTableRegistrations] Error:", error);
+    return [];
+  }
+  return data || [];
 }
 
 // Slide deck queries

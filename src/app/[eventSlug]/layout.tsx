@@ -42,7 +42,7 @@ export default async function EventLayout({ children, params }: EventLayoutProps
       {/* Analytics - track page views */}
       <PageTracker eventId={event.id} />
 
-      {/* Seat Assignment Banner - shows table assignment at top when lockout is active */}
+      {/* Seat Assignment Banner - shows QR table and smart seating updates */}
       {session?.userId && (
         <SeatAssignmentBanner event={event} userId={session.userId} />
       )}

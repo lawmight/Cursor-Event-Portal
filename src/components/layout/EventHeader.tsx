@@ -19,9 +19,8 @@ interface EventHeaderProps {
 }
 
 interface TableAssignment {
+  id: string;
   tableNumber: number;
-  groupName: string;
-  groupId: string;
 }
 
 export function EventHeader({ event, announcement: initialAnnouncement, showTimer = true, userId }: EventHeaderProps) {
@@ -158,13 +157,19 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
         if (!response.ok) return;
         const data = await response.json();
 
-        const newAssignment = data.assignment || null;
+        const qrAssignment = data.qrAssignment || null;
+        const smartAssignment = data.smartAssignment || null;
+        const newAssignment = qrAssignment
+          ? { id: qrAssignment.id, tableNumber: qrAssignment.tableNumber }
+          : smartAssignment
+            ? { id: smartAssignment.groupId, tableNumber: smartAssignment.tableNumber }
+            : null;
         setTableAssignment(newAssignment);
 
         if (newAssignment) {
           // Check if this is the first time seeing this assignment (using Supabase)
           try {
-            const hasSeen = await hasUserSeenItem(userId!, "table_assignment", newAssignment.groupId);
+            const hasSeen = await hasUserSeenItem(userId!, "table_assignment", newAssignment.id);
 
             if (!hasSeen && !hasMarkedAsSeen.current) {
               setIsFirstView(true);
@@ -173,7 +178,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               // Mark as seen after the animation completes (15 seconds)
               setTimeout(async () => {
                 try {
-                  await markItemAsSeen(userId!, event.id, "table_assignment", newAssignment.groupId);
+                  await markItemAsSeen(userId!, event.id, "table_assignment", newAssignment.id);
                 } catch (err) {
                   console.error("[EventHeader] Error marking as seen:", err);
                 }

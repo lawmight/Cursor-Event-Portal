@@ -39,11 +39,30 @@ export interface Event {
   end_time: string | null;
   status: EventStatus;
   seat_lockout_active: boolean;
+  smart_seating_active: boolean;
   survey_popup_visible: boolean;
   timezone: string;
   admin_code: string;
   data_retention_days: number;
   created_at: string;
+}
+
+export interface TableQRCode {
+  id: string;
+  event_id: string;
+  table_number: number;
+  qr_image_url: string | null;
+  storage_path: string | null;
+  created_at: string;
+}
+
+export interface TableRegistration {
+  id: string;
+  event_id: string;
+  user_id: string;
+  table_number: number;
+  source: "qr" | "smart_seating";
+  registered_at: string;
 }
 
 export interface User {

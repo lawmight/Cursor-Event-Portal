@@ -266,10 +266,10 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-light tracking-tight text-white/90">
-                      Smart Seating
+                      Seating
                     </h3>
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                      Networking Engine
+                      Table Management
                     </p>
                   </div>
                 </div>
