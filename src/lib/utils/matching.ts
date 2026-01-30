@@ -357,14 +357,16 @@ Now create the optimal seating arrangement. Remember: every person needs a speci
     console.log("[matching] Calling reasoning model for group formation...");
     const startTime = Date.now();
 
+    // Use gpt-4o for deep analysis — it handles complex multi-constraint
+    // matching well and is compatible with the installed OpenAI SDK version.
     const completion = await openai.chat.completions.create({
-      model: "o4-mini",
-      reasoning_effort: "high",
+      model: "gpt-4o",
       messages: [
-        { role: "developer", content: systemPrompt },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_output_tokens: 16000,
+      temperature: 0.4,
+      max_tokens: 16000,
     });
 
     const elapsed = Date.now() - startTime;
