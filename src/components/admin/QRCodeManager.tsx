@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { TableQRCode } from "@/types";
-import { Upload, Trash2 } from "lucide-react";
+import { Upload, Trash2, Copy, Check } from "lucide-react";
 
 interface QRCodeManagerProps {
   eventId: string;
@@ -20,6 +20,28 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [baseUrl, setBaseUrl] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBaseUrl(
+      typeof window !== "undefined"
+        ? (process.env.NEXT_PUBLIC_BASE_URL || window.location.origin)
+        : ""
+    );
+  }, []);
+
+  const tableUrl = (num: number) => `${baseUrl}/${eventSlug}?table=${num}`;
+
+  const copyUrl = async (url: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      setError("Could not copy to clipboard");
+    }
+  };
 
   const handleUpload = async () => {
     setError(null);
@@ -135,17 +157,40 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mt-6">
-          <button
-            onClick={handleUpload}
-            disabled={isUploading}
-            className="px-6 py-3 rounded-full bg-white text-black text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-all disabled:opacity-50"
-          >
-            {isUploading ? "Uploading..." : "Upload QR"}
-          </button>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600">
-            Link format: /{eventSlug}?table=NUMBER
-          </p>
+        <div className="flex flex-col gap-4 mt-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleUpload}
+              disabled={isUploading}
+              className="px-6 py-3 rounded-full bg-white text-black text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-all disabled:opacity-50"
+            >
+              {isUploading ? "Uploading..." : "Upload QR"}
+            </button>
+            {baseUrl && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600">URL to encode in QR:</span>
+                <code className="text-[11px] text-white/90 bg-white/5 px-2 py-1 rounded truncate max-w-[280px]" title={tableNumber ? tableUrl(Number(tableNumber)) : `${baseUrl}/${eventSlug}?table=NUMBER`}>
+                  {tableNumber ? tableUrl(Number(tableNumber)) : `${baseUrl}/${eventSlug}?table=NUMBER`}
+                </code>
+                {tableNumber && (
+                  <button
+                    type="button"
+                    onClick={() => copyUrl(tableUrl(Number(tableNumber)), "upload")}
+                    className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors"
+                    title="Copy URL"
+                  >
+                    {copiedId === "upload" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedId === "upload" ? "Copied" : "Copy"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          {baseUrl && (
+            <p className="text-[10px] text-gray-500">
+              Use the URL above in any QR generator (e.g. qr-code-generator.com). The table number in the URL assigns the attendee to that table when they scan and check in.
+            </p>
+          )}
         </div>
 
         {error && (
@@ -166,6 +211,18 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
             <div key={qr.id} className="glass rounded-[32px] p-6 border-white/[0.04]">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Table {qr.table_number}</p>
+                <div className="flex items-center gap-2">
+                  {baseUrl && (
+                    <button
+                      type="button"
+                      onClick={() => copyUrl(tableUrl(qr.table_number), qr.id)}
+                      className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors"
+                      title="Copy table URL"
+                    >
+                      {copiedId === qr.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedId === qr.id ? "Copied" : "Copy URL"}
+                    </button>
+                  )}
                 <button
                   type="button"
                   onClick={() => handleRemove(qr)}
@@ -176,7 +233,13 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
                   <Trash2 className="w-3.5 h-3.5" />
                   Remove
                 </button>
+                </div>
               </div>
+              {baseUrl && (
+                <p className="text-[10px] text-gray-600 mb-3 truncate" title={tableUrl(qr.table_number)}>
+                  {tableUrl(qr.table_number)}
+                </p>
+              )}
               {qr.qr_image_url ? (
                 <div className="w-[25%] min-w-[80px] bg-white/[0.02] border border-white/[0.05] rounded-2xl p-2">
                   <img
