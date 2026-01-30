@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { TableQRCode } from "@/types";
-import { Upload, Trash2, Copy, Check } from "lucide-react";
+import { Upload, Trash2, Copy, Check, ChevronDown, ChevronRight, X, QrCode } from "lucide-react";
 
 interface QRCodeManagerProps {
   eventId: string;
@@ -22,6 +22,8 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
   const [success, setSuccess] = useState<string | null>(null);
   const [baseUrl, setBaseUrl] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [qrDrawerOpen, setQrDrawerOpen] = useState(false);
+  const [lightboxQr, setLightboxQr] = useState<TableQRCode | null>(null);
 
   useEffect(() => {
     setBaseUrl(
@@ -206,54 +208,122 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
       </div>
 
       {qrCodes.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {qrCodes.map((qr) => (
-            <div key={qr.id} className="glass rounded-[32px] p-6 border-white/[0.04]">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Table {qr.table_number}</p>
-                <div className="flex items-center gap-2">
+        <>
+          {/* Collapsible drawer trigger */}
+          <button
+            type="button"
+            onClick={() => setQrDrawerOpen(!qrDrawerOpen)}
+            className="w-full glass rounded-[32px] p-6 border-white/[0.06] hover:bg-white/[0.03] transition-all flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                <QrCode className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-white/90">{qrCodes.length} Table QR Code{qrCodes.length !== 1 ? "s" : ""}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Click to browse</p>
+              </div>
+            </div>
+            {qrDrawerOpen ? (
+              <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+            )}
+          </button>
+
+          {/* Expanded folder grid */}
+          {qrDrawerOpen && (
+            <div className="glass rounded-[32px] p-8 border-white/[0.06] animate-fade-in">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {qrCodes.map((qr) => (
+                  <div key={qr.id} className="group/card relative">
+                    <button
+                      type="button"
+                      onClick={() => qr.qr_image_url ? setLightboxQr(qr) : undefined}
+                      className="w-full flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all cursor-pointer"
+                    >
+                      {qr.qr_image_url ? (
+                        <div className="w-full aspect-square bg-white/[0.02] rounded-xl p-2 flex items-center justify-center">
+                          <img
+                            src={qr.qr_image_url}
+                            alt={`Table ${qr.table_number} QR`}
+                            className="w-full h-full object-contain rounded-lg"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-square bg-white/[0.02] rounded-xl flex items-center justify-center">
+                          <QrCode className="w-8 h-8 text-gray-700" />
+                        </div>
+                      )}
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">Table {qr.table_number}</p>
+                    </button>
+                    {/* Remove button on hover */}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleRemove(qr); }}
+                      disabled={deletingId === qr.id}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500 disabled:opacity-50"
+                      title="Remove"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Full-size lightbox */}
+          {lightboxQr && (
+            <div
+              className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-8"
+              onClick={() => setLightboxQr(null)}
+            >
+              <div
+                className="relative max-w-md w-full bg-white/[0.05] border border-white/[0.1] rounded-[32px] p-8 flex flex-col items-center gap-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setLightboxQr(null)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+                <p className="text-[11px] uppercase tracking-[0.4em] text-gray-400 font-medium">Table {lightboxQr.table_number}</p>
+                {lightboxQr.qr_image_url && (
+                  <div className="w-full max-w-[320px] aspect-square bg-white rounded-2xl p-4">
+                    <img
+                      src={lightboxQr.qr_image_url}
+                      alt={`Table ${lightboxQr.table_number} QR`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
                   {baseUrl && (
                     <button
                       type="button"
-                      onClick={() => copyUrl(tableUrl(qr.table_number), qr.id)}
-                      className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors"
-                      title="Copy table URL"
+                      onClick={() => copyUrl(tableUrl(lightboxQr.table_number), lightboxQr.id)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-[10px] uppercase tracking-[0.2em] text-gray-300 hover:text-white transition-all"
                     >
-                      {copiedId === qr.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copiedId === qr.id ? "Copied" : "Copy URL"}
+                      {copiedId === lightboxQr.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedId === lightboxQr.id ? "Copied" : "Copy URL"}
                     </button>
                   )}
-                <button
-                  type="button"
-                  onClick={() => handleRemove(qr)}
-                  disabled={deletingId === qr.id}
-                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-red-400/80 hover:text-red-400 transition-colors disabled:opacity-50"
-                  title="Remove QR code"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Remove
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => { handleRemove(lightboxQr); setLightboxQr(null); }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-[10px] uppercase tracking-[0.2em] text-red-400 transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Remove
+                  </button>
                 </div>
               </div>
-              {baseUrl && (
-                <p className="text-[10px] text-gray-600 mb-3 truncate" title={tableUrl(qr.table_number)}>
-                  {tableUrl(qr.table_number)}
-                </p>
-              )}
-              {qr.qr_image_url ? (
-                <div className="w-[25%] min-w-[80px] bg-white/[0.02] border border-white/[0.05] rounded-2xl p-2">
-                  <img
-                    src={qr.qr_image_url}
-                    alt={`Table ${qr.table_number} QR`}
-                    className="w-full h-auto rounded-xl"
-                  />
-                </div>
-              ) : (
-                <div className="text-[11px] text-gray-600">No image uploaded.</div>
-              )}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { generateGroups, updateGroupStatus, updateGroupTableNumber, removeGroupMember, cancelGroup } from "@/lib/actions/groups";
-import { X } from "lucide-react";
+import { X, Search, Filter } from "lucide-react";
 import Image from "next/image";
 import type { SuggestedGroup, AttendeeIntake, GroupStatus } from "@/types";
 
@@ -16,6 +16,7 @@ interface GroupFormationProps {
   adminCode?: string;
   intakes: AttendeeIntake[];
   groups: SuggestedGroup[];
+  initialView?: "all" | "groups" | "attendees";
 }
 
 const GOAL_LABELS: Record<string, string> = {
@@ -40,12 +41,22 @@ const OFFER_LABELS: Record<string, string> = {
   "other": "Other",
 };
 
+const TABS = [
+  { id: "all", label: "All", tags: [] },
+  { id: "ai", label: "AI/ML", tags: ["ai-expertise", "learn-ai"] },
+  { id: "dev", label: "Dev", tags: ["software-dev", "learn-coding"] },
+  { id: "business", label: "Business", tags: ["business-strategy", "funding-investment"] },
+  { id: "design", label: "Design", tags: ["design"] },
+  { id: "collab", label: "Collab", tags: ["collaboration", "find-cofounders", "networking"] },
+];
+
 export function GroupFormation({
   eventId,
   eventSlug,
   adminCode,
   intakes,
   groups,
+  initialView = "all",
 }: GroupFormationProps) {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
@@ -53,6 +64,30 @@ export function GroupFormation({
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const showStats = initialView === "all" || initialView === "groups";
+  const showGroups = initialView === "all" || initialView === "groups";
+  const showAttendees = initialView === "all" || initialView === "attendees";
+
+  const filteredIntakes = useMemo(() => {
+    return intakes.filter((intake) => {
+      // Filter by search query
+      const nameMatch = intake.user?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      if (searchQuery && !nameMatch) return false;
+
+      // Filter by tab
+      if (activeTab === "all") return true;
+      const tab = TABS.find((t) => t.id === activeTab);
+      if (!tab) return true;
+
+      const hasGoal = intake.goals.some((g) => tab.tags.includes(g));
+      const hasOffer = intake.offers.some((o) => tab.tags.includes(o));
+      
+      return hasGoal || hasOffer;
+    });
+  }, [intakes, activeTab, searchQuery]);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -154,77 +189,79 @@ export function GroupFormation({
   return (
     <div className="space-y-12">
       {/* Stats Header */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
-          <div className="flex items-center gap-6 w-full">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
-              <Image
-                src="/attendees-2.png"
-                alt="Intake Responses"
-                width={40}
-                height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Intake Responses</p>
+      {showStats && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+            <div className="flex items-center gap-6 w-full">
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+                <Image
+                  src="/attendees-2.png"
+                  alt="Intake Responses"
+                  width={40}
+                  height={40}
+                  className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-4xl font-light tracking-tight tabular-nums">{intakes.length}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Intake Responses</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
-          <div className="flex items-center gap-6 w-full">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
-              <Image
-                src="/proposals.png"
-                alt="Proposals"
-                width={40}
-                height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Proposals</p>
+          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+            <div className="flex items-center gap-6 w-full">
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+                <Image
+                  src="/proposals.png"
+                  alt="Proposals"
+                  width={40}
+                  height={40}
+                  className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-4xl font-light tracking-tight tabular-nums">{groups.length}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Proposals</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
-          <div className="flex items-center gap-6 w-full">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
-              <Image
-                src="/group-synthesis.png"
-                alt="Synthesize"
-                width={40}
-                height={40}
-                className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <button
-                onClick={handleGenerate}
-                disabled={generating || intakes.length < 2}
-                className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 overflow-hidden ${
-                  generating || intakes.length < 2
-                    ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
-                    : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
-                }`}
-              >
-                {generating ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin flex-shrink-0" />
-                    <span className="animate-pulse truncate">{progressMessage ? "Generating..." : "Processing..."}</span>
-                  </>
-                ) : (
-                  <span>Synthesize Groups</span>
-                )}
-              </button>
+          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+            <div className="flex items-center gap-6 w-full">
+              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+                <Image
+                  src="/group-synthesis.png"
+                  alt="Synthesize"
+                  width={40}
+                  height={40}
+                  className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating || intakes.length < 2}
+                  className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 overflow-hidden ${
+                    generating || intakes.length < 2
+                      ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
+                      : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
+                  }`}
+                >
+                  {generating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin flex-shrink-0" />
+                      <span className="animate-pulse truncate">{progressMessage ? "Generating..." : "Processing..."}</span>
+                    </>
+                  ) : (
+                    <span>Synthesize Groups</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {progressMessage && generating && (
         <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 p-6 rounded-[24px] text-sm tracking-tight">
@@ -268,66 +305,167 @@ export function GroupFormation({
       )}
 
       {/* Intake Summary */}
-      <div className="glass rounded-[40px] p-10 border-white/[0.03]">
-        <div className="flex items-center gap-4 mb-6">
-          <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Input Matrix</h3>
-          <div className="h-[1px] flex-1 bg-white/[0.03]" />
+      {showAttendees && (
+        <div className="space-y-0">
+          <div className="flex flex-wrap items-end gap-1 px-8 relative z-10">
+            {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            // Count items in this tab
+            const count = tab.id === "all" 
+              ? intakes.length 
+              : intakes.filter(intake => 
+                  intake.goals.some(g => tab.tags.includes(g)) || 
+                  intake.offers.some(o => tab.tags.includes(o))
+                ).length;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  relative px-6 py-4 rounded-t-[24px] text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-500 group
+                  ${isActive 
+                    ? "bg-[#0A0A0A] text-white border-t border-l border-r border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-20" 
+                    : "bg-white/[0.02] text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <span>{tab.label}</span>
+                  <span className={`
+                    px-2 py-0.5 rounded-full text-[9px] tabular-nums transition-colors
+                    ${isActive ? "bg-white/10 text-white" : "bg-white/5 text-gray-600 group-hover:text-gray-400"}
+                  `}>
+                    {count}
+                  </span>
+                </div>
+                
+                {/* Folder slant shadow effects */}
+                {isActive && (
+                  <>
+                    <div className="absolute -bottom-[2px] left-0 right-0 h-[4px] bg-[#0A0A0A] z-30" />
+                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  </>
+                )}
+              </button>
+            );
+          })}
+
+          <div className="flex-1" />
+
+          {/* Search Input */}
+          <div className="pb-3 px-4">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600 group-focus-within:text-white transition-colors" />
+              <input
+                type="text"
+                placeholder="Search Identity..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/[0.03] border border-white/[0.05] rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all w-48 focus:w-64"
+              />
+            </div>
+          </div>
         </div>
-        
-        {intakes.length === 0 ? (
-          <div className="space-y-4">
-            <p className="text-gray-800 text-center py-8 text-sm uppercase tracking-[0.2em] font-medium">
-              Awaiting attendee data transmissions
-            </p>
-            <p className="text-gray-700 text-center text-xs tracking-tight leading-relaxed max-w-2xl mx-auto">
-              Attendees submit their networking goals and offers through the intake form. Once they complete it, their data will appear here for group formation analysis.
-            </p>
+
+        <div className="glass rounded-[40px] rounded-tl-none p-10 border-white/[0.03] relative z-0 bg-[#0A0A0A]/40 backdrop-blur-xl">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-gray-500" />
+              <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">
+                {TABS.find(t => t.id === activeTab)?.label} Matrix
+              </h3>
+            </div>
+            <div className="h-[1px] flex-1 bg-white/[0.03]" />
           </div>
-        ) : (
-          <div className="space-y-8">
-            {intakes.map((intake) => (
-              <div key={intake.id} className="p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xl font-light tracking-tight text-white/90">{intake.user?.name || "Unknown Identity"}</p>
-                    {intake.user?.role === "admin" && (
-                      <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center" title="Admin">
-                        <span className="text-[10px] font-bold text-white">A</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white/40 transition-colors shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {intake.goals.map((goal) => (
-                    <span key={goal} className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                      {GOAL_LABELS[goal] || goal}
-                    </span>
-                  ))}
-                  {intake.goals_other && (
-                    <span className="px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.05] text-[10px] uppercase tracking-[0.15em] text-gray-500 font-medium">
-                      {intake.goals_other}
-                    </span>
-                  )}
-                  {intake.offers.map((offer) => (
-                    <span key={offer} className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                      {OFFER_LABELS[offer] || offer}
-                    </span>
-                  ))}
-                  {intake.offers_other && (
-                    <span className="px-4 py-1.5 rounded-full bg-white text-black text-[10px] uppercase tracking-[0.15em] font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                      {intake.offers_other}
-                    </span>
-                  )}
-                </div>
+          
+          {filteredIntakes.length === 0 ? (
+            <div className="space-y-4 py-20">
+              <div className="w-16 h-16 rounded-3xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mx-auto mb-6">
+                <Search className="w-6 h-6 text-gray-700" />
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <p className="text-gray-600 text-center text-sm uppercase tracking-[0.2em] font-medium">
+                No matching transmissions found
+              </p>
+              <p className="text-gray-700 text-center text-xs tracking-tight leading-relaxed max-w-md mx-auto">
+                Try adjusting your filters or search query to find the attendees you're looking for.
+              </p>
+              {activeTab !== "all" && (
+                <div className="flex justify-center pt-4">
+                  <button 
+                    onClick={() => setActiveTab("all")}
+                    className="text-[10px] uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {filteredIntakes.map((intake) => (
+                <div key={intake.id} className="p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] hover:border-white/[0.05] transition-all group flex flex-col justify-between min-h-[180px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent border border-white/5 flex items-center justify-center text-lg font-light text-white/40 group-hover:text-white/90 transition-colors">
+                          {intake.user?.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-xl font-light tracking-tight text-white/90 group-hover:text-white transition-colors">
+                            {intake.user?.name || "Unknown Identity"}
+                          </p>
+                          {intake.user?.role === "admin" && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <div className="w-3 h-3 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                                <span className="text-[8px] font-bold text-blue-400 uppercase">A</span>
+                              </div>
+                              <span className="text-[8px] text-blue-500/60 uppercase tracking-widest font-bold">Event Admin</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 rounded-full bg-white/5 group-hover:bg-blue-500 transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0)] group-hover:shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {intake.goals.map((goal) => (
+                        <span key={goal} className="px-3 py-1 rounded-lg bg-white/[0.02] border border-white/[0.03] text-[9px] uppercase tracking-[0.1em] text-gray-500 font-medium group-hover:border-white/10 transition-colors">
+                          {GOAL_LABELS[goal] || goal}
+                        </span>
+                      ))}
+                      {intake.offers.map((offer) => (
+                        <span key={offer} className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[9px] uppercase tracking-[0.1em] text-blue-400 font-bold group-hover:bg-blue-500 group-hover:text-white transition-all">
+                          {OFFER_LABELS[offer] || offer}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(intake.goals_other || intake.offers_other) && (
+                    <div className="mt-6 pt-6 border-t border-white/[0.02] flex flex-col gap-2">
+                      {intake.goals_other && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-[8px] uppercase tracking-widest text-gray-600 mt-1">Goal:</span>
+                          <span className="text-xs text-gray-400 italic">"{intake.goals_other}"</span>
+                        </div>
+                      )}
+                      {intake.offers_other && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-[8px] uppercase tracking-widest text-gray-600 mt-1">Offer:</span>
+                          <span className="text-xs text-gray-400 italic">"{intake.offers_other}"</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Suggested Groups */}
-      {groups.length > 0 && (
+      {showGroups && groups.length > 0 && (
         <div className="space-y-8">
           <div className="flex items-center gap-4">
             <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Proposed Formations</h2>

@@ -24,8 +24,24 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
   const [loading, setLoading] = useState(true);
   const [isQrFirstView, setIsQrFirstView] = useState(false);
   const [isSmartFirstView, setIsSmartFirstView] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const hasMarkedQrAsSeen = useRef(false);
   const hasMarkedSmartAsSeen = useRef(false);
+  const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-dismiss entire banner after 90 seconds; reset when assignment changes
+  useEffect(() => {
+    const assignmentId = qrAssignment?.id ?? smartAssignment?.groupId ?? null;
+    if (!assignmentId || loading) return;
+
+    setBannerDismissed(false);
+    if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
+    dismissTimeoutRef.current = setTimeout(() => setBannerDismissed(true), 90 * 1000);
+    return () => {
+      if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
+      dismissTimeoutRef.current = null;
+    };
+  }, [loading, qrAssignment?.id, smartAssignment?.groupId]);
 
   useEffect(() => {
     async function fetchAssignment() {
@@ -161,6 +177,9 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
     smartAssignment.tableNumber !== qrAssignment?.tableNumber;
 
   if ((!shouldShowQr && !shouldShowSmart) || loading) {
+    return null;
+  }
+  if (bannerDismissed) {
     return null;
   }
 

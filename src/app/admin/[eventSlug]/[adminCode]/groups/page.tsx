@@ -1,6 +1,5 @@
 import { getEventIntakes, getSuggestedGroups, getTableQRCodes } from "@/lib/supabase/queries";
-import { GroupFormation } from "@/components/admin/GroupFormation";
-import { QRCodeManager } from "@/components/admin/QRCodeManager";
+import { SeatingManagementClient } from "@/components/admin/SeatingManagementClient";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { validateAdminCode } from "@/lib/utils/admin";
 
@@ -36,22 +35,15 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
         subtitle="Seating" 
       />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 w-full z-10 flex-1">
-        <div className="space-y-12">
-          <QRCodeManager
-            eventId={event.id}
-            eventSlug={eventSlug}
-            adminCode={adminCode}
-            qrCodes={qrCodes}
-          />
-          <GroupFormation
-            eventId={event.id}
-            eventSlug={eventSlug}
-            adminCode={adminCode}
-            intakes={intakes}
-            groups={groups}
-          />
-        </div>
+      <main className="max-w-6xl mx-auto px-6 py-8 w-full z-10 flex-1">
+        <SeatingManagementClient
+          eventId={event.id}
+          eventSlug={eventSlug}
+          adminCode={adminCode}
+          intakes={intakes}
+          groups={groups}
+          qrCodes={qrCodes}
+        />
       </main>
 
       <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
