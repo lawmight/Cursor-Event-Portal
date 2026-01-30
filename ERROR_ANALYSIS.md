@@ -22,6 +22,14 @@ Your application is experiencing multiple HTTP errors from the Render deployment
 ### 4. **TypeError: Cannot read properties of undefined (reading 'error')**
 - This was caused by improper error handling when the server returns non-JSON responses (502/503 errors)
 
+### 5. **ChunkLoadError: Loading chunk X failed (404)**
+- **What it is**: The browser requests a Next.js route chunk (e.g. `page-158507bc30b70d23.js`) and the server returns 404.
+- **Why it happens**:
+  - **Stale cache**: User has cached HTML from a previous deploy; that HTML references chunk hashes that no longer exist after a new deploy.
+  - **Deploy race**: New version went live on Render before all `_next/static/chunks` were available.
+- **Fix applied**: A global `ChunkLoadErrorHandler` (in root layout) listens for `unhandledrejection`, detects ChunkLoadError, and shows a toast: “A new version of the app is available. Refresh the page.” so users can recover without seeing a blank “Application error” screen.
+- **User action**: If you see this, do a hard refresh (Ctrl+Shift+R / Cmd+Shift+R) or click “Refresh the page” in the toast.
+
 ## Root Causes
 
 1. **Server Infrastructure Issues**: The 502/503 errors indicate that:
