@@ -159,14 +159,18 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
 
     const checkPublishedSurvey = async () => {
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("surveys")
         .select("*")
         .eq("event_id", event.id)
         .not("published_at", "is", null)
+        .order("published_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
+      if (error) {
+        console.error("[EventNav] Error fetching published survey:", error);
+      }
       setPublishedSurvey(data || null);
     };
 

@@ -29,7 +29,7 @@ export function SurveyPopupAlert({
   // Fetch published survey directly from Supabase
   const fetchPublishedSurvey = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("surveys")
       .select("*")
       .eq("event_id", event.id)
@@ -37,6 +37,11 @@ export function SurveyPopupAlert({
       .order("published_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (error) {
+      console.error("[SurveyPopupAlert] Error fetching survey:", error);
+      return;
+    }
 
     if (data) {
       // If a new survey appeared, clear the dismissed state so it shows again
@@ -54,12 +59,16 @@ export function SurveyPopupAlert({
   // Fetch popup visibility from events table
   const fetchPopupVisibility = useCallback(async () => {
     const supabase = createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("events")
       .select("survey_popup_visible")
       .eq("id", event.id)
       .single();
 
+    if (error) {
+      console.error("[SurveyPopupAlert] Error fetching popup visibility:", error);
+      return;
+    }
     if (data) {
       setPopupEnabled(data.survey_popup_visible);
     }
@@ -171,6 +180,7 @@ export function SurveyPopupAlert({
   // Determine visibility
   useEffect(() => {
     const shouldShow = popupEnabled && survey && !hasCompleted && !isDismissed;
+    console.log("[SurveyPopupAlert] Visibility check:", { popupEnabled, hasSurvey: !!survey, hasCompleted, isDismissed, shouldShow: !!shouldShow });
 
     // Small delay to make it feel more natural
     if (shouldShow) {
