@@ -17,7 +17,7 @@ interface SeatingManagementClientProps {
 
 const TABS = [
   { id: "seating", label: "Smart Seating", icon: BrainCircuit },
-  { id: "attendees", label: "Input Matrix", icon: LayoutGrid },
+  { id: "attendees", label: "Guest List", icon: LayoutGrid },
   { id: "qr", label: "QR Setup", icon: ScanQrCode },
 ];
 
