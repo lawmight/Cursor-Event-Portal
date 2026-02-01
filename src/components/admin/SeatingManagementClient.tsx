@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { QRCodeManager } from "./QRCodeManager";
-import { GroupFormation } from "./GroupFormation";
+import { GroupFormation } from "./GroupFormationView";
 import type { AttendeeIntake, SuggestedGroup, TableQRCode } from "@/types";
-import { QrCode, Users, Sparkles, LayoutGrid } from "lucide-react";
+import { ScanQrCode, LayoutGrid, Wand2, BrainCircuit } from "lucide-react";
 
 interface SeatingManagementClientProps {
   eventId: string;
@@ -16,9 +16,9 @@ interface SeatingManagementClientProps {
 }
 
 const TABS = [
-  { id: "seating", label: "Smart Seating", icon: Sparkles },
-  { id: "attendees", label: "Input Matrix", icon: Users },
-  { id: "qr", label: "QR Setup", icon: QrCode },
+  { id: "seating", label: "Smart Seating", icon: BrainCircuit },
+  { id: "attendees", label: "Input Matrix", icon: LayoutGrid },
+  { id: "qr", label: "QR Setup", icon: ScanQrCode },
 ];
 
 export function SeatingManagementClient({
@@ -50,7 +50,10 @@ export function SeatingManagementClient({
                   : "bg-white/[0.02] text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
               `}
             >
-              <Icon className={`w-4 h-4 transition-colors ${isActive ? "text-blue-400" : "text-gray-600 group-hover:text-gray-400"}`} />
+              <Icon 
+                strokeWidth={1.5}
+                className={`w-5 h-5 transition-colors ${isActive ? "text-blue-400" : "text-gray-600 group-hover:text-gray-400"}`} 
+              />
               <span>{tab.label}</span>
               
               {isActive && (

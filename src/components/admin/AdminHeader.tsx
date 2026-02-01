@@ -47,7 +47,7 @@ export function AdminHeader({
                 href={adminPath}
                 className="text-white/40 hover:text-white transition-colors group"
               >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft strokeWidth={1.5} className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </Link>
             )}
             <Link
@@ -75,7 +75,7 @@ export function AdminHeader({
                 className="ml-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white hover:bg-white/10 transition-all"
                 title="Sign out"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut strokeWidth={1.5} className="w-4 h-4" />
               </button>
             )}
           </div>

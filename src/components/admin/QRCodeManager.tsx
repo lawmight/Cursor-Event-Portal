@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { TableQRCode } from "@/types";
-import { Upload, Trash2, Copy, Check, ChevronDown, ChevronRight, X, QrCode } from "lucide-react";
+import { Upload, Trash2, Copy, Check, ChevronDown, ChevronRight, X, ScanQrCode } from "lucide-react";
 
 interface QRCodeManagerProps {
   eventId: string;
@@ -144,7 +144,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
           <div className="space-y-3 md:col-span-2">
             <label className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">QR Image</label>
             <label className="flex items-center justify-center gap-3 h-12 rounded-xl border border-white/10 text-gray-500 hover:text-white hover:border-white/30 transition-all cursor-pointer">
-              <Upload className="w-4 h-4" />
+              <Upload strokeWidth={1.5} className="w-4 h-4" />
               <span className="text-xs uppercase tracking-[0.2em]">Choose File</span>
               <input
                 type="file"
@@ -181,7 +181,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
                     className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors"
                     title="Copy URL"
                   >
-                    {copiedId === "upload" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedId === "upload" ? <Check strokeWidth={1.5} className="w-3.5 h-3.5" /> : <Copy strokeWidth={1.5} className="w-3.5 h-3.5" />}
                     {copiedId === "upload" ? "Copied" : "Copy"}
                   </button>
                 )}
@@ -217,7 +217,10 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-                <QrCode className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+                <ScanQrCode 
+                  strokeWidth={1.5}
+                  className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" 
+                />
               </div>
               <div className="text-left">
                 <p className="text-sm font-medium text-white/90">{qrCodes.length} Table QR Code{qrCodes.length !== 1 ? "s" : ""}</p>
@@ -225,9 +228,9 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
               </div>
             </div>
             {qrDrawerOpen ? (
-              <ChevronDown className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+              <ChevronDown strokeWidth={1.5} className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
             ) : (
-              <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+              <ChevronRight strokeWidth={1.5} className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
             )}
           </button>
 
@@ -252,7 +255,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
                         </div>
                       ) : (
                         <div className="w-full aspect-square bg-white/[0.02] rounded-xl flex items-center justify-center">
-                          <QrCode className="w-8 h-8 text-gray-700" />
+                          <ScanQrCode strokeWidth={1.5} className="w-8 h-8 text-gray-700" />
                         </div>
                       )}
                       <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-medium">Table {qr.table_number}</p>
@@ -265,7 +268,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
                       className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500 disabled:opacity-50"
                       title="Remove"
                     >
-                      <X className="w-3 h-3" />
+                      <X strokeWidth={1.5} className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
