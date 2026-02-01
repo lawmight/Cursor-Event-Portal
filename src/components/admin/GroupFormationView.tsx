@@ -38,13 +38,59 @@ const OFFER_LABELS: Record<string, string> = {
   "other": "Other",
 };
 
-const TABS = [
-  { id: "all", label: "All", tags: [] },
-  { id: "ai", label: "AI/ML", tags: ["ai-expertise", "learn-ai"] },
-  { id: "dev", label: "Dev", tags: ["software-dev", "learn-coding"] },
-  { id: "business", label: "Business", tags: ["business-strategy", "funding-investment"] },
-  { id: "design", label: "Design", tags: ["design"] },
-  { id: "collab", label: "Collab", tags: ["collaboration", "find-cofounders", "networking"] },
+interface Subtab {
+  id: string;
+  label: string;
+  tags: string[];
+}
+
+interface Tab {
+  id: string;
+  label: string;
+  subtabs: Subtab[];
+}
+
+const TABS: Tab[] = [
+  { id: "all", label: "All", subtabs: [] },
+  {
+    id: "skills",
+    label: "Skills",
+    subtabs: [
+      { id: "ai-ml", label: "AI/ML", tags: ["ai-expertise"] },
+      { id: "dev", label: "Dev", tags: ["software-dev"] },
+      { id: "design", label: "Design", tags: ["design"] },
+    ],
+  },
+  {
+    id: "growth",
+    label: "Growth",
+    subtabs: [
+      { id: "learn-ai", label: "Learn AI", tags: ["learn-ai"] },
+      { id: "learn-code", label: "Coding", tags: ["learn-coding"] },
+      { id: "tools", label: "Tools", tags: ["explore-tools"] },
+      { id: "mentorship", label: "Mentorship", tags: ["mentorship"] },
+    ],
+  },
+  {
+    id: "connect",
+    label: "Connect",
+    subtabs: [
+      { id: "network", label: "Networking", tags: ["networking"] },
+      { id: "cofounders", label: "Co-founders", tags: ["find-cofounders"] },
+      { id: "collab", label: "Collab", tags: ["collaboration"] },
+      { id: "hiring", label: "Hiring", tags: ["hire-talent"] },
+      { id: "jobs", label: "Jobs", tags: ["find-job"] },
+    ],
+  },
+  {
+    id: "business",
+    label: "Business",
+    subtabs: [
+      { id: "strategy", label: "Strategy", tags: ["business-strategy"] },
+      { id: "funding", label: "Funding", tags: ["funding-investment"] },
+      { id: "other", label: "Other", tags: ["other"] },
+    ],
+  },
 ];
 
 export function GroupFormation({
@@ -62,29 +108,39 @@ export function GroupFormation({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [activeSubtab, setActiveSubtab] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const showStats = initialView === "all" || initialView === "groups";
   const showGroups = initialView === "all" || initialView === "groups";
   const showAttendees = initialView === "all" || initialView === "attendees";
 
+  const getTabTags = (tab: Tab): string[] => tab.subtabs.flatMap((st) => st.tags);
+
   const filteredIntakes = useMemo(() => {
     return intakes.filter((intake) => {
-      // Filter by search query
       const nameMatch = intake.user?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       if (searchQuery && !nameMatch) return false;
 
-      // Filter by tab
       if (activeTab === "all") return true;
       const tab = TABS.find((t) => t.id === activeTab);
       if (!tab) return true;
 
-      const hasGoal = intake.goals.some((g) => tab.tags.includes(g));
-      const hasOffer = intake.offers.some((o) => tab.tags.includes(o));
-      
-      return hasGoal || hasOffer;
+      // If subtab selected, filter by subtab tags only
+      if (activeSubtab) {
+        const subtab = tab.subtabs.find((st) => st.id === activeSubtab);
+        if (subtab) {
+          return intake.goals.some((g) => subtab.tags.includes(g)) ||
+            intake.offers.some((o) => subtab.tags.includes(o));
+        }
+      }
+
+      // Otherwise filter by all tags in parent category
+      const allTags = getTabTags(tab);
+      return intake.goals.some((g) => allTags.includes(g)) ||
+        intake.offers.some((o) => allTags.includes(o));
     });
-  }, [intakes, activeTab, searchQuery]);
+  }, [intakes, activeTab, activeSubtab, searchQuery]);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -307,18 +363,18 @@ export function GroupFormation({
           <div className="flex flex-wrap items-end gap-1 px-8 relative z-10">
             {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
-            // Count items in this tab
-            const count = tab.id === "all" 
-              ? intakes.length 
-              : intakes.filter(intake => 
-                  intake.goals.some(g => tab.tags.includes(g)) || 
-                  intake.offers.some(o => tab.tags.includes(o))
-                ).length;
+            const count = tab.id === "all"
+              ? intakes.length
+              : intakes.filter(intake => {
+                  const allTags = getTabTags(tab);
+                  return intake.goals.some(g => allTags.includes(g)) ||
+                    intake.offers.some(o => allTags.includes(o));
+                }).length;
 
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); setActiveSubtab(null); }}
                 className={`
                   relative px-6 py-4 rounded-t-[24px] text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-500 group
                   ${isActive 
@@ -365,11 +421,47 @@ export function GroupFormation({
         </div>
 
         <div className="glass rounded-[40px] rounded-tl-none p-10 border-white/[0.03] relative z-0 bg-[#0A0A0A]/40 backdrop-blur-xl">
+          {/* Subtabs */}
+          {(() => {
+            const currentTab = TABS.find(t => t.id === activeTab);
+            if (!currentTab || currentTab.subtabs.length === 0) return null;
+            return (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {currentTab.subtabs.map((subtab) => {
+                  const isSubActive = activeSubtab === subtab.id;
+                  const subCount = intakes.filter(intake =>
+                    intake.goals.some(g => subtab.tags.includes(g)) ||
+                    intake.offers.some(o => subtab.tags.includes(o))
+                  ).length;
+                  return (
+                    <button
+                      key={subtab.id}
+                      onClick={() => setActiveSubtab(isSubActive ? null : subtab.id)}
+                      className={`
+                        px-4 py-1.5 rounded-full text-[9px] uppercase tracking-[0.15em] font-bold transition-all
+                        ${isSubActive
+                          ? "bg-white/10 text-white border border-white/20"
+                          : "bg-white/[0.02] text-gray-500 border border-white/[0.05] hover:bg-white/[0.05] hover:text-gray-300"}
+                      `}
+                    >
+                      {subtab.label}
+                      <span className={`ml-2 tabular-nums ${isSubActive ? "text-white/60" : "text-gray-700"}`}>
+                        {subCount}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-gray-500" />
               <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">
-                {TABS.find(t => t.id === activeTab)?.label} Matrix
+                {activeSubtab
+                  ? TABS.find(t => t.id === activeTab)?.subtabs.find(st => st.id === activeSubtab)?.label
+                  : TABS.find(t => t.id === activeTab)?.label} Matrix
               </h3>
             </div>
             <div className="h-[1px] flex-1 bg-white/[0.03]" />
@@ -388,8 +480,8 @@ export function GroupFormation({
               </p>
               {activeTab !== "all" && (
                 <div className="flex justify-center pt-4">
-                  <button 
-                    onClick={() => setActiveTab("all")}
+                  <button
+                    onClick={() => { setActiveTab("all"); setActiveSubtab(null); }}
                     className="text-[10px] uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
                   >
                     Clear Filters
