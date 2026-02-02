@@ -60,30 +60,41 @@ export async function createCompetition(
   },
   adminCode?: string
 ): Promise<{ success?: true; competitionId?: string; error?: string }> {
+  console.log("[createCompetition] Called with:", { eventId, eventSlug, adminCode: !!adminCode, data });
+  
   try {
     if (!eventId || !eventSlug || !data?.title?.trim()) {
+      console.log("[createCompetition] Validation failed - missing eventId, eventSlug, or title");
       return { error: "Event and title are required." };
     }
 
+    console.log("[createCompetition] Creating service client...");
     const supabase = await createServiceClient();
+    console.log("[createCompetition] Validating admin access...");
     const auth = await validateAdminAccess(supabase, eventId, adminCode);
+    console.log("[createCompetition] Auth result:", auth);
     if (!auth.valid) return { error: auth.error ?? "Not authorized." };
+
+    const insertPayload = {
+      event_id: eventId,
+      title: data.title.trim(),
+      description: data.description?.trim() || null,
+      rules: data.rules?.trim() || null,
+      voting_mode: data.voting_mode,
+      starts_at: data.starts_at || null,
+      ends_at: data.ends_at || null,
+      max_entries: data.max_entries != null && Number.isFinite(data.max_entries) ? data.max_entries : null,
+      status: "draft",
+    };
+    console.log("[createCompetition] Inserting:", insertPayload);
 
     const { data: competition, error } = await supabase
       .from("competitions")
-      .insert({
-        event_id: eventId,
-        title: data.title.trim(),
-        description: data.description?.trim() || null,
-        rules: data.rules?.trim() || null,
-        voting_mode: data.voting_mode,
-        starts_at: data.starts_at || null,
-        ends_at: data.ends_at || null,
-        max_entries: data.max_entries != null && Number.isFinite(data.max_entries) ? data.max_entries : null,
-        status: "draft",
-      })
+      .insert(insertPayload)
       .select("id")
       .single();
+
+    console.log("[createCompetition] Insert result:", { competition, error });
 
     if (error) {
       console.error("[createCompetition] Supabase error:", error.code, error.message);
@@ -91,9 +102,11 @@ export async function createCompetition(
     }
 
     if (!competition?.id) {
+      console.log("[createCompetition] No competition ID returned");
       return { error: "Competition was created but no ID returned." };
     }
 
+    console.log("[createCompetition] Success! ID:", competition.id);
     revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
     revalidatePath(`/${eventSlug}/competitions`);
     return { success: true, competitionId: competition.id };

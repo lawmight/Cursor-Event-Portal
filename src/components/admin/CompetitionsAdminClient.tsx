@@ -48,6 +48,8 @@ export function CompetitionsAdminClient({
   adminCode,
   initialCompetitions,
 }: CompetitionsAdminClientProps) {
+  console.log("[CompetitionsAdminClient] Mounted with:", { eventId, eventSlug, adminCode, competitionsCount: initialCompetitions.length });
+  
   const [competitions, setCompetitions] = useState(initialCompetitions);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -63,6 +65,8 @@ export function CompetitionsAdminClient({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[CompetitionsAdminClient] handleCreate called", { eventId, eventSlug, adminCode, newTitle });
+    
     if (!newTitle.trim()) {
       setError("Title is required.");
       return;
@@ -70,19 +74,19 @@ export function CompetitionsAdminClient({
 
     setLoading("create");
     setError(null);
+    
+    const payload = {
+      title: newTitle.trim(),
+      description: newDesc.trim() || undefined,
+      rules: newRules.trim() || undefined,
+      voting_mode: newVotingMode,
+      max_entries: newMaxEntries ? (parseInt(newMaxEntries, 10) || undefined) : undefined,
+    };
+    console.log("[CompetitionsAdminClient] Calling createCompetition with payload:", payload);
+    
     try {
-      const result = await createCompetition(
-        eventId,
-        eventSlug,
-        {
-          title: newTitle.trim(),
-          description: newDesc.trim() || undefined,
-          rules: newRules.trim() || undefined,
-          voting_mode: newVotingMode,
-          max_entries: newMaxEntries ? (parseInt(newMaxEntries, 10) || undefined) : undefined,
-        },
-        adminCode
-      );
+      const result = await createCompetition(eventId, eventSlug, payload, adminCode);
+      console.log("[CompetitionsAdminClient] createCompetition result:", result);
 
       if (result && "error" in result && result.error) {
         setError(result.error);
@@ -228,6 +232,7 @@ export function CompetitionsAdminClient({
             <button
               type="submit"
               disabled={loading === "create"}
+              onClick={() => console.log("[CompetitionsAdminClient] Create button clicked")}
               className="px-6 py-3 rounded-2xl bg-white text-black text-sm font-medium hover:bg-white/90 transition-all disabled:opacity-50"
             >
               {loading === "create" ? "Creating..." : "Create"}
