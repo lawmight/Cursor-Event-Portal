@@ -4,10 +4,29 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { createAgendaItem, updateAgendaItem, deleteAgendaItem } from "@/lib/actions/agenda";
+import { createAgendaItem, updateAgendaItem, deleteAgendaItem, updateEventDetails } from "@/lib/actions/agenda";
 import type { Event, AgendaItem } from "@/types";
-import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User, Image } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User, Image, Settings, Check } from "lucide-react";
 import { formatTime } from "@/lib/utils";
+
+// Convert UTC ISO string to datetime-local format in MST
+function utcToMstLocal(utcString: string): string {
+  const date = new Date(utcString);
+  const mstDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Edmonton" }));
+  const year = mstDate.getFullYear();
+  const month = String(mstDate.getMonth() + 1).padStart(2, "0");
+  const day = String(mstDate.getDate()).padStart(2, "0");
+  const hours = String(mstDate.getHours()).padStart(2, "0");
+  const minutes = String(mstDate.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Get timezone offset in milliseconds for a given timezone
+function getTimezoneOffset(timezone: string, date: Date): number {
+  const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
+  const tzDate = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+  return utcDate.getTime() - tzDate.getTime();
+}
 
 interface AgendaAdminClientProps {
   event: Event;
@@ -28,6 +47,102 @@ export function AgendaAdminClient({
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingItem, setEditingItem] = useState<AgendaItem | null>(null);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+  const [eventName, setEventName] = useState(event.name);
+  const [eventVenue, setEventVenue] = useState(event.venue || "");
+  const [eventAddress, setEventAddress] = useState(event.address || "");
+  const [eventStartTime, setEventStartTime] = useState(
+    event.start_time ? utcToMstLocal(event.start_time) : ""
+  );
+  const [eventEndTime, setEventEndTime] = useState(
+    event.end_time ? utcToMstLocal(event.end_time) : ""
+  );
+  const [venueImageUrl, setVenueImageUrl] = useState(event.venue_image_url || "");
+  const [uploadingVenueImage, setUploadingVenueImage] = useState(false);
+  const [eventDetailsSaved, setEventDetailsSaved] = useState(false);
+
+  const handleVenueImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingVenueImage(true);
+    setError(null);
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const blob = new Blob([buffer], { type: file.type });
+
+      const formData = new FormData();
+      formData.append("file", blob, file.name);
+      formData.append("eventId", event.id);
+
+      const response = await fetch("/api/admin/upload-agenda-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to upload image");
+      }
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setVenueImageUrl(data.url);
+      } else {
+        throw new Error("Failed to upload image");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload image";
+      setError(errorMessage);
+    } finally {
+      setUploadingVenueImage(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
+  const handleSaveEventDetails = async () => {
+    setError(null);
+    startTransition(async () => {
+      let startTimeUtc: string | null = null;
+      let endTimeUtc: string | null = null;
+
+      if (eventStartTime) {
+        const [datePart, timePart] = eventStartTime.split("T");
+        const [year, month, day] = datePart.split("-").map(Number);
+        const [hours, minutes] = timePart.split(":").map(Number);
+        const localDate = new Date(year, month - 1, day, hours, minutes);
+        const offset = getTimezoneOffset("America/Edmonton", localDate);
+        startTimeUtc = new Date(localDate.getTime() + offset).toISOString();
+      }
+
+      if (eventEndTime) {
+        const [datePart, timePart] = eventEndTime.split("T");
+        const [year, month, day] = datePart.split("-").map(Number);
+        const [hours, minutes] = timePart.split(":").map(Number);
+        const localDate = new Date(year, month - 1, day, hours, minutes);
+        const offset = getTimezoneOffset("America/Edmonton", localDate);
+        endTimeUtc = new Date(localDate.getTime() + offset).toISOString();
+      }
+
+      const result = await updateEventDetails(event.id, eventSlug, {
+        name: eventName.trim(),
+        venue: eventVenue.trim() || null,
+        address: eventAddress.trim() || null,
+        start_time: startTimeUtc,
+        end_time: endTimeUtc,
+        venue_image_url: venueImageUrl.trim() || null,
+      });
+
+      if (result.success) {
+        setEventDetailsSaved(true);
+        setTimeout(() => setEventDetailsSaved(false), 2000);
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to update event details");
+      }
+    });
+  };
 
   const handleDelete = async (itemId: string) => {
     if (!confirm("Are you sure you want to delete this agenda item?")) return;
@@ -124,6 +239,134 @@ export function AgendaAdminClient({
           </div>
         )}
 
+        {/* Event Details */}
+        <div className="glass rounded-[32px] border-white/[0.03] overflow-hidden">
+          <button
+            onClick={() => setShowEventDetails(!showEventDetails)}
+            className="w-full px-8 py-6 flex items-center justify-between hover:bg-white/[0.01] transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <Settings className="w-4 h-4 text-gray-500" />
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">
+                Event Details
+              </span>
+            </div>
+            <span className="text-gray-600 text-sm">{showEventDetails ? "−" : "+"}</span>
+          </button>
+          {showEventDetails && (
+            <div className="px-8 pb-8 space-y-5 border-t border-white/[0.03] pt-6">
+              <div>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                  Event Name
+                </label>
+                <input
+                  type="text"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                    Venue
+                  </label>
+                  <input
+                    type="text"
+                    value={eventVenue}
+                    onChange={(e) => setEventVenue(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                    placeholder="e.g., Platform Innovation Centre"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={eventAddress}
+                    onChange={(e) => setEventAddress(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                    placeholder="e.g., 123 Main St, Calgary"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                  Venue Image
+                </label>
+                <div className="space-y-3">
+                  {venueImageUrl && (
+                    <div className="relative w-full h-36 rounded-2xl overflow-hidden border border-white/10">
+                      <img
+                        src={venueImageUrl}
+                        alt="Venue preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setVenueImageUrl("")}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <label className="block">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleVenueImageUpload}
+                      disabled={uploadingVenueImage || isPending}
+                      className="hidden"
+                    />
+                    <div className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white hover:bg-white/10 transition-all cursor-pointer text-center text-sm">
+                      {uploadingVenueImage ? "Uploading..." : venueImageUrl ? "Change Image" : "Upload Image"}
+                    </div>
+                  </label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                    Event Start Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={eventStartTime}
+                    onChange={(e) => setEventStartTime(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
+                    Event End Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={eventEndTime}
+                    onChange={(e) => setEventEndTime(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20 transition-all"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={handleSaveEventDetails}
+                disabled={isPending}
+                className="h-12 px-8 rounded-full bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl flex items-center gap-2"
+              >
+                {eventDetailsSaved ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Saved
+                  </>
+                ) : isPending ? "..." : "Save Details"}
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Agenda Items */}
         {items.length === 0 ? (
           <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 space-y-6">
@@ -145,6 +388,15 @@ export function AgendaAdminClient({
                 key={item.id}
                 className="glass rounded-[32px] p-8 border-white/[0.03] hover:bg-white/[0.01] transition-all"
               >
+                {item.image_url && (
+                  <div className="w-full h-32 rounded-2xl overflow-hidden border border-white/10 mb-5">
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-6">
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-4">
@@ -156,17 +408,9 @@ export function AgendaAdminClient({
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-light tracking-tight text-white/90">
-                        {item.title}
-                      </h3>
-                      {item.image_url && (
-                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
-                          <Image className="w-3 h-3 text-gray-500" />
-                          <span className="text-[9px] uppercase tracking-[0.15em] text-gray-600">Image</span>
-                        </div>
-                      )}
-                    </div>
+                    <h3 className="text-2xl font-light tracking-tight text-white/90">
+                      {item.title}
+                    </h3>
                     {item.description && (
                       <p className="text-sm text-gray-500 leading-relaxed">
                         {item.description}
@@ -252,47 +496,6 @@ interface CreateEditModalProps {
   isPending: boolean;
 }
 
-// Convert UTC ISO string to datetime-local format in MST
-function utcToMstLocal(utcString: string): string {
-  const date = new Date(utcString);
-  // Format for datetime-local input in Mountain timezone
-  const mstDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Edmonton" }));
-  const year = mstDate.getFullYear();
-  const month = String(mstDate.getMonth() + 1).padStart(2, "0");
-  const day = String(mstDate.getDate()).padStart(2, "0");
-  const hours = String(mstDate.getHours()).padStart(2, "0");
-  const minutes = String(mstDate.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-// Convert datetime-local value (assumed MST) to UTC ISO string
-function mstLocalToUtc(localString: string): string {
-  // Parse the local datetime string
-  const [datePart, timePart] = localString.split("T");
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hours, minutes] = timePart.split(":").map(Number);
-
-  // Create a date in MST by using the Intl API to get the offset
-  const mstDate = new Date(year, month - 1, day, hours, minutes);
-  const utcString = mstDate.toLocaleString("en-US", { timeZone: "America/Edmonton" });
-  const utcDate = new Date(utcString);
-
-  // Calculate the offset between local interpretation and MST
-  const localDate = new Date(year, month - 1, day, hours, minutes);
-  const mstOffset = localDate.getTime() - utcDate.getTime();
-
-  // Adjust to get actual UTC
-  const actualUtc = new Date(localDate.getTime() + getTimezoneOffset("America/Edmonton", localDate));
-  return actualUtc.toISOString();
-}
-
-// Get timezone offset in milliseconds for a given timezone
-function getTimezoneOffset(timezone: string, date: Date): number {
-  const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
-  const tzDate = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
-  return utcDate.getTime() - tzDate.getTime();
-}
-
 function CreateEditModal({
   item,
   eventId,
@@ -323,8 +526,12 @@ function CreateEditModal({
     setError(null);
 
     try {
+      // Read file into memory immediately to avoid ERR_UPLOAD_FILE_CHANGED
+      const buffer = await file.arrayBuffer();
+      const blob = new Blob([buffer], { type: file.type });
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", blob, file.name);
       formData.append("eventId", eventId);
 
       const response = await fetch("/api/admin/upload-agenda-image", {

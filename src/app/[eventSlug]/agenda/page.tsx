@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { AgendaList } from "@/components/agenda/AgendaList";
+import { MapPin } from "lucide-react";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -67,6 +68,36 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
             Agenda
           </h1>
         </div>
+
+        {/* Venue Info */}
+        {(event.venue || event.address || event.venue_image_url) && (
+          <div className="glass rounded-[24px] overflow-hidden border-white/[0.03] animate-slide-up" style={{ animationDelay: "250ms" }}>
+            {event.venue_image_url && (
+              <div className="w-full h-28 overflow-hidden">
+                <img
+                  src={event.venue_image_url}
+                  alt={event.venue || "Venue"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="px-5 py-4 flex items-center gap-3">
+              <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+              <div>
+                {event.venue && (
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-gray-400 font-medium">
+                    {event.venue}
+                  </p>
+                )}
+                {event.address && (
+                  <p className="text-[10px] text-gray-600 font-light mt-0.5">
+                    {event.address}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
           <AgendaList 

@@ -65,12 +65,16 @@ export default async function EventPage({ params }: EventPageProps) {
                   {formatDate(event.start_time)} · {formatTime(event.start_time)}
                 </p>
               )}
-              <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400 mt-2">
-                Platform, Calgary
-              </p>
-              <p className="text-[10px] text-gray-500 font-light">
-                407 9 Ave SE
-              </p>
+              {event.venue && (
+                <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400 mt-2">
+                  {event.venue}
+                </p>
+              )}
+              {event.address && (
+                <p className="text-[10px] text-gray-500 font-light">
+                  {event.address}
+                </p>
+              )}
             </div>
           </div>
         </div>

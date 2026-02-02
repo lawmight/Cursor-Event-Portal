@@ -29,14 +29,14 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
   const hasMarkedSmartAsSeen = useRef(false);
   const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-dismiss entire banner after 90 seconds; reset when assignment changes
+  // Auto-dismiss entire banner after 30 seconds; reset when assignment changes
   useEffect(() => {
     const assignmentId = qrAssignment?.id ?? smartAssignment?.groupId ?? null;
     if (!assignmentId || loading) return;
 
     setBannerDismissed(false);
     if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
-    dismissTimeoutRef.current = setTimeout(() => setBannerDismissed(true), 90 * 1000);
+    dismissTimeoutRef.current = setTimeout(() => setBannerDismissed(true), 30 * 1000);
     return () => {
       if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
       dismissTimeoutRef.current = null;

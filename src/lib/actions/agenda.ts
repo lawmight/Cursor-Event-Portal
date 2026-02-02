@@ -113,6 +113,52 @@ export async function updateAgendaItem(
   return { success: true };
 }
 
+export async function updateEventDetails(
+  eventId: string,
+  eventSlug: string,
+  data: {
+    name?: string;
+    venue?: string | null;
+    address?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    venue_image_url?: string | null;
+  }
+) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || user.role !== "admin") {
+    return { error: "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("events")
+    .update(data)
+    .eq("id", eventId);
+
+  if (error) {
+    console.error("Failed to update event details:", error);
+    return { error: "Failed to update event details" };
+  }
+
+  revalidatePath(`/admin/${eventSlug}`);
+  revalidatePath(`/admin/${eventSlug}/agenda`);
+  revalidatePath(`/${eventSlug}`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  return { success: true };
+}
+
 export async function deleteAgendaItem(itemId: string, eventSlug: string) {
   const session = await getSession();
   if (!session) {

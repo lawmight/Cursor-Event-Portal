@@ -44,6 +44,7 @@ export interface Event {
   timezone: string;
   admin_code: string;
   data_retention_days: number;
+  venue_image_url: string | null;
   created_at: string;
 }
 
