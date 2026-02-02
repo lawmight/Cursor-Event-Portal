@@ -80,7 +80,7 @@ export function AttendancePatternChart({ data }: AttendancePatternChartProps) {
               <LabelList
                 dataKey="checkInRate"
                 position="top"
-                formatter={(value: number) => `${value}%`}
+                formatter={(value) => `${value ?? 0}%`}
                 fill="rgba(255,255,255,0.7)"
                 fontSize={10}
               />
