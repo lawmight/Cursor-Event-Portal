@@ -123,14 +123,28 @@ export function CompetitionsAdminClient({
   };
 
   const handleStatusChange = async (compId: string, nextStatus: string) => {
+    console.log("[CompetitionsAdminClient] handleStatusChange:", { compId, nextStatus });
     setLoading(compId);
-    const result = await updateCompetitionStatus(compId, eventSlug, nextStatus, adminCode);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      router.refresh();
+    setError(null);
+    
+    try {
+      const result = await updateCompetitionStatus(compId, eventSlug, nextStatus, adminCode);
+      console.log("[CompetitionsAdminClient] updateCompetitionStatus result:", result);
+      
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+      } else if (result && "success" in result && result.success) {
+        console.log("[CompetitionsAdminClient] Status updated, refreshing...");
+        router.refresh();
+      } else {
+        setError("Status update failed. No response from server.");
+      }
+    } catch (err) {
+      console.error("[CompetitionsAdminClient] handleStatusChange error:", err);
+      setError(err instanceof Error ? err.message : "Status update failed.");
+    } finally {
+      setLoading(null);
     }
-    setLoading(null);
   };
 
   const handleDelete = async (compId: string) => {

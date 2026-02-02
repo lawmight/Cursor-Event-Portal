@@ -1144,7 +1144,8 @@ export async function getIntakeAnalytics(eventId: string): Promise<IntakeAnalyti
 
 // Competition queries
 export async function getActiveCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
-  const supabase = await createClient();
+  console.log("[getActiveCompetitions] Fetching for eventId:", eventId);
+  const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("competitions")
     .select("*, entries:competition_entries(*, user:users(id, name, email))")
@@ -1156,6 +1157,7 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
     console.error("[getActiveCompetitions] Error:", error);
     return [];
   }
+  console.log("[getActiveCompetitions] Found", data?.length || 0, "active competitions");
   return data || [];
 }
 

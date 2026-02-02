@@ -197,19 +197,27 @@ export async function updateCompetitionStatus(
   eventSlug: string,
   status: string,
   adminCode?: string
-) {
+): Promise<{ success?: true; error?: string }> {
+  console.log("[updateCompetitionStatus] Called:", { competitionId, eventSlug, status, adminCode: !!adminCode });
+  
   const supabase = await createServiceClient();
 
-  const { data: competition } = await supabase
+  const { data: competition, error: fetchError } = await supabase
     .from("competitions")
     .select("event_id, status")
     .eq("id", competitionId)
     .single();
 
+  if (fetchError) {
+    console.error("[updateCompetitionStatus] Fetch error:", fetchError);
+    return { error: fetchError.message };
+  }
   if (!competition) return { error: "Competition not found" };
 
+  console.log("[updateCompetitionStatus] Current status:", competition.status, "-> New status:", status);
+
   const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
-  if (!auth.valid) return { error: auth.error };
+  if (!auth.valid) return { error: auth.error ?? "Not authorized" };
 
   // Validate transitions: draft -> active -> voting -> ended
   const validTransitions: Record<string, string[]> = {
@@ -220,7 +228,9 @@ export async function updateCompetitionStatus(
   };
 
   if (!validTransitions[competition.status]?.includes(status)) {
-    return { error: `Cannot transition from ${competition.status} to ${status}` };
+    const errMsg = `Cannot transition from ${competition.status} to ${status}`;
+    console.log("[updateCompetitionStatus]", errMsg);
+    return { error: errMsg };
   }
 
   const { error } = await supabase
@@ -229,10 +239,11 @@ export async function updateCompetitionStatus(
     .eq("id", competitionId);
 
   if (error) {
-    console.error("[updateCompetitionStatus] Error:", error);
+    console.error("[updateCompetitionStatus] Update error:", error);
     return { error: error.message };
   }
 
+  console.log("[updateCompetitionStatus] Success! Status updated to:", status);
   revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/competitions`);
   return { success: true };
