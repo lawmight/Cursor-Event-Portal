@@ -29,6 +29,16 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
   const [tableAssignment, setTableAssignment] = useState<TableAssignment | null>(null);
   const [isFirstView, setIsFirstView] = useState(false);
   const hasMarkedAsSeen = useRef(false);
+  const [venueHovered, setVenueHovered] = useState(false);
+  const venueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleVenueEnter = () => {
+    if (venueTimeoutRef.current) clearTimeout(venueTimeoutRef.current);
+    setVenueHovered(true);
+  };
+  const handleVenueLeave = () => {
+    venueTimeoutRef.current = setTimeout(() => setVenueHovered(false), 200);
+  };
 
   // Auto-refresh every 60 seconds to catch any updates
   useEffect(() => {
@@ -237,9 +247,59 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               <span className="font-semibold text-white text-xl leading-tight tracking-tight">
                 {event.name}
               </span>
-              <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold leading-tight">
-                Event Platform
-              </span>
+              {event.venue ? (
+                <div
+                  className="relative"
+                  onMouseEnter={handleVenueEnter}
+                  onMouseLeave={handleVenueLeave}
+                  onTouchStart={() => setVenueHovered(v => !v)}
+                >
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold leading-tight cursor-pointer hover:text-gray-300 transition-colors flex items-center gap-1.5">
+                    <MapPin className="w-2.5 h-2.5" />
+                    {event.venue}
+                  </span>
+
+                  {/* Venue Popup */}
+                  <div
+                    className={cn(
+                      "absolute top-full left-0 mt-3 w-72 rounded-[20px] overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl bg-black/90 transition-all duration-300 origin-top-left z-50",
+                      venueHovered
+                        ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                        : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                    )}
+                    onMouseEnter={handleVenueEnter}
+                    onMouseLeave={handleVenueLeave}
+                  >
+                    {event.venue_image_url && (
+                      <div className="w-full h-36 overflow-hidden relative">
+                        <img
+                          src={event.venue_image_url}
+                          alt={event.venue}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      </div>
+                    )}
+                    <div className="p-5 space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">
+                        Venue
+                      </p>
+                      <p className="text-white text-sm font-medium tracking-tight">
+                        {event.venue}
+                      </p>
+                      {event.address && (
+                        <p className="text-[11px] text-gray-500 leading-relaxed">
+                          {event.address}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-bold leading-tight">
+                  Event Platform
+                </span>
+              )}
             </div>
           </Link>
 
