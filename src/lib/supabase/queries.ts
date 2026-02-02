@@ -1161,19 +1161,52 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
 
 export async function getAllCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
   console.log("[getAllCompetitions] Fetching for eventId:", eventId);
-  const supabase = await createServiceClient();
-  const { data, error } = await supabase
-    .from("competitions")
-    .select("*, entries:competition_entries(*, user:users(id, name, email))")
-    .eq("event_id", eventId)
-    .order("created_at", { ascending: false });
+  
+  try {
+    const supabase = await createServiceClient();
+    
+    // First, try simple query without joins to verify table access
+    const { data: simpleData, error: simpleError } = await supabase
+      .from("competitions")
+      .select("*")
+      .eq("event_id", eventId);
+    
+    console.log("[getAllCompetitions] Simple query result:", { 
+      count: simpleData?.length || 0, 
+      error: simpleError?.message || null,
+      data: simpleData 
+    });
+    
+    if (simpleError) {
+      console.error("[getAllCompetitions] Simple query error:", simpleError);
+      return [];
+    }
+    
+    // If no competitions, return empty
+    if (!simpleData || simpleData.length === 0) {
+      console.log("[getAllCompetitions] No competitions found for this event");
+      return [];
+    }
+    
+    // Now try with entries join
+    const { data, error } = await supabase
+      .from("competitions")
+      .select("*, entries:competition_entries(*, user:users(id, name, email))")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("[getAllCompetitions] Error:", error);
+    if (error) {
+      console.error("[getAllCompetitions] Full query error:", error);
+      // Fallback to simple data with empty entries
+      return simpleData.map(c => ({ ...c, entries: [] })) as CompetitionWithEntries[];
+    }
+    
+    console.log("[getAllCompetitions] Found", data?.length || 0, "competitions with entries");
+    return data || [];
+  } catch (err) {
+    console.error("[getAllCompetitions] Exception:", err);
     return [];
   }
-  console.log("[getAllCompetitions] Found", data?.length || 0, "competitions");
-  return data || [];
 }
 
 export async function getCompetitionWithEntries(
