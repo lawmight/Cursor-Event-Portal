@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -48,10 +48,13 @@ export function CompetitionsAdminClient({
   adminCode,
   initialCompetitions,
 }: CompetitionsAdminClientProps) {
-  console.log("[CompetitionsAdminClient] Mounted with:", { eventId, eventSlug, adminCode, competitionsCount: initialCompetitions.length });
-  
   const [competitions, setCompetitions] = useState(initialCompetitions);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Debug: log on client mount
+  useEffect(() => {
+    console.log("[CompetitionsAdminClient] CLIENT MOUNTED:", { eventId, eventSlug, adminCode, competitionsCount: initialCompetitions.length });
+  }, []);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -64,8 +67,7 @@ export function CompetitionsAdminClient({
   const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("[CompetitionsAdminClient] handleCreate called", { eventId, eventSlug, adminCode, newTitle });
+    console.log("[CompetitionsAdminClient] handleCreate START");
     
     if (!newTitle.trim()) {
       setError("Title is required.");
@@ -166,7 +168,16 @@ export function CompetitionsAdminClient({
 
       {/* Create form */}
       {showCreateForm && (
-        <form onSubmit={handleCreate} className="glass rounded-[32px] p-8 border-white/10 space-y-5">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            alert("Form submitted! Check console for logs.");
+            console.log("[CompetitionsAdminClient] Form onSubmit fired");
+            handleCreate(e);
+          }}
+          className="glass rounded-[32px] p-8 border-white/10 space-y-5"
+        >
           <h3 className="text-lg font-light text-white">New Competition</h3>
 
           <div>
@@ -232,7 +243,10 @@ export function CompetitionsAdminClient({
             <button
               type="submit"
               disabled={loading === "create"}
-              onClick={() => console.log("[CompetitionsAdminClient] Create button clicked")}
+              onClick={(e) => {
+                console.log("[CompetitionsAdminClient] Create button onClick");
+                // Don't prevent default here - let form submit handle it
+              }}
               className="px-6 py-3 rounded-2xl bg-white text-black text-sm font-medium hover:bg-white/90 transition-all disabled:opacity-50"
             >
               {loading === "create" ? "Creating..." : "Create"}
