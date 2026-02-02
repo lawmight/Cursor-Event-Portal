@@ -258,7 +258,7 @@ export async function selectWinner(
     }
 
     let maxScore = 0;
-    for (const [eid, score] of entryScores) {
+    for (const [eid, score] of Array.from(entryScores)) {
       if (score > maxScore) {
         maxScore = score;
         winnerEntryId = eid;
