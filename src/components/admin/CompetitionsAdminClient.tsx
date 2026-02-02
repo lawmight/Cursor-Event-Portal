@@ -67,32 +67,37 @@ export function CompetitionsAdminClient({
 
     setLoading("create");
     setError(null);
-    const result = await createCompetition(
-      eventId,
-      eventSlug,
-      {
-        title: newTitle.trim(),
-        description: newDesc.trim() || undefined,
-        rules: newRules.trim() || undefined,
-        voting_mode: newVotingMode,
-        max_entries: newMaxEntries ? parseInt(newMaxEntries) : undefined,
-      },
-      adminCode
-    );
+    try {
+      const result = await createCompetition(
+        eventId,
+        eventSlug,
+        {
+          title: newTitle.trim(),
+          description: newDesc.trim() || undefined,
+          rules: newRules.trim() || undefined,
+          voting_mode: newVotingMode,
+          max_entries: newMaxEntries ? parseInt(newMaxEntries) : undefined,
+        },
+        adminCode
+      );
 
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setNewTitle("");
-      setNewDesc("");
-      setNewRules("");
-      setNewVotingMode("group");
-      setNewMaxEntries("");
-      setShowCreateForm(false);
-      // Refresh via router
-      window.location.reload();
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setNewTitle("");
+        setNewDesc("");
+        setNewRules("");
+        setNewVotingMode("group");
+        setNewMaxEntries("");
+        setShowCreateForm(false);
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("[CompetitionsAdminClient] createCompetition failed:", err);
+      setError("Create failed. Please check the console for details.");
+    } finally {
+      setLoading(null);
     }
-    setLoading(null);
   };
 
   const handleStatusChange = async (compId: string, nextStatus: string) => {
