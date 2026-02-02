@@ -43,10 +43,10 @@ export function EntryCard({
   const router = useRouter();
   const [voting, setVoting] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
-  const [showEmbed, setShowEmbed] = useState(false);
   const [judgeScore, setJudgeScore] = useState(3);
   const isOwn = entry.user_id === userId;
   const ghRepo = parseGitHubRepo(entry.repo_url);
+  const stackBlitzUrl = ghRepo ? `https://stackblitz.com/github/${ghRepo.owner}/${ghRepo.repo}` : null;
 
   const handleVote = async (score: number = 1, isJudge: boolean = false) => {
     setVoteError(null);
@@ -101,28 +101,15 @@ export function EntryCard({
 
         {/* Action buttons */}
         <div className="flex items-center gap-3 pt-1 flex-wrap">
-          {ghRepo ? (
-            <button
-              onClick={() => setShowEmbed(!showEmbed)}
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
-                showEmbed
-                  ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                  : "bg-white/10 text-gray-300 border border-white/10 hover:bg-white/15"
-              )}
-            >
-              <Code className="w-3.5 h-3.5" />
-              {showEmbed ? "Hide Preview" : "View Project"}
-            </button>
-          ) : (
+          {stackBlitzUrl && (
             <a
-              href={entry.repo_url}
+              href={stackBlitzUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-gray-300 border border-white/10 hover:bg-white/15 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-all"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open Link
+              <Code className="w-3.5 h-3.5" />
+              Open in StackBlitz
             </a>
           )}
 
@@ -130,7 +117,7 @@ export function EntryCard({
             href={entry.repo_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-gray-500 border border-white/5 hover:bg-white/10 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10 transition-all"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             GitHub
@@ -191,18 +178,6 @@ export function EntryCard({
           )}
         </div>
       </div>
-
-      {/* StackBlitz embed */}
-      {showEmbed && ghRepo && (
-        <div className="border-t border-white/10">
-          <iframe
-            src={`https://stackblitz.com/github/${ghRepo.owner}/${ghRepo.repo}?embed=1&view=preview`}
-            className="w-full h-[500px]"
-            title={`${entry.title} preview`}
-            allow="cross-origin-isolated"
-          />
-        </div>
-      )}
     </div>
   );
 }
