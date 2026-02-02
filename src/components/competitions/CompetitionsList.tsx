@@ -32,7 +32,7 @@ export function CompetitionsList({
     const fetchCompetitions = async () => {
       const { data } = await supabase
         .from("competitions")
-        .select("*, entries:competition_entries(*, user:users(id, name, email))")
+        .select("*, entries:competition_entries!competition_entries_competition_id_fkey(*, user:users(id, name, email))")
         .eq("event_id", eventId)
         .in("status", ["active", "voting", "ended"])
         .order("created_at", { ascending: false });

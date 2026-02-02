@@ -1148,7 +1148,7 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("competitions")
-    .select("*, entries:competition_entries(*, user:users(id, name, email))")
+    .select("*, entries:competition_entries!competition_entries_competition_id_fkey(*, user:users(id, name, email))")
     .eq("event_id", eventId)
     .in("status", ["active", "voting", "ended"])
     .order("created_at", { ascending: false });
@@ -1193,7 +1193,7 @@ export async function getAllCompetitions(eventId: string): Promise<CompetitionWi
     // Now try with entries join
     const { data, error } = await supabase
       .from("competitions")
-      .select("*, entries:competition_entries(*, user:users(id, name, email))")
+      .select("*, entries:competition_entries!competition_entries_competition_id_fkey(*, user:users(id, name, email))")
       .eq("event_id", eventId)
       .order("created_at", { ascending: false });
 
@@ -1218,7 +1218,7 @@ export async function getCompetitionWithEntries(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("competitions")
-    .select("*, entries:competition_entries(*, user:users(id, name, email))")
+    .select("*, entries:competition_entries!competition_entries_competition_id_fkey(*, user:users(id, name, email))")
     .eq("id", competitionId)
     .single();
 
