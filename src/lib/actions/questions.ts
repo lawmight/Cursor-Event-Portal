@@ -103,6 +103,7 @@ export async function createQuestion(
     console.log("[createQuestion] Question created successfully:", data?.[0]?.id);
 
     revalidatePath(`/${eventSlug}/qa`);
+    revalidatePath(`/${eventSlug}/socials/qa`);
     revalidatePath(getAdminQAPath(eventSlug));
     return { success: true };
   } catch (error) {
@@ -154,6 +155,7 @@ export async function upvoteQuestion(questionId: string, eventSlug: string) {
   }
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/${eventSlug}/socials/qa`);
   revalidatePath(getAdminQAPath(eventSlug));
   return { success: true };
 }
@@ -205,6 +207,7 @@ export async function createAnswer(
 
   console.log("[createAnswer] Successfully created answer:", data?.[0]?.id);
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/${eventSlug}/socials/qa`);
   revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
@@ -252,6 +255,7 @@ export async function updateQuestionStatus(
 
   console.log("[updateQuestionStatus] Successfully updated question status to:", status);
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/${eventSlug}/socials/qa`);
   revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
@@ -298,6 +302,7 @@ export async function deleteQuestion(
 
   console.log("[deleteQuestion] Successfully deleted question:", questionId);
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/${eventSlug}/socials/qa`);
   revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }
@@ -348,6 +353,7 @@ export async function acceptAnswer(
     .eq("id", questionId);
 
   revalidatePath(`/${eventSlug}/qa`);
+  revalidatePath(`/${eventSlug}/socials/qa`);
   revalidatePath(getAdminQAPath(eventSlug, adminCode));
   return { success: true };
 }

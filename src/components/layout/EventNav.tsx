@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X, Trophy, HandHelping } from "lucide-react";
+import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSeenItemIds, markMultipleItemsAsSeen } from "@/lib/supabase/seenItems";
 import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
@@ -20,8 +20,7 @@ interface EventNavProps {
 
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
-  { href: "qa", label: "Q&A", icon: MessageCircle },
-  { href: "help", label: "Help", icon: HandHelping },
+  { href: "socials", label: "Socials", icon: MessageCircle },
   { href: "slides", label: "Slides", icon: FileText },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
   { href: "competitions", label: "Compete", icon: Trophy },
@@ -296,7 +295,7 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
       const Icon = item.icon;
       const showPollAlert =
         item.hasAlert && hasActivePolls && pollAlertVisible && !isActive;
-      const showHelpCount = item.href === "help" && helpWaitingCount > 0;
+      const showHelpCount = item.href === "socials" && helpWaitingCount > 0;
 
       // During lockout, only Agenda is accessible
       const isDisabled = isLockoutActive && item.href !== "agenda";

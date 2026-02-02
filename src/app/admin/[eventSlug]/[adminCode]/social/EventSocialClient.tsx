@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { MessageCircle, ClipboardCheck, Vote, Megaphone } from "lucide-react";
+import { MessageCircle, ClipboardCheck, Vote, Megaphone, HandHelping } from "lucide-react";
 import { AdminQAClient } from "../../qa/AdminQAClient";
 import { PollsAdminClient } from "../../polls/PollsAdminClient";
 import { AnnouncementsClient } from "../../announcements/AnnouncementsClient";
 import { SurveysAdminClient } from "../../surveys/SurveysAdminClient";
+import { HelpQueueAdmin } from "@/components/help/HelpQueueAdmin";
 import { cn } from "@/lib/utils";
-import type { Event, Question, Poll, Announcement, Survey } from "@/types";
+import type { Event, Question, Poll, Announcement, Survey, HelpRequest } from "@/types";
 
 interface EventSocialClientProps {
   event: Event;
@@ -21,12 +22,13 @@ interface EventSocialClientProps {
   initialPolls: Poll[];
   initialAnnouncements: Announcement[];
   initialSurveys: Survey[];
+  initialHelpRequests: HelpRequest[];
   sortBy: "new" | "trending";
   statusFilter: "all" | "open" | "answered" | "pinned" | "hidden";
   activeTab: TabType;
 }
 
-type TabType = "qa" | "surveys" | "polls" | "announcements";
+type TabType = "qa" | "help" | "surveys" | "polls" | "announcements";
 
 const TABS: Array<{ id: TabType; label: string; icon: typeof MessageCircle; description: string }> = [
   {
@@ -34,6 +36,12 @@ const TABS: Array<{ id: TabType; label: string; icon: typeof MessageCircle; desc
     label: "Q&A",
     icon: MessageCircle,
     description: "Manage audience questions",
+  },
+  {
+    id: "help",
+    label: "Help",
+    icon: HandHelping,
+    description: "Help queue & support",
   },
   {
     id: "polls",
@@ -64,6 +72,7 @@ export function EventSocialClient({
   initialPolls,
   initialAnnouncements,
   initialSurveys,
+  initialHelpRequests,
   sortBy,
   statusFilter,
   activeTab: initialActiveTab
@@ -101,6 +110,15 @@ export function EventSocialClient({
             sortBy={sortBy}
             statusFilter={statusFilter}
             isEmbedded={true}
+          />
+        );
+      case "help":
+        return (
+          <HelpQueueAdmin
+            initialRequests={initialHelpRequests}
+            eventId={event.id}
+            eventSlug={eventSlug}
+            adminCode={adminCode}
           />
         );
       case "polls":

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getEventBySlug, getQuestionsForAdmin, getAllPolls, getAnnouncements, getAllSurveys } from "@/lib/supabase/queries";
+import { getEventBySlug, getQuestionsForAdmin, getAllPolls, getAnnouncements, getAllSurveys, getHelpRequestsForAdmin } from "@/lib/supabase/queries";
 import { EventSocialClient } from "./EventSocialClient";
 
 interface EventSocialPageProps {
@@ -11,7 +11,6 @@ export default async function EventSocialPage({ params, searchParams }: EventSoc
   const { eventSlug, adminCode } = await params;
   const { sort, status, tab } = await searchParams;
 
-  // Validate admin code (this is sufficient for admin access)
   const event = await getEventBySlug(eventSlug);
   if (!event || event.admin_code !== adminCode) {
     notFound();
@@ -19,14 +18,14 @@ export default async function EventSocialPage({ params, searchParams }: EventSoc
 
   const sortBy = sort === "new" ? "new" : "trending";
   const statusFilter = (status === "answered" || status === "hidden" || status === "pinned" || status === "open") ? status : "all";
-  const activeTab = (tab === "surveys" || tab === "polls" || tab === "announcements") ? tab : "qa";
+  const activeTab = (tab === "help" || tab === "surveys" || tab === "polls" || tab === "announcements") ? tab : "qa";
 
-  // Fetch all data in parallel
-  const [questions, polls, announcements, surveys] = await Promise.all([
+  const [questions, polls, announcements, surveys, helpRequests] = await Promise.all([
     getQuestionsForAdmin(event.id, sortBy, true),
     getAllPolls(event.id),
     getAnnouncements(event.id),
-    getAllSurveys(event.id)
+    getAllSurveys(event.id),
+    getHelpRequestsForAdmin(event.id),
   ]);
 
   return (
@@ -39,6 +38,7 @@ export default async function EventSocialPage({ params, searchParams }: EventSoc
       initialPolls={polls}
       initialAnnouncements={announcements}
       initialSurveys={surveys}
+      initialHelpRequests={helpRequests}
       sortBy={sortBy}
       statusFilter={statusFilter as any}
       activeTab={activeTab as any}

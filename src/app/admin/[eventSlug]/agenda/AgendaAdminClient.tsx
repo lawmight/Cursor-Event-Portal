@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -43,6 +43,12 @@ export function AgendaAdminClient({
 }: AgendaAdminClientProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
+
+  // Sync list from server when initialItems changes (e.g. after router.refresh() so image_url updates show)
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);

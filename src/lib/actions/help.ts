@@ -61,7 +61,9 @@ async function validateAdminAccess(
 
 async function revalidateHelpPaths(eventId: string, eventSlug: string, adminCode?: string) {
   revalidatePath(`/${eventSlug}/help`);
+  revalidatePath(`/${eventSlug}/socials/help`);
   revalidatePath(getAdminHelpPath(eventSlug, adminCode));
+  if (adminCode) revalidatePath(`/admin/${eventSlug}/${adminCode}/social`);
 
   if (!adminCode) {
     const supabase = await createServiceClient();
