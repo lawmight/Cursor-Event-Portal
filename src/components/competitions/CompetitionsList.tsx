@@ -25,7 +25,7 @@ export function CompetitionsList({
     console.log("[CompetitionsList] Mounted with", initialCompetitions.length, "competitions for event:", eventId);
   }, []);
 
-  // Real-time subscription
+  // Load competitions with vote counts, and subscribe to realtime
   useEffect(() => {
     const supabase = createClient();
 
@@ -64,6 +64,9 @@ export function CompetitionsList({
         setCompetitions(data);
       }
     };
+
+    // Load vote counts on mount and after refresh (server data has no vote_count)
+    fetchCompetitions();
 
     const channel = supabase
       .channel(`competitions-${eventId}`)

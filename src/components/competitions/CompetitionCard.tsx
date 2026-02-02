@@ -100,7 +100,7 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
             </div>
           )}
 
-          {/* Submit button */}
+          {/* Submit button - only when status is "active" */}
           {canSubmit && (
             <button
               onClick={() => setShowSubmitModal(true)}
@@ -110,7 +110,25 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
             </button>
           )}
 
-          {/* Entries */}
+          {/* Voting open but no entries yet */}
+          {canVote && (!competition.entries || competition.entries.length === 0) && (
+            <div className="rounded-2xl bg-white/5 border border-white/10 px-6 py-6 text-center">
+              <p className="text-sm text-gray-400">
+                Voting is open, but there are no submissions yet. Vote buttons will appear here when projects are submitted.
+              </p>
+            </div>
+          )}
+
+          {/* Ended with no entries */}
+          {competition.status === "ended" && (!competition.entries || competition.entries.length === 0) && (
+            <div className="rounded-2xl bg-white/5 border border-white/10 px-6 py-6 text-center">
+              <p className="text-sm text-gray-400">
+                This competition ended with no submissions.
+              </p>
+            </div>
+          )}
+
+          {/* Entries list - with vote buttons when voting is open */}
           {competition.entries && competition.entries.length > 0 && (
             <div className="space-y-4">
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">

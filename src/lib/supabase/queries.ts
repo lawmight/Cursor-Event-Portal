@@ -1157,6 +1157,29 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
     console.error("[getActiveCompetitions] Error:", error);
     return [];
   }
+  // Load vote counts for each entry
+  if (data?.length) {
+    for (const comp of data) {
+      if (comp.entries?.length) {
+        const { data: votes } = await supabase
+          .from("competition_votes")
+          .select("*")
+          .eq("competition_id", comp.id);
+        const allVotes = votes || [];
+        for (const entry of comp.entries) {
+          const entryVotes = allVotes.filter((v: { entry_id: string }) => v.entry_id === entry.id);
+          entry.vote_count = entryVotes.length;
+          entry.avg_score =
+            entryVotes.length > 0
+              ? entryVotes.reduce((sum: number, v: { score: number }) => sum + v.score, 0) / entryVotes.length
+              : 0;
+        }
+        if (comp.winner_entry_id) {
+          comp.winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.winner_entry_id) || null;
+        }
+      }
+    }
+  }
   console.log("[getActiveCompetitions] Found", data?.length || 0, "active competitions");
   return data || [];
 }
@@ -1201,6 +1224,30 @@ export async function getAllCompetitions(eventId: string): Promise<CompetitionWi
       console.error("[getAllCompetitions] Full query error:", error);
       // Fallback to simple data with empty entries
       return simpleData.map(c => ({ ...c, entries: [] })) as CompetitionWithEntries[];
+    }
+    
+    // Load vote counts for each entry
+    if (data?.length) {
+      for (const comp of data) {
+        if (comp.entries?.length) {
+          const { data: votes } = await supabase
+            .from("competition_votes")
+            .select("*")
+            .eq("competition_id", comp.id);
+          const allVotes = votes || [];
+          for (const entry of comp.entries) {
+            const entryVotes = allVotes.filter((v: { entry_id: string }) => v.entry_id === entry.id);
+            entry.vote_count = entryVotes.length;
+            entry.avg_score =
+              entryVotes.length > 0
+                ? entryVotes.reduce((sum: number, v: { score: number }) => sum + v.score, 0) / entryVotes.length
+                : 0;
+          }
+          if (comp.winner_entry_id) {
+            comp.winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.winner_entry_id) || null;
+          }
+        }
+      }
     }
     
     console.log("[getAllCompetitions] Found", data?.length || 0, "competitions with entries");

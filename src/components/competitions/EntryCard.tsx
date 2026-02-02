@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Trophy, ThumbsUp, ExternalLink, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { castVote } from "@/lib/actions/competitions";
@@ -39,16 +40,24 @@ export function EntryCard({
   votingMode,
   isWinner,
 }: EntryCardProps) {
+  const router = useRouter();
   const [voting, setVoting] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
   const [showEmbed, setShowEmbed] = useState(false);
   const [judgeScore, setJudgeScore] = useState(3);
   const isOwn = entry.user_id === userId;
   const ghRepo = parseGitHubRepo(entry.repo_url);
 
   const handleVote = async (score: number = 1, isJudge: boolean = false) => {
+    setVoteError(null);
     setVoting(true);
-    await castVote(competitionId, entry.id, eventSlug, score, isJudge);
+    const result = await castVote(competitionId, entry.id, eventSlug, score, isJudge);
     setVoting(false);
+    if (result?.error) {
+      setVoteError(result.error);
+    } else {
+      router.refresh();
+    }
   };
 
   return (
@@ -137,6 +146,10 @@ export function EntryCard({
               <ExternalLink className="w-3.5 h-3.5" />
               Live Demo
             </a>
+          )}
+
+          {voteError && (
+            <p className="text-xs text-red-400">{voteError}</p>
           )}
 
           {/* Vote button */}
