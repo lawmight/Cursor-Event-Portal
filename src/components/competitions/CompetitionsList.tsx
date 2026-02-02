@@ -20,6 +20,11 @@ export function CompetitionsList({
 }: CompetitionsListProps) {
   const [competitions, setCompetitions] = useState(initialCompetitions);
 
+  // Log on mount
+  useEffect(() => {
+    console.log("[CompetitionsList] Mounted with", initialCompetitions.length, "competitions for event:", eventId);
+  }, []);
+
   // Real-time subscription
   useEffect(() => {
     const supabase = createClient();

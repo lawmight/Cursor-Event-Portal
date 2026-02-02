@@ -27,10 +27,12 @@ export default async function CompetitionsPage({ params }: CompetitionsPageProps
     redirect(`/${eventSlug}/intake`);
   }
 
+  console.log("[CompetitionsPage] Fetching for event:", event.id, event.slug);
   const [competitions, announcements] = await Promise.all([
     getActiveCompetitions(event.id),
     getAnnouncements(event.id),
   ]);
+  console.log("[CompetitionsPage] Found", competitions.length, "competitions:", competitions.map(c => ({ id: c.id, title: c.title, status: c.status })));
 
   const latestAnnouncement = announcements[0] || null;
 
