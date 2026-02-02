@@ -45,6 +45,17 @@ export interface Event {
   admin_code: string;
   data_retention_days: number;
   venue_image_url: string | null;
+  timer_label: string | null;
+  timer_end_time: string | null;
+  timer_active: boolean;
+  series_id: string | null;
+  created_at: string;
+}
+
+export interface EventSeries {
+  id: string;
+  name: string;
+  description: string | null;
   created_at: string;
 }
 
@@ -158,6 +169,23 @@ export interface Answer {
 export interface QuestionUpvote {
   question_id: string;
   user_id: string;
+}
+
+export type HelpRequestStatus = "waiting" | "helping" | "resolved" | "cancelled";
+export type HelpCategory = "Debugging" | "Design" | "Deployment" | "Cursor" | "Prompting" | "Other";
+
+export interface HelpRequest {
+  id: string;
+  event_id: string;
+  user_id: string;
+  category: HelpCategory;
+  description: string;
+  status: HelpRequestStatus;
+  claimed_by: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  user?: User;
+  claimer?: User;
 }
 
 export interface Survey {
@@ -384,4 +412,55 @@ export interface PollWithVotes extends Poll {
   user_vote?: PollVote | null;
   vote_counts: number[];
   total_votes: number;
+}
+
+// Competition types
+export type CompetitionStatus = "draft" | "active" | "voting" | "ended";
+export type VotingMode = "group" | "judges" | "both";
+export type WinnerMethod = "auto" | "manual";
+
+export interface Competition {
+  id: string;
+  event_id: string;
+  title: string;
+  description: string | null;
+  rules: string | null;
+  status: CompetitionStatus;
+  voting_mode: VotingMode;
+  winner_entry_id: string | null;
+  winner_method: WinnerMethod | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  max_entries: number | null;
+  created_at: string;
+}
+
+export interface CompetitionEntry {
+  id: string;
+  competition_id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  repo_url: string;
+  project_url: string | null;
+  created_at: string;
+  // Joined fields
+  user?: User;
+  vote_count?: number;
+  avg_score?: number;
+}
+
+export interface CompetitionVote {
+  id: string;
+  competition_id: string;
+  entry_id: string;
+  user_id: string;
+  score: number;
+  is_judge: boolean;
+  created_at: string;
+}
+
+export interface CompetitionWithEntries extends Competition {
+  entries: CompetitionEntry[];
+  winner_entry?: CompetitionEntry | null;
 }

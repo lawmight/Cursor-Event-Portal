@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getEventBySlug, getEventIntakes, getSuggestedGroups } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { createClient } from "@/lib/supabase/server";
-import { GroupFormation } from "@/components/admin/GroupFormation";
+import { GroupFormation } from "@/components/admin/GroupFormationView";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

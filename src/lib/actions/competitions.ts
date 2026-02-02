@@ -1,0 +1,492 @@
+"use server";
+
+import { createServiceClient } from "@/lib/supabase/server";
+import { getSession } from "./registration";
+import { revalidatePath } from "next/cache";
+
+function getAdminCompetitionsPath(eventSlug: string, adminCode?: string) {
+  return adminCode
+    ? `/admin/${eventSlug}/${adminCode}/competitions`
+    : `/admin/${eventSlug}/competitions`;
+}
+
+async function validateAdminAccess(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  eventId: string,
+  adminCode?: string
+) {
+  if (adminCode) {
+    const { data: event } = await supabase
+      .from("events")
+      .select("admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (event && event.admin_code === adminCode) {
+      return { valid: true as const };
+    }
+    return { valid: false as const, error: "Not authorized. Admin access required." };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return { valid: false as const, error: "Not authenticated" };
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.userId)
+    .single();
+
+  if (!user || !["staff", "admin"].includes(user.role)) {
+    return { valid: false as const, error: "Not authorized. Admin access required." };
+  }
+
+  return { valid: true as const, userId: session.userId };
+}
+
+export async function createCompetition(
+  eventId: string,
+  eventSlug: string,
+  data: {
+    title: string;
+    description?: string;
+    rules?: string;
+    voting_mode: string;
+    starts_at?: string;
+    ends_at?: string;
+    max_entries?: number;
+  },
+  adminCode?: string
+) {
+  try {
+    const supabase = await createServiceClient();
+    const auth = await validateAdminAccess(supabase, eventId, adminCode);
+    if (!auth.valid) return { error: auth.error };
+
+    const { data: competition, error } = await supabase
+      .from("competitions")
+      .insert({
+        event_id: eventId,
+        title: data.title,
+        description: data.description || null,
+        rules: data.rules || null,
+        voting_mode: data.voting_mode,
+        starts_at: data.starts_at || null,
+        ends_at: data.ends_at || null,
+        max_entries: data.max_entries || null,
+        status: "draft",
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("[createCompetition] Error:", error);
+      return { error: error.message };
+    }
+
+    revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true, competitionId: competition.id };
+  } catch (error) {
+    console.error("[createCompetition] Exception:", error);
+    return { error: "Failed to create competition" };
+  }
+}
+
+export async function updateCompetition(
+  competitionId: string,
+  eventSlug: string,
+  data: {
+    title?: string;
+    description?: string;
+    rules?: string;
+    voting_mode?: string;
+    starts_at?: string | null;
+    ends_at?: string | null;
+    max_entries?: number | null;
+  },
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error };
+
+  const { error } = await supabase
+    .from("competitions")
+    .update(data)
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[updateCompetition] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function deleteCompetition(
+  competitionId: string,
+  eventSlug: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error };
+
+  const { error } = await supabase
+    .from("competitions")
+    .delete()
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[deleteCompetition] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function updateCompetitionStatus(
+  competitionId: string,
+  eventSlug: string,
+  status: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id, status")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error };
+
+  // Validate transitions: draft -> active -> voting -> ended
+  const validTransitions: Record<string, string[]> = {
+    draft: ["active"],
+    active: ["voting"],
+    voting: ["ended"],
+    ended: [],
+  };
+
+  if (!validTransitions[competition.status]?.includes(status)) {
+    return { error: `Cannot transition from ${competition.status} to ${status}` };
+  }
+
+  const { error } = await supabase
+    .from("competitions")
+    .update({ status })
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[updateCompetitionStatus] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function selectWinner(
+  competitionId: string,
+  eventSlug: string,
+  method: "auto" | "manual",
+  entryId?: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id, status, voting_mode")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error };
+
+  let winnerEntryId = entryId;
+
+  if (method === "auto") {
+    // Get entry with highest score
+    const { data: votes } = await supabase
+      .from("competition_votes")
+      .select("entry_id, score, is_judge")
+      .eq("competition_id", competitionId);
+
+    if (!votes || votes.length === 0) {
+      return { error: "No votes to calculate winner" };
+    }
+
+    // Aggregate scores per entry
+    const entryScores = new Map<string, number>();
+    for (const vote of votes) {
+      const weight = vote.is_judge ? 2 : 1;
+      const current = entryScores.get(vote.entry_id) || 0;
+      entryScores.set(vote.entry_id, current + vote.score * weight);
+    }
+
+    let maxScore = 0;
+    for (const [eid, score] of entryScores) {
+      if (score > maxScore) {
+        maxScore = score;
+        winnerEntryId = eid;
+      }
+    }
+  }
+
+  if (!winnerEntryId) return { error: "No winner entry specified" };
+
+  const { error } = await supabase
+    .from("competitions")
+    .update({
+      winner_entry_id: winnerEntryId,
+      winner_method: method,
+    })
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[selectWinner] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true, winnerEntryId };
+}
+
+export async function submitEntry(
+  competitionId: string,
+  eventSlug: string,
+  data: {
+    title: string;
+    description?: string;
+    repo_url: string;
+    project_url?: string;
+  }
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  // Check competition exists and is active
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("status, max_entries")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+  if (competition.status !== "active") {
+    return { error: "Competition is not accepting submissions" };
+  }
+
+  // Check max entries
+  if (competition.max_entries) {
+    const { count } = await supabase
+      .from("competition_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("competition_id", competitionId);
+
+    if ((count || 0) >= competition.max_entries) {
+      return { error: "Competition has reached maximum entries" };
+    }
+  }
+
+  // Check if user already has an entry
+  const { data: existing } = await supabase
+    .from("competition_entries")
+    .select("id")
+    .eq("competition_id", competitionId)
+    .eq("user_id", session.userId)
+    .maybeSingle();
+
+  if (existing) {
+    return { error: "You already have an entry in this competition" };
+  }
+
+  const { error } = await supabase.from("competition_entries").insert({
+    competition_id: competitionId,
+    user_id: session.userId,
+    title: data.title,
+    description: data.description || null,
+    repo_url: data.repo_url,
+    project_url: data.project_url || null,
+  });
+
+  if (error) {
+    console.error("[submitEntry] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function updateEntry(
+  entryId: string,
+  eventSlug: string,
+  data: {
+    title?: string;
+    description?: string;
+    repo_url?: string;
+    project_url?: string;
+  }
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  const { data: entry } = await supabase
+    .from("competition_entries")
+    .select("user_id, competition_id")
+    .eq("id", entryId)
+    .single();
+
+  if (!entry) return { error: "Entry not found" };
+  if (entry.user_id !== session.userId) return { error: "Not your entry" };
+
+  // Check competition is still active
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("status")
+    .eq("id", entry.competition_id)
+    .single();
+
+  if (!competition || competition.status !== "active") {
+    return { error: "Competition is not accepting modifications" };
+  }
+
+  const { error } = await supabase
+    .from("competition_entries")
+    .update(data)
+    .eq("id", entryId);
+
+  if (error) {
+    console.error("[updateEntry] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function castVote(
+  competitionId: string,
+  entryId: string,
+  eventSlug: string,
+  score: number = 1,
+  isJudge: boolean = false
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  // Check competition is in voting phase
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("status, voting_mode")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+  if (competition.status !== "voting") {
+    return { error: "Voting is not open" };
+  }
+
+  // Don't let users vote on their own entry
+  const { data: entry } = await supabase
+    .from("competition_entries")
+    .select("user_id")
+    .eq("id", entryId)
+    .single();
+
+  if (entry?.user_id === session.userId) {
+    return { error: "Cannot vote on your own entry" };
+  }
+
+  // For group voting, score is always 1
+  const finalScore = isJudge ? Math.min(Math.max(score, 1), 5) : 1;
+
+  // Upsert vote
+  const { error } = await supabase
+    .from("competition_votes")
+    .upsert(
+      {
+        competition_id: competitionId,
+        entry_id: entryId,
+        user_id: session.userId,
+        score: finalScore,
+        is_judge: isJudge,
+      },
+      { onConflict: "competition_id,user_id,entry_id" }
+    );
+
+  if (error) {
+    console.error("[castVote] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function removeVote(
+  competitionId: string,
+  entryId: string,
+  eventSlug: string
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  const supabase = await createServiceClient();
+
+  const { error } = await supabase
+    .from("competition_votes")
+    .delete()
+    .eq("competition_id", competitionId)
+    .eq("entry_id", entryId)
+    .eq("user_id", session.userId);
+
+  if (error) {
+    console.error("[removeVote] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}

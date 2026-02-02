@@ -20,6 +20,17 @@ export function EventDisplay({
   const [countdown, setCountdown] = useState<string>("");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSlides, setShowSlides] = useState(!!data.slideDeck && data.slideDeck.is_live);
+  const [timerLabel, setTimerLabel] = useState<string | null>(data.event.timer_label);
+  const [timerEndTime, setTimerEndTime] = useState<string | null>(data.event.timer_end_time);
+  const [timerActive, setTimerActive] = useState<boolean>(data.event.timer_active);
+  const [timerRemaining, setTimerRemaining] = useState<string>("");
+  const [helpWaitingCount, setHelpWaitingCount] = useState(0);
+
+  useEffect(() => {
+    setTimerLabel(data.event.timer_label);
+    setTimerEndTime(data.event.timer_end_time);
+    setTimerActive(data.event.timer_active);
+  }, [data.event.timer_label, data.event.timer_end_time, data.event.timer_active]);
 
   // Subscribe to real-time updates for announcements and slide decks
   useEffect(() => {
@@ -103,6 +114,28 @@ export function EventDisplay({
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "events",
+          filter: `id=eq.${initialData.event.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as typeof initialData.event;
+          setData((prev) => ({
+            ...prev,
+            event: {
+              ...prev.event,
+              ...updated,
+            },
+          }));
+          setTimerLabel(updated.timer_label);
+          setTimerEndTime(updated.timer_end_time);
+          setTimerActive(updated.timer_active);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -133,6 +166,75 @@ export function EventDisplay({
     const interval = setInterval(fetchData, refreshInterval);
     return () => clearInterval(interval);
   }, [eventSlug, refreshInterval]);
+
+  // Update timer countdown
+  useEffect(() => {
+    if (!timerActive || !timerEndTime) {
+      setTimerRemaining("");
+      return;
+    }
+
+    const endMs = new Date(timerEndTime).getTime();
+    const tick = () => {
+      const diff = endMs - Date.now();
+      if (diff <= 0) {
+        setTimerRemaining("TIME'S UP!");
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setTimerRemaining(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+      );
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [timerActive, timerEndTime]);
+
+  // Subscribe to help request counts
+  useEffect(() => {
+    const supabase = createClient();
+
+    const loadHelpWaitingCount = async () => {
+      const { count, error } = await supabase
+        .from("help_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", initialData.event.id)
+        .eq("status", "waiting");
+
+      if (error) {
+        console.error("[EventDisplay] Failed to fetch help requests:", error);
+        return;
+      }
+      setHelpWaitingCount(count || 0);
+    };
+
+    loadHelpWaitingCount();
+
+    const channel = supabase
+      .channel(`help-requests-display-${initialData.event.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "help_requests",
+          filter: `event_id=eq.${initialData.event.id}`,
+        },
+        () => {
+          loadHelpWaitingCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initialData.event.id]);
 
   // Update countdown and current time every second
   useEffect(() => {
@@ -228,6 +330,16 @@ export function EventDisplay({
               })}
             </time>
             <p className="text-[10px] uppercase tracking-[0.4em] text-gray-500 font-medium">System Active</p>
+            {timerActive && timerEndTime && (
+              <div className="mt-4">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-medium">
+                  {timerLabel || "Countdown"}
+                </p>
+                <p className="text-4xl font-light tracking-tight text-white tabular-nums">
+                  {timerRemaining || "--:--:--"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -303,12 +415,17 @@ export function EventDisplay({
               </div>
             )}
 
-            {data.announcements.length > 0 && (
+            {(data.announcements.length > 0 || helpWaitingCount > 0) && (
               <div className="glass rounded-[48px] p-12 bg-white/5 border-white/20">
                 <div className="text-[10px] font-medium uppercase tracking-[0.4em] text-gray-400 mb-8">
                   Bulletin
                 </div>
                 <div className="space-y-6">
+                  {helpWaitingCount > 0 && (
+                    <p className="text-2xl font-light leading-relaxed tracking-tight text-white/90">
+                      {helpWaitingCount} waiting for help
+                    </p>
+                  )}
                   {data.announcements.slice(0, 2).map((announcement) => (
                     <p key={announcement.id} className="text-2xl font-light leading-relaxed tracking-tight text-white/90">
                       {announcement.content}

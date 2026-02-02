@@ -19,8 +19,10 @@ import type {
   QAAnalytics,
   PollParticipation,
   IntakeAnalytics,
+  SeriesAttendanceDataPoint,
 } from "@/lib/supabase/queries";
 import { TrendingUp, Clock, MessageCircle, BarChart3, Users, AlertCircle } from "lucide-react";
+import { AttendancePatternChart } from "@/components/analytics/AttendancePatternChart";
 
 interface AnalyticsClientProps {
   event: Event;
@@ -28,6 +30,7 @@ interface AnalyticsClientProps {
   qaAnalytics: QAAnalytics;
   pollParticipation: PollParticipation[];
   intakeAnalytics: IntakeAnalytics;
+  seriesAttendanceData?: SeriesAttendanceDataPoint[];
 }
 
 export function AnalyticsClient({
@@ -36,6 +39,7 @@ export function AnalyticsClient({
   qaAnalytics,
   pollParticipation,
   intakeAnalytics,
+  seriesAttendanceData,
 }: AnalyticsClientProps) {
   // Format check-in data for chart
   const chartData = checkInCurve.map((point) => ({
@@ -302,6 +306,10 @@ export function AnalyticsClient({
           </div>
         </div>
       </div>
+
+      {seriesAttendanceData && seriesAttendanceData.length > 0 && (
+        <AttendancePatternChart data={seriesAttendanceData} />
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X } from "lucide-react";
+import { Calendar, MessageCircle, FolderOpen, BarChart3, Lock, FileText, Menu, X, Trophy, HandHelping } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSeenItemIds, markMultipleItemsAsSeen } from "@/lib/supabase/seenItems";
 import { LiveSlidePopup } from "@/components/slides/LiveSlidePopup";
@@ -21,8 +21,10 @@ interface EventNavProps {
 const navItems = [
   { href: "agenda", label: "Agenda", icon: Calendar },
   { href: "qa", label: "Q&A", icon: MessageCircle },
+  { href: "help", label: "Help", icon: HandHelping },
   { href: "slides", label: "Slides", icon: FileText },
   { href: "polls", label: "Polls", icon: BarChart3, hasAlert: true },
+  { href: "competitions", label: "Compete", icon: Trophy },
   { href: "resources", label: "Resources", icon: FolderOpen },
 ];
 
@@ -36,6 +38,7 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [seenPollIds, setSeenPollIds] = useState<Set<string>>(new Set());
   const [publishedSurvey, setPublishedSurvey] = useState<Survey | null>(null);
+  const [helpWaitingCount, setHelpWaitingCount] = useState(0);
 
   // Load seen poll IDs from Supabase
   const loadSeenPollIds = useCallback(async () => {
@@ -244,6 +247,44 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
     };
   }, [pathname, event, seenPollIds]);
 
+  // Check for help requests and subscribe to changes
+  useEffect(() => {
+    if (!event) return;
+
+    const supabase = createClient();
+
+    const checkHelpWaiting = async () => {
+      const { count, error } = await supabase
+        .from("help_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .eq("status", "waiting");
+
+      if (error) {
+        console.error("[EventNav] Error fetching help requests:", error);
+        return;
+      }
+      setHelpWaitingCount(count || 0);
+    };
+
+    checkHelpWaiting();
+
+    const channel = supabase
+      .channel(`help-requests-nav-${event.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "help_requests", filter: `event_id=eq.${event.id}` },
+        () => {
+          checkHelpWaiting();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event]);
+
   // Close mobile menu when navigating
   const handleNavClick = () => {
     setIsMobileMenuOpen(false);
@@ -255,6 +296,7 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
       const Icon = item.icon;
       const showPollAlert =
         item.hasAlert && hasActivePolls && pollAlertVisible && !isActive;
+      const showHelpCount = item.href === "help" && helpWaitingCount > 0;
 
       // During lockout, only Agenda is accessible
       const isDisabled = isLockoutActive && item.href !== "agenda";
@@ -328,6 +370,13 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
               <div className="absolute -top-1 -right-1">
                 <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
                 <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-400 animate-ping opacity-75" />
+              </div>
+            )}
+
+            {/* Help request count */}
+            {showHelpCount && (
+              <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-amber-400 text-black text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(251,191,36,0.6)]">
+                {helpWaitingCount > 9 ? "9+" : helpWaitingCount}
               </div>
             )}
           </div>

@@ -17,6 +17,9 @@
 # misc
 .DS_Store
 *.pem
+NUL
+test-build*.js
+test-bisect.js
 
 # debug
 npm-debug.log*

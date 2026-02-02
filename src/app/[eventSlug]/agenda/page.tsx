@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getEventBySlug, getAgendaItems, getAnnouncements } from "@/lib/supabase/queries";
+import { getEventBySlug, getAgendaItems, getAnnouncements, getSeriesEvents } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { getSurveyConsentStatus } from "@/lib/actions/consent";
@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { EventHeader } from "@/components/layout/EventHeader";
 import { EventNavWrapper } from "@/components/layout/EventNavWrapper";
 import { AgendaList } from "@/components/agenda/AgendaList";
+import { EventSeriesSection } from "@/components/agenda/EventSeriesSection";
 
 interface AgendaPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -43,9 +44,10 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
     .eq("id", session.userId)
     .single();
 
-  const [items, announcements] = await Promise.all([
+  const [items, announcements, seriesEvents] = await Promise.all([
     getAgendaItems(event.id),
     getAnnouncements(event.id),
+    event.series_id ? getSeriesEvents(event.series_id) : Promise.resolve([]),
   ]);
 
   const latestAnnouncement = announcements[0] || null;
@@ -68,6 +70,9 @@ export default async function AgendaPage({ params }: AgendaPageProps) {
           </h1>
         </div>
 
+        {event.series_id && seriesEvents.length > 0 && (
+          <EventSeriesSection currentEventId={event.id} seriesEvents={seriesEvents} />
+        )}
 
         <div className="animate-slide-up" style={{ animationDelay: "300ms" }}>
           <AgendaList 

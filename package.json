@@ -38,6 +38,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@babel/plugin-transform-class-static-block": "^7.28.6",
+    "@babel/plugin-transform-private-methods": "^7.28.6",
     "tsx": "^4.19.2"
   }
 }

@@ -10,6 +10,7 @@ import type {
   Announcement,
   Question,
   Answer,
+  HelpRequest,
   Survey,
   SurveyResponse,
   AttendeeIntake,
@@ -21,6 +22,9 @@ import type {
   SlideDeck,
   TableQRCode,
   TableRegistration,
+  Competition,
+  CompetitionEntry,
+  CompetitionWithEntries,
 } from "@/types";
 
 // Event queries
@@ -215,6 +219,53 @@ export async function getAgendaItems(eventId: string): Promise<AgendaItem[]> {
   return data;
 }
 
+export interface SeriesEventSummary {
+  id: string;
+  slug: string;
+  name: string;
+  start_time: string | null;
+  venue: string | null;
+  status: string;
+  registration_count: number;
+}
+
+export async function getSeriesEvents(seriesId: string): Promise<SeriesEventSummary[]> {
+  const supabase = await createClient();
+
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("id, slug, name, start_time, venue, status")
+    .eq("series_id", seriesId)
+    .order("start_time", { ascending: true });
+
+  if (error || !events) {
+    console.error("[getSeriesEvents] Error fetching events:", error);
+    return [];
+  }
+
+  const eventIds = events.map((event) => event.id);
+  if (eventIds.length === 0) return [];
+
+  const { data: registrations, error: regError } = await supabase
+    .from("registrations")
+    .select("event_id")
+    .in("event_id", eventIds);
+
+  if (regError) {
+    console.error("[getSeriesEvents] Error fetching registrations:", regError);
+  }
+
+  const counts = new Map<string, number>();
+  (registrations || []).forEach((reg) => {
+    counts.set(reg.event_id, (counts.get(reg.event_id) || 0) + 1);
+  });
+
+  return events.map((event) => ({
+    ...event,
+    registration_count: counts.get(event.id) || 0,
+  }));
+}
+
 // Announcement queries
 export async function getAnnouncements(eventId: string): Promise<Announcement[]> {
   const supabase = await createClient();
@@ -350,6 +401,42 @@ export async function getQuestionById(id: string): Promise<Question | null> {
 
   if (error) return null;
   return data;
+}
+
+// Help request queries
+export async function getHelpRequests(eventId: string, userId?: string): Promise<HelpRequest[]> {
+  const supabase = await createClient();
+  const query = supabase
+    .from("help_requests")
+    .select("*, user:users!help_requests_user_id_fkey(*), claimer:users!help_requests_claimed_by_fkey(*)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (userId) {
+    query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("[getHelpRequests] Error fetching help requests:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function getHelpRequestsForAdmin(eventId: string): Promise<HelpRequest[]> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("help_requests")
+    .select("*, user:users!help_requests_user_id_fkey(*), claimer:users!help_requests_claimed_by_fkey(*)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getHelpRequestsForAdmin] Error fetching help requests:", error);
+    return [];
+  }
+  return data || [];
 }
 
 // Survey queries
@@ -841,6 +928,62 @@ export interface IntakeAnalytics {
   total: number;
 }
 
+export interface SeriesAttendanceDataPoint {
+  name: string;
+  start_time: string | null;
+  registered: number;
+  checked_in: number;
+}
+
+export async function getSeriesAttendanceData(seriesId: string): Promise<SeriesAttendanceDataPoint[]> {
+  const supabase = await createServiceClient();
+
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("id, name, start_time")
+    .eq("series_id", seriesId)
+    .order("start_time", { ascending: true });
+
+  if (error || !events || events.length === 0) {
+    if (error) {
+      console.error("[getSeriesAttendanceData] Error fetching events:", error);
+    }
+    return [];
+  }
+
+  const eventIds = events.map((event) => event.id);
+  const { data: registrations, error: regError } = await supabase
+    .from("registrations")
+    .select("event_id, checked_in_at")
+    .in("event_id", eventIds);
+
+  if (regError) {
+    console.error("[getSeriesAttendanceData] Error fetching registrations:", regError);
+  }
+
+  const counts = new Map<string, { registered: number; checked_in: number }>();
+  eventIds.forEach((id) => counts.set(id, { registered: 0, checked_in: 0 }));
+
+  (registrations || []).forEach((reg) => {
+    const current = counts.get(reg.event_id) || { registered: 0, checked_in: 0 };
+    current.registered += 1;
+    if (reg.checked_in_at) {
+      current.checked_in += 1;
+    }
+    counts.set(reg.event_id, current);
+  });
+
+  return events.map((event) => {
+    const count = counts.get(event.id) || { registered: 0, checked_in: 0 };
+    return {
+      name: event.name,
+      start_time: event.start_time,
+      registered: count.registered,
+      checked_in: count.checked_in,
+    };
+  });
+}
+
 export async function getCheckInCurve(eventId: string): Promise<CheckInDataPoint[]> {
   const supabase = await createClient();
   
@@ -997,4 +1140,78 @@ export async function getIntakeAnalytics(eventId: string): Promise<IntakeAnalyti
     skipped,
     total,
   };
+}
+
+// Competition queries
+export async function getActiveCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("competitions")
+    .select("*, entries:competition_entries(*, user:users(id, name, email))")
+    .eq("event_id", eventId)
+    .in("status", ["active", "voting", "ended"])
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getActiveCompetitions] Error:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function getAllCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("competitions")
+    .select("*, entries:competition_entries(*, user:users(id, name, email))")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getAllCompetitions] Error:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function getCompetitionWithEntries(
+  competitionId: string,
+  userId?: string
+): Promise<CompetitionWithEntries | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("competitions")
+    .select("*, entries:competition_entries(*, user:users(id, name, email))")
+    .eq("id", competitionId)
+    .single();
+
+  if (error) {
+    console.error("[getCompetitionWithEntries] Error:", error);
+    return null;
+  }
+
+  // Load votes for each entry
+  if (data?.entries) {
+    const { data: votes } = await supabase
+      .from("competition_votes")
+      .select("*")
+      .eq("competition_id", competitionId);
+
+    const allVotes = votes || [];
+    for (const entry of data.entries) {
+      const entryVotes = allVotes.filter((v) => v.entry_id === entry.id);
+      entry.vote_count = entryVotes.length;
+      entry.avg_score =
+        entryVotes.length > 0
+          ? entryVotes.reduce((sum, v) => sum + v.score, 0) / entryVotes.length
+          : 0;
+    }
+
+    // Resolve winner entry
+    if (data.winner_entry_id) {
+      data.winner_entry = data.entries.find((e: CompetitionEntry) => e.id === data.winner_entry_id) || null;
+    }
+  }
+
+  return data;
 }

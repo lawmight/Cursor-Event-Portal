@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SeatAssignmentBanner } from "@/components/seating/SeatAssignmentBanner";
 import { PageTracker } from "@/components/analytics/PageTracker";
+import { CountdownBar } from "@/components/timer/CountdownBar";
 
 interface EventLayoutProps {
   children: React.ReactNode;
@@ -46,6 +47,7 @@ export default async function EventLayout({ children, params }: EventLayoutProps
       {session?.userId && (
         <SeatAssignmentBanner event={event} userId={session.userId} />
       )}
+      <CountdownBar event={event} />
       {children}
     </>
   );

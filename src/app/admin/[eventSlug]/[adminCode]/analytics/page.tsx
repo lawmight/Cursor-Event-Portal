@@ -6,6 +6,7 @@ import {
   getQAAnalytics,
   getPollParticipation,
   getIntakeAnalytics,
+  getSeriesAttendanceData,
 } from "@/lib/supabase/queries";
 
 interface AnalyticsPageProps {
@@ -26,6 +27,10 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
     getIntakeAnalytics(event.id),
   ]);
 
+  const seriesAttendanceData = event.series_id
+    ? await getSeriesAttendanceData(event.series_id)
+    : null;
+
   return (
     <div className="min-h-screen bg-black-gradient text-white flex flex-col relative overflow-hidden">
       {/* Subtle Depth Elements */}
@@ -45,6 +50,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           qaAnalytics={qaAnalytics}
           pollParticipation={pollParticipation}
           intakeAnalytics={intakeAnalytics}
+          seriesAttendanceData={seriesAttendanceData || undefined}
         />
       </main>
 
