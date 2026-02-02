@@ -59,39 +59,48 @@ export async function createCompetition(
     max_entries?: number;
   },
   adminCode?: string
-) {
+): Promise<{ success?: true; competitionId?: string; error?: string }> {
   try {
+    if (!eventId || !eventSlug || !data?.title?.trim()) {
+      return { error: "Event and title are required." };
+    }
+
     const supabase = await createServiceClient();
     const auth = await validateAdminAccess(supabase, eventId, adminCode);
-    if (!auth.valid) return { error: auth.error };
+    if (!auth.valid) return { error: auth.error ?? "Not authorized." };
 
     const { data: competition, error } = await supabase
       .from("competitions")
       .insert({
         event_id: eventId,
-        title: data.title,
-        description: data.description || null,
-        rules: data.rules || null,
+        title: data.title.trim(),
+        description: data.description?.trim() || null,
+        rules: data.rules?.trim() || null,
         voting_mode: data.voting_mode,
         starts_at: data.starts_at || null,
         ends_at: data.ends_at || null,
-        max_entries: data.max_entries || null,
+        max_entries: data.max_entries != null && Number.isFinite(data.max_entries) ? data.max_entries : null,
         status: "draft",
       })
       .select("id")
       .single();
 
     if (error) {
-      console.error("[createCompetition] Error:", error);
+      console.error("[createCompetition] Supabase error:", error.code, error.message);
       return { error: error.message };
+    }
+
+    if (!competition?.id) {
+      return { error: "Competition was created but no ID returned." };
     }
 
     revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
     revalidatePath(`/${eventSlug}/competitions`);
     return { success: true, competitionId: competition.id };
-  } catch (error) {
-    console.error("[createCompetition] Exception:", error);
-    return { error: "Failed to create competition" };
+  } catch (err) {
+    console.error("[createCompetition] Exception:", err);
+    const message = err instanceof Error ? err.message : "Failed to create competition";
+    return { error: message };
   }
 }
 

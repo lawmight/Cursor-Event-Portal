@@ -63,7 +63,10 @@ export function CompetitionsAdminClient({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim()) {
+      setError("Title is required.");
+      return;
+    }
 
     setLoading("create");
     setError(null);
@@ -76,14 +79,16 @@ export function CompetitionsAdminClient({
           description: newDesc.trim() || undefined,
           rules: newRules.trim() || undefined,
           voting_mode: newVotingMode,
-          max_entries: newMaxEntries ? parseInt(newMaxEntries) : undefined,
+          max_entries: newMaxEntries ? (parseInt(newMaxEntries, 10) || undefined) : undefined,
         },
         adminCode
       );
 
-      if (result?.error) {
+      if (result && "error" in result && result.error) {
         setError(result.error);
-      } else {
+        return;
+      }
+      if (result && "success" in result && result.success) {
         setNewTitle("");
         setNewDesc("");
         setNewRules("");
@@ -91,10 +96,13 @@ export function CompetitionsAdminClient({
         setNewMaxEntries("");
         setShowCreateForm(false);
         window.location.reload();
+        return;
       }
+      setError("Create failed. No response from server.");
     } catch (err) {
       console.error("[CompetitionsAdminClient] createCompetition failed:", err);
-      setError("Create failed. Please check the console for details.");
+      const message = err instanceof Error ? err.message : "Create failed.";
+      setError(message);
     } finally {
       setLoading(null);
     }
@@ -141,7 +149,8 @@ export function CompetitionsAdminClient({
       {/* Create button */}
       {!showCreateForm && (
         <button
-          onClick={() => setShowCreateForm(true)}
+          type="button"
+          onClick={() => { setShowCreateForm(true); setError(null); }}
           className="glass rounded-[32px] p-6 border-white/10 hover:bg-white/10 transition-all w-full flex items-center gap-4 group"
         >
           <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-105 transition-all">
@@ -195,11 +204,11 @@ export function CompetitionsAdminClient({
               <select
                 value={newVotingMode}
                 onChange={(e) => setNewVotingMode(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20"
+                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20 [&_option]:bg-white [&_option]:text-gray-900"
               >
-                <option value="group">Group (Upvote)</option>
-                <option value="judges">Judges (1-5)</option>
-                <option value="both">Both</option>
+                <option value="group" style={{ backgroundColor: "#fff", color: "#111" }}>Group (Upvote)</option>
+                <option value="judges" style={{ backgroundColor: "#fff", color: "#111" }}>Judges (1-5)</option>
+                <option value="both" style={{ backgroundColor: "#fff", color: "#111" }}>Both</option>
               </select>
             </div>
             <div>
