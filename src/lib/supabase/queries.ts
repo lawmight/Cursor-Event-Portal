@@ -1160,6 +1160,7 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
 }
 
 export async function getAllCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
+  console.log("[getAllCompetitions] Fetching for eventId:", eventId);
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("competitions")
@@ -1171,6 +1172,7 @@ export async function getAllCompetitions(eventId: string): Promise<CompetitionWi
     console.error("[getAllCompetitions] Error:", error);
     return [];
   }
+  console.log("[getAllCompetitions] Found", data?.length || 0, "competitions");
   return data || [];
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Trash2,
@@ -48,8 +49,14 @@ export function CompetitionsAdminClient({
   adminCode,
   initialCompetitions,
 }: CompetitionsAdminClientProps) {
+  const router = useRouter();
   const [competitions, setCompetitions] = useState(initialCompetitions);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Sync competitions from props when they change (after revalidation)
+  useEffect(() => {
+    setCompetitions(initialCompetitions);
+  }, [initialCompetitions]);
 
   // Debug: log on client mount
   useEffect(() => {
@@ -95,13 +102,14 @@ export function CompetitionsAdminClient({
         return;
       }
       if (result && "success" in result && result.success) {
+        console.log("[CompetitionsAdminClient] Success! Refreshing...");
         setNewTitle("");
         setNewDesc("");
         setNewRules("");
         setNewVotingMode("group");
         setNewMaxEntries("");
         setShowCreateForm(false);
-        window.location.reload();
+        router.refresh();
         return;
       }
       setError("Create failed. No response from server.");
@@ -120,7 +128,7 @@ export function CompetitionsAdminClient({
     if (result.error) {
       setError(result.error);
     } else {
-      window.location.reload();
+      router.refresh();
     }
     setLoading(null);
   };
@@ -129,7 +137,7 @@ export function CompetitionsAdminClient({
     if (!confirm("Delete this competition and all its entries?")) return;
     setLoading(compId);
     await deleteCompetition(compId, eventSlug, adminCode);
-    window.location.reload();
+    router.refresh();
     setLoading(null);
   };
 
@@ -139,7 +147,7 @@ export function CompetitionsAdminClient({
     if (result.error) {
       setError(result.error);
     } else {
-      window.location.reload();
+      router.refresh();
     }
     setLoading(null);
   };
@@ -172,7 +180,6 @@ export function CompetitionsAdminClient({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            alert("Form submitted! Check console for logs.");
             console.log("[CompetitionsAdminClient] Form onSubmit fired");
             handleCreate(e);
           }}
