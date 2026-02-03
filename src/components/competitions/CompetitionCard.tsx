@@ -34,7 +34,7 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
   const canVote = competition.status === "voting";
 
   return (
-    <div className="glass rounded-[32px] border-white/10 overflow-hidden">
+    <div className="glass rounded-[32px] border border-white/10 min-w-0 overflow-visible">
       {/* Winner banner */}
       {competition.winner_entry && (
         <div className="bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-4 flex items-center gap-3">

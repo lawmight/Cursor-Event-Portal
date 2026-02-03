@@ -230,8 +230,10 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
               <div className="hidden sm:block w-px h-10 bg-white/30" />
 
               <div className="hidden sm:flex items-center gap-2">
-                <MapPin className={`w-4 h-4 transition-colors duration-500 ${isQrFirstView ? "text-white" : "text-white/70"}`} />
-                <span className="text-sm text-white/90">Scanned seating</span>
+                <MapPin className={`w-4 h-4 transition-colors duration-500 ${isQrFirstView ? "text-sky-300" : "text-white/70"}`} />
+                <span className="text-sm text-sky-200/95 font-medium drop-shadow-[0_0_8px_rgba(56,189,248,0.4)] px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-400/20">
+                  Scanned seating
+                </span>
               </div>
             </div>
           </div>

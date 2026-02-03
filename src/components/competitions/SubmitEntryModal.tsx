@@ -60,9 +60,9 @@ export function SubmitEntryModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="glass rounded-[32px] border border-white/10 w-full max-w-md p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
+      <div className="glass rounded-[32px] border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-light text-white">Submit Project</h2>
           <button
