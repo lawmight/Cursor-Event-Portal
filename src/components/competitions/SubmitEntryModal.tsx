@@ -19,6 +19,8 @@ export function SubmitEntryModal({
   const [description, setDescription] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [projectUrl, setProjectUrl] = useState("");
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +36,10 @@ export function SubmitEntryModal({
       setError("Please enter a GitHub URL");
       return;
     }
+    if (!previewImageUrl.trim() && !videoUrl.trim()) {
+      setError("Add at least one: preview image URL or video URL (so we can show your project on screen)");
+      return;
+    }
 
     setLoading(true);
     const result = await submitEntry(competitionId, eventSlug, {
@@ -41,6 +47,8 @@ export function SubmitEntryModal({
       description: description.trim() || undefined,
       repo_url: repoUrl.trim(),
       project_url: projectUrl.trim() || undefined,
+      preview_image_url: previewImageUrl.trim() || undefined,
+      video_url: videoUrl.trim() || undefined,
     });
 
     if (result.error) {
@@ -117,6 +125,37 @@ export function SubmitEntryModal({
               value={projectUrl}
               onChange={(e) => setProjectUrl(e.target.value)}
               placeholder="https://your-project-demo.com"
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mb-2">
+              Preview image URL
+            </label>
+            <input
+              type="url"
+              value={previewImageUrl}
+              onChange={(e) => setPreviewImageUrl(e.target.value)}
+              placeholder="https://imgur.com/... or direct image link"
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+            />
+            <p className="mt-1 text-[10px] text-gray-500">
+              Screenshot or hero image — shown on the voting screen and big screen. At least one of image or video is required.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mb-2">
+              Video URL (optional)
+            </label>
+            <input
+              type="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://youtube.com/watch?v=... or Vimeo link"
               disabled={loading}
               className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
             />

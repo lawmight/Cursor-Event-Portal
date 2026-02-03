@@ -443,6 +443,8 @@ export interface CompetitionEntry {
   description: string | null;
   repo_url: string;
   project_url: string | null;
+  preview_image_url: string | null;
+  video_url: string | null;
   created_at: string;
   // Joined fields
   user?: User;

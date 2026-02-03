@@ -31,6 +31,27 @@ function parseGitHubRepo(url: string): { owner: string; repo: string } | null {
   }
 }
 
+function getVideoEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "www.youtube.com" || u.hostname === "youtube.com") {
+      const v = u.searchParams.get("v");
+      return v ? `https://www.youtube.com/embed/${v}` : null;
+    }
+    if (u.hostname === "youtu.be") {
+      const v = u.pathname.slice(1).split("/")[0];
+      return v ? `https://www.youtube.com/embed/${v}` : null;
+    }
+    if (u.hostname === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://player.vimeo.com/video/${id}` : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function EntryCard({
   entry,
   competitionId,
@@ -47,6 +68,7 @@ export function EntryCard({
   const isOwn = entry.user_id === userId;
   const ghRepo = parseGitHubRepo(entry.repo_url);
   const stackBlitzUrl = ghRepo ? `https://stackblitz.com/github/${ghRepo.owner}/${ghRepo.repo}` : null;
+  const videoEmbedUrl = entry.video_url ? getVideoEmbedUrl(entry.video_url) : null;
 
   const handleVote = async (score: number = 1, isJudge: boolean = false) => {
     setVoteError(null);
@@ -69,6 +91,52 @@ export function EntryCard({
           : "border-white/10 bg-white/5"
       )}
     >
+      {/* Preview media: image and/or video — for voting and big-screen showcase */}
+      {(entry.preview_image_url || videoEmbedUrl) && (
+        <div className="aspect-video w-full bg-white/5 relative overflow-hidden">
+          {entry.preview_image_url && (
+            <img
+              src={entry.preview_image_url}
+              alt={`Preview: ${entry.title}`}
+              className="w-full h-full object-contain object-center"
+            />
+          )}
+          {videoEmbedUrl && !entry.preview_image_url && (
+            <iframe
+              src={videoEmbedUrl}
+              title={`Video: ${entry.title}`}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )}
+        </div>
+      )}
+      {entry.video_url && entry.preview_image_url && (
+        <div className="px-4 pt-2 pb-0">
+          <a
+            href={entry.video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-300 hover:underline"
+          >
+            Watch video
+          </a>
+        </div>
+      )}
+      {entry.video_url && !videoEmbedUrl && !entry.preview_image_url && (
+        <div className="p-4">
+          <a
+            href={entry.video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-300 hover:underline"
+          >
+            Open video →
+          </a>
+        </div>
+      )}
+
       <div className="p-5 space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">

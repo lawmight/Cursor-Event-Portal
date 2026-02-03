@@ -327,6 +327,8 @@ export async function submitEntry(
     description?: string;
     repo_url: string;
     project_url?: string;
+    preview_image_url?: string;
+    video_url?: string;
   }
 ) {
   const session = await getSession();
@@ -377,6 +379,8 @@ export async function submitEntry(
     description: data.description || null,
     repo_url: data.repo_url,
     project_url: data.project_url || null,
+    preview_image_url: data.preview_image_url?.trim() || null,
+    video_url: data.video_url?.trim() || null,
   });
 
   if (error) {
@@ -396,6 +400,8 @@ export async function updateEntry(
     description?: string;
     repo_url?: string;
     project_url?: string;
+    preview_image_url?: string | null;
+    video_url?: string | null;
   }
 ) {
   const session = await getSession();
