@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { X } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, Upload, Loader2 } from "lucide-react";
 import { submitEntry } from "@/lib/actions/competitions";
 
 interface SubmitEntryModalProps {
   competitionId: string;
+  eventId: string;
   eventSlug: string;
   onClose: () => void;
 }
 
 export function SubmitEntryModal({
   competitionId,
+  eventId,
   eventSlug,
   onClose,
 }: SubmitEntryModalProps) {
@@ -22,7 +24,9 @@ export function SubmitEntryModal({
   const [previewImageUrl, setPreviewImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +41,11 @@ export function SubmitEntryModal({
       return;
     }
     if (!previewImageUrl.trim() && !videoUrl.trim()) {
-      setError("Add at least one: preview image URL or video URL (so we can show your project on screen)");
+      setError("Add at least one: preview image (upload or URL) or video URL");
       return;
     }
 
+    setError(null);
     setLoading(true);
     const result = await submitEntry(competitionId, eventSlug, {
       title: title.trim(),
@@ -59,11 +64,40 @@ export function SubmitEntryModal({
     }
   };
 
+  const handlePreviewFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("eventId", eventId);
+      form.set("competitionId", competitionId);
+      const res = await fetch("/api/competition-upload-preview", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Upload failed");
+        return;
+      }
+      setPreviewImageUrl(data.url);
+    } catch {
+      setError("Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="glass rounded-[32px] border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="glass rounded-[32px] border border-white/10 w-full max-w-2xl min-w-0 max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8 mx-4">
+        <div className="flex items-center justify-between mb-6 min-w-0">
           <h2 className="text-xl font-light text-white">Submit Project</h2>
           <button
             onClick={onClose}
@@ -73,7 +107,7 @@ export function SubmitEntryModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 min-w-0">
           <div>
             <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mb-2">
               Project Title
@@ -84,7 +118,7 @@ export function SubmitEntryModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="My Awesome Project"
               disabled={loading}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
             />
           </div>
 
@@ -98,7 +132,7 @@ export function SubmitEntryModal({
               placeholder="Brief description of your project..."
               disabled={loading}
               rows={3}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all resize-none"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all resize-none box-border"
             />
           </div>
 
@@ -112,7 +146,7 @@ export function SubmitEntryModal({
               onChange={(e) => setRepoUrl(e.target.value)}
               placeholder="https://github.com/username/repo"
               disabled={loading}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
             />
           </div>
 
@@ -126,24 +160,59 @@ export function SubmitEntryModal({
               onChange={(e) => setProjectUrl(e.target.value)}
               placeholder="https://your-project-demo.com"
               disabled={loading}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
             />
           </div>
 
           <div>
             <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mb-2">
-              Preview image URL
+              Preview image
             </label>
-            <input
-              type="url"
-              value={previewImageUrl}
-              onChange={(e) => setPreviewImageUrl(e.target.value)}
-              placeholder="https://imgur.com/... or direct image link"
-              disabled={loading}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
-            />
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                  onChange={handlePreviewFile}
+                  disabled={loading || uploading}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading || uploading}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 border border-white/10 text-white text-sm font-medium hover:bg-white/15 transition-all disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {uploading ? "Uploading…" : "Upload from PC"}
+                </button>
+                <span className="text-[10px] text-gray-500">or paste URL below</span>
+              </div>
+              <input
+                type="url"
+                value={previewImageUrl}
+                onChange={(e) => setPreviewImageUrl(e.target.value)}
+                placeholder="https://imgur.com/... or direct image link"
+                disabled={loading}
+                className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+              />
+              {previewImageUrl && (
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 aspect-video max-h-32 w-full">
+                  <img
+                    src={previewImageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
+            </div>
             <p className="mt-1 text-[10px] text-gray-500">
-              Screenshot or hero image — shown on the voting screen and big screen. At least one of image or video is required.
+              Screenshot or hero image — shown on voting and big screen. At least one of image or video is required.
             </p>
           </div>
 
@@ -157,7 +226,7 @@ export function SubmitEntryModal({
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=... or Vimeo link"
               disabled={loading}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
             />
           </div>
 

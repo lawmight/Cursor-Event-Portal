@@ -154,6 +154,7 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
       {showSubmitModal && (
         <SubmitEntryModal
           competitionId={competition.id}
+          eventId={competition.event_id}
           eventSlug={eventSlug}
           onClose={() => setShowSubmitModal(false)}
         />
