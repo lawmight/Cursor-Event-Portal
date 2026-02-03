@@ -189,22 +189,13 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
         <div
           className={`relative overflow-hidden transition-all duration-1000 ${
             isQrFirstView
-              ? "bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600"
-              : "bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600"
+              ? "bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 border-b border-white/10"
+              : "bg-zinc-900 border-b border-white/10"
           }`}
         >
           {isQrFirstView && (
             <>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
-              <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(255,255,255,0.3)] animate-pulse" />
-              <div className="absolute inset-0 pointer-events-none">
-                <Sparkles className="absolute top-2 left-[10%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "0ms", animationDuration: "1.5s" }} />
-                <Sparkles className="absolute top-3 left-[30%] w-3 h-3 text-white/50 animate-ping" style={{ animationDelay: "300ms", animationDuration: "2s" }} />
-                <Sparkles className="absolute bottom-2 left-[50%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "600ms", animationDuration: "1.8s" }} />
-                <Sparkles className="absolute top-2 right-[30%] w-3 h-3 text-white/50 animate-ping" style={{ animationDelay: "400ms", animationDuration: "1.6s" }} />
-                <Sparkles className="absolute bottom-3 right-[15%] w-4 h-4 text-white/60 animate-ping" style={{ animationDelay: "200ms", animationDuration: "2.2s" }} />
-              </div>
-              <div className="absolute inset-0 bg-radial-glow opacity-50 animate-pulse" style={{ animationDuration: "2s" }} />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
             </>
           )}
 
@@ -214,8 +205,8 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
                 <div
                   className={`w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center border-2 transition-all duration-500 ${
                     isQrFirstView
-                      ? "bg-white/30 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.5)] scale-110"
-                      : "bg-white/20 border-white/40"
+                      ? "bg-white/10 border-white/30 scale-105"
+                      : "bg-white/10 border-white/20"
                   }`}
                 >
                   <span className={`text-xl font-bold tabular-nums transition-all duration-500 ${isQrFirstView ? "scale-110" : ""}`}>
@@ -229,7 +220,7 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
                     {isQrFirstView ? "Table Registered" : "Your Table"}
                   </p>
                   <p className={`text-lg font-medium tracking-tight transition-all duration-500 ${
-                    isQrFirstView ? "text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" : ""
+                    isQrFirstView ? "text-white" : ""
                   }`}>
                     Table {qrAssignment?.tableNumber}
                   </p>
