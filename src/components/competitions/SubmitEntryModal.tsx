@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Upload, Loader2 } from "lucide-react";
 import { submitEntry } from "@/lib/actions/competitions";
 
@@ -93,11 +94,24 @@ export function SubmitEntryModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="glass rounded-[32px] border border-white/10 w-full max-w-2xl min-w-0 max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8 mx-4">
-        <div className="flex items-center justify-between mb-6 min-w-0">
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Prevent scrolling on body when modal is open
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto min-h-screen">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+      <div className="glass rounded-[32px] border border-white/10 w-full max-w-2xl min-w-0 max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8 mx-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-6 min-w-0 sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-4 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 -mt-6 sm:-mt-8 rounded-t-[32px]">
           <h2 className="text-xl font-light text-white">Submit Project</h2>
           <button
             onClick={onClose}
@@ -245,6 +259,7 @@ export function SubmitEntryModal({
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
