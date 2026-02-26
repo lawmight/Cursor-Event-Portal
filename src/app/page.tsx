@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getActiveEventSlug } from "@/lib/supabase/queries";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const activeSlug = await getActiveEventSlug();
   return (
     <main className="min-h-screen bg-black-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Subtle Depth Elements */}
@@ -33,7 +35,7 @@ export default function HomePage() {
 
         <div className="glass rounded-[40px] p-8 space-y-4 border-white/[0.05] animate-slide-up">
           <Link
-            href="/calgary-jan-2026"
+            href={`/${activeSlug}`}
             className="block w-full h-16 rounded-[24px] bg-white text-black flex items-center justify-center font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-gray-200 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] active:scale-[0.98]"
           >
             Event Dashboard

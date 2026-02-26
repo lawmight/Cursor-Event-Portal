@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       const { data: event, error: eventError } = await supabase
         .from("events")
         .select("id")
-        .eq("slug", "calgary-jan-2026")
+        .eq("slug", "calgary-feb-2026")
         .single();
 
       if (eventError || !event) {

@@ -79,6 +79,46 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
   }
 }
 
+/** Slug of the event currently shown to attendees (homepage link, etc.). Defaults to calgary-feb-2026 if unset. */
+export async function getActiveEventSlug(): Promise<string> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  try {
+    const directSupabase = createDirectClient(url, anonKey);
+    const { data } = await directSupabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "active_event_slug")
+      .single();
+    if (data?.value) return data.value;
+  } catch {
+    // ignore
+  }
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "active_event_slug")
+      .single();
+    if (data?.value) return data.value;
+  } catch {
+    // ignore
+  }
+  return "calgary-feb-2026";
+}
+
+/** All events (for admin venue selector). */
+export async function getAllEvents(): Promise<Pick<Event, "id" | "slug" | "name" | "venue" | "start_time" | "status">[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, slug, name, venue, start_time, status")
+    .order("start_time", { ascending: false });
+  if (error) return [];
+  return data ?? [];
+}
+
 export async function getEventStats(eventId: string) {
   const supabase = await createClient();
 

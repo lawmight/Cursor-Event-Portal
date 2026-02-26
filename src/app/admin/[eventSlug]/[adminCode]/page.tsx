@@ -1,4 +1,4 @@
-import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey } from "@/lib/supabase/queries";
+import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey, getActiveEventSlug, getAllEvents } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SimulateStartButton } from "@/components/admin/SimulateStartButton";
 import { EventSocialCard } from "@/components/admin/EventSocialCard";
+import { ActiveVenueSelector } from "@/components/admin/ActiveVenueSelector";
 import { checkAndUnlockAtStartTime } from "@/lib/actions/seating";
 import { validateAdminCode } from "@/lib/utils/admin";
 
@@ -50,6 +51,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
 
   // Check and auto-unlock at event start time
   await checkAndUnlockAtStartTime(event.id, eventSlug);
+
+  const [activeSlug, allEvents] = await Promise.all([getActiveEventSlug(), getAllEvents()]);
 
   return (
     <div className="min-h-screen bg-black-gradient text-white flex flex-col relative overflow-hidden">
@@ -89,6 +92,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
             <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium mt-1">Surveys</p>
           </div>
         </div>
+
+        <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} />
 
         {/* Capacity Progress */}
         <div className="glass rounded-[40px] p-10 border-white/20 animate-slide-up shadow-lg" style={{ animationDelay: "120ms" }}>
