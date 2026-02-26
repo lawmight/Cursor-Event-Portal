@@ -84,6 +84,7 @@ export default async function EventPage({ params }: EventPageProps) {
           <AttendeeCheckinForm
             eventId={event.id}
             eventSlug={eventSlug}
+            seatingEnabled={event.seating_enabled}
           />
         </div>
 

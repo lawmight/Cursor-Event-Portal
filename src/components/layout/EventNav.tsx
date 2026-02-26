@@ -32,7 +32,9 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
   const router = useRouter();
   const [hasActivePolls, setHasActivePolls] = useState(false);
   const [pollAlertVisible, setPollAlertVisible] = useState(false);
-  const [isLockoutActive, setIsLockoutActive] = useState(event?.seat_lockout_active ?? false);
+  const [isLockoutActive, setIsLockoutActive] = useState(
+    (event?.seat_lockout_active ?? false) && (event?.seating_enabled ?? true)
+  );
   const [hasLiveSlideDeck, setHasLiveSlideDeck] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [seenPollIds, setSeenPollIds] = useState<Set<string>>(new Set());
@@ -75,7 +77,7 @@ export function EventNav({ eventSlug, event, userId }: EventNavProps) {
         },
         (payload) => {
           const newEvent = payload.new as Event;
-          setIsLockoutActive(newEvent.seat_lockout_active);
+          setIsLockoutActive(newEvent.seat_lockout_active && (newEvent.seating_enabled ?? true));
         }
       )
       .subscribe();

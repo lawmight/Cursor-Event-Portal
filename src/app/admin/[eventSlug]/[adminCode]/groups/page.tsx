@@ -37,7 +37,7 @@ export default async function AdminGroupsPage({ params }: AdminGroupsPageProps) 
 
       <main className="max-w-6xl mx-auto px-6 py-8 w-full z-10 flex-1">
         <SeatingManagementClient
-          eventId={event.id}
+          event={event}
           eventSlug={eventSlug}
           adminCode={adminCode}
           intakes={intakes}

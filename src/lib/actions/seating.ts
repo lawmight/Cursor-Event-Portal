@@ -43,6 +43,35 @@ async function validateAdminAccess(
   return { valid: true as const };
 }
 
+export async function toggleSeatingEnabled(
+  eventId: string,
+  enabled: boolean,
+  eventSlug: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+
+  const auth = await validateAdminAccess(supabase, eventId, adminCode);
+  if (!auth.valid) {
+    return { error: auth.error || "Not authorized" };
+  }
+
+  const { error } = await supabase
+    .from("events")
+    .update({ seating_enabled: enabled })
+    .eq("id", eventId);
+
+  if (error) {
+    console.error("[toggleSeatingEnabled] Error:", error);
+    return { error: "Failed to update seating status" };
+  }
+
+  revalidatePath(getAdminPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}`);
+  revalidatePath(`/${eventSlug}/agenda`);
+  return { success: true };
+}
+
 export async function toggleSeatLockout(
   eventId: string,
   active: boolean,

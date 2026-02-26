@@ -43,8 +43,8 @@ export default async function EventLayout({ children, params }: EventLayoutProps
       {/* Analytics - track page views */}
       <PageTracker eventId={event.id} />
 
-      {/* Seat Assignment Banner - shows QR table and smart seating updates */}
-      {session?.userId && (
+      {/* Seat Assignment Banner - shows QR table and smart seating updates (only when seating is enabled) */}
+      {session?.userId && event.seating_enabled && (
         <SeatAssignmentBanner event={event} userId={session.userId} />
       )}
       <CountdownBar event={event} />

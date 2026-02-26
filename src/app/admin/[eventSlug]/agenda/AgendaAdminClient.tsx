@@ -6,8 +6,37 @@ import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createAgendaItem, updateAgendaItem, deleteAgendaItem, updateEventDetails } from "@/lib/actions/agenda";
 import type { Event, AgendaItem } from "@/types";
-import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User, Image, Settings, Check } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Clock, MapPin, User, Image, Settings, Check, Building2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { formatTime } from "@/lib/utils";
+
+// Venue presets
+type VenuePresetId = "platform-calgary" | "house-831";
+
+const VENUE_PRESETS: {
+  id: VenuePresetId;
+  label: string;
+  venue: string;
+  address: string;
+  description: string;
+  image: string | null;
+}[] = [
+  {
+    id: "platform-calgary",
+    label: "Platform Calgary",
+    venue: "Platform Calgary",
+    address: "700 2 St SW, Calgary, AB T2P 2W2",
+    description: "Innovation hub in downtown Calgary",
+    image: null,
+  },
+  {
+    id: "house-831",
+    label: "House 831",
+    venue: "House 831",
+    address: "831 17 Ave SW, Calgary, AB T2T 0A1",
+    description: "Coffee shop & event space on 17th Ave",
+    image: "/house-831.webp",
+  },
+];
 
 // Convert UTC ISO string to datetime-local format in MST
 function utcToMstLocal(utcString: string): string {
@@ -54,6 +83,8 @@ export function AgendaAdminClient({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingItem, setEditingItem] = useState<AgendaItem | null>(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
+  const [showVenuePresets, setShowVenuePresets] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<VenuePresetId>("house-831");
   const [eventName, setEventName] = useState(event.name);
   const [eventVenue, setEventVenue] = useState(event.venue || "");
   const [eventAddress, setEventAddress] = useState(event.address || "");
@@ -199,14 +230,19 @@ export function AgendaAdminClient({
     });
   };
 
-  const handleInitAgenda = async () => {
-    if (!confirm("This will create default agenda items for the event. Continue?")) return;
+  const handleInitAgenda = async (template: VenuePresetId = selectedTemplate, force = false) => {
+    const confirmMsg = force
+      ? "This will DELETE all existing agenda items and replace them with the template. Continue?"
+      : "This will create agenda items from the selected template. Continue?";
+    if (!confirm(confirmMsg)) return;
 
     setError(null);
     startTransition(async () => {
       try {
         const response = await fetch("/api/admin/init-agenda", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventSlug, adminCode, template, force }),
         });
 
         if (response.ok) {
@@ -272,6 +308,116 @@ export function AgendaAdminClient({
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
                 />
               </div>
+              {/* Venue Presets */}
+              <div className="border border-white/[0.06] rounded-2xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowVenuePresets(!showVenuePresets)}
+                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-4 h-4 text-gray-500" />
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">
+                      Venue Presets
+                    </span>
+                    {selectedTemplate && (
+                      <span className="text-[9px] text-gray-600 normal-case tracking-normal">
+                        — {VENUE_PRESETS.find(p => p.id === selectedTemplate)?.label}
+                      </span>
+                    )}
+                  </div>
+                  {showVenuePresets ? (
+                    <ChevronUp className="w-4 h-4 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-600" />
+                  )}
+                </button>
+                {showVenuePresets && (
+                  <div className="px-5 pb-5 pt-3 border-t border-white/[0.04] space-y-3">
+                    <p className="text-[10px] text-gray-600 leading-relaxed">
+                      Select a venue to auto-fill details below. Image, address and agenda template are all linked.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {VENUE_PRESETS.map((preset) => {
+                        const isSelected = selectedTemplate === preset.id;
+                        return (
+                          <div
+                            key={preset.id}
+                            className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 h-44 ${
+                              isSelected
+                                ? "ring-2 ring-white/60 shadow-[0_0_30px_rgba(255,255,255,0.08)]"
+                                : "ring-1 ring-white/[0.06] hover:ring-white/20"
+                            }`}
+                            onClick={() => {
+                              setSelectedTemplate(preset.id);
+                              setEventVenue(preset.venue);
+                              setEventAddress(preset.address);
+                            }}
+                          >
+                            {/* Background */}
+                            {preset.image ? (
+                              <img
+                                src={preset.image}
+                                alt={preset.label}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent" />
+                            )}
+
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 transition-opacity duration-300" />
+
+                            {/* Selection ring inner glow */}
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
+                            )}
+
+                            {/* Content */}
+                            <div className="relative z-10 h-full flex flex-col justify-between p-4">
+                              {/* Top: radio indicator */}
+                              <div className="flex justify-end">
+                                <div
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shadow-lg ${
+                                    isSelected
+                                      ? "border-white bg-white"
+                                      : "border-white/30 group-hover:border-white/60 bg-black/30 backdrop-blur-sm"
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <div className="w-2 h-2 rounded-full bg-black" />
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Bottom: venue info */}
+                              <div className="space-y-1">
+                                <p className="text-base font-medium text-white tracking-tight leading-tight">
+                                  {preset.label}
+                                </p>
+                                {/* Address slides up on hover */}
+                                <div className="flex items-start gap-1.5 transition-all duration-200 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0">
+                                  <MapPin className="w-3 h-3 text-white/50 flex-shrink-0 mt-0.5" />
+                                  <p className="text-[10px] text-white/55 leading-snug">
+                                    {preset.address}
+                                  </p>
+                                </div>
+                                <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] transition-colors group-hover:text-white/50">
+                                  {preset.description}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[9px] text-gray-700 pt-1">
+                      Fills in venue & address below. Click <strong className="text-gray-600">Save Details</strong> to persist.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium mb-2">
@@ -282,7 +428,7 @@ export function AgendaAdminClient({
                     value={eventVenue}
                     onChange={(e) => setEventVenue(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
-                    placeholder="e.g., Platform Innovation Centre"
+                    placeholder="e.g., House 831"
                   />
                 </div>
                 <div>
@@ -294,7 +440,7 @@ export function AgendaAdminClient({
                     value={eventAddress}
                     onChange={(e) => setEventAddress(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
-                    placeholder="e.g., 123 Main St, Calgary"
+                    placeholder="e.g., 831 17 Ave SW, Calgary"
                   />
                 </div>
               </div>
@@ -375,20 +521,97 @@ export function AgendaAdminClient({
 
         {/* Agenda Items */}
         {items.length === 0 ? (
-          <div className="text-center py-24 glass rounded-[40px] border-dashed border-white/5 space-y-6">
-            <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
-              No agenda items yet
-            </p>
-            <button
-              onClick={handleInitAgenda}
-              disabled={isPending}
-              className="px-8 py-4 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending ? "Initializing..." : "Initialize Default Agenda"}
-            </button>
+          <div className="glass rounded-[40px] border-dashed border-white/5 p-10 space-y-8">
+            <div className="text-center space-y-2">
+              <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600">
+                No agenda items yet
+              </p>
+              <p className="text-xs text-gray-700">Select a venue to initialize the agenda</p>
+            </div>
+            {/* Venue image cards */}
+            <div className="grid grid-cols-2 gap-4">
+              {VENUE_PRESETS.map((preset) => {
+                const isSelected = selectedTemplate === preset.id;
+                return (
+                  <div
+                    key={preset.id}
+                    className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 h-48 ${
+                      isSelected
+                        ? "ring-2 ring-white/60 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                        : "ring-1 ring-white/[0.06] hover:ring-white/20"
+                    }`}
+                    onClick={() => setSelectedTemplate(preset.id)}
+                  >
+                    {preset.image ? (
+                      <img
+                        src={preset.image}
+                        alt={preset.label}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+                    {isSelected && <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />}
+                    <div className="relative z-10 h-full flex flex-col justify-between p-4">
+                      <div className="flex justify-end">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shadow-lg ${isSelected ? "border-white bg-white" : "border-white/30 group-hover:border-white/60 bg-black/30 backdrop-blur-sm"}`}>
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-black" />}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-base font-medium text-white tracking-tight">{preset.label}</p>
+                        <div className="flex items-start gap-1.5 transition-all duration-200 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0">
+                          <MapPin className="w-3 h-3 text-white/50 flex-shrink-0 mt-0.5" />
+                          <p className="text-[10px] text-white/55 leading-snug">{preset.address}</p>
+                        </div>
+                        <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] group-hover:text-white/50 transition-colors">{preset.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => handleInitAgenda(selectedTemplate, false)}
+                disabled={isPending}
+                className="px-10 py-4 rounded-2xl bg-white text-black hover:bg-gray-200 transition-all text-[10px] uppercase tracking-[0.2em] font-bold shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isPending ? "Initializing..." : `Initialize ${VENUE_PRESETS.find(p => p.id === selectedTemplate)?.label} Agenda`}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Reset agenda action */}
+            <div className="flex items-center justify-between px-2 pb-2">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">
+                {items.length} item{items.length !== 1 ? "s" : ""}
+              </p>
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value as VenuePresetId)}
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-[10px] uppercase tracking-[0.1em] text-gray-400 focus:outline-none focus:border-white/20 cursor-pointer"
+                >
+                  {VENUE_PRESETS.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-black text-white">
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => handleInitAgenda(selectedTemplate, true)}
+                  disabled={isPending}
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-500 hover:text-white hover:border-white/20 transition-all text-[10px] uppercase tracking-[0.1em] disabled:opacity-30"
+                  title="Delete current agenda and apply selected template"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset & Apply
+                </button>
+              </div>
+            </div>
             {items.map((item) => (
               <div
                 key={item.id}

@@ -60,7 +60,7 @@ export function PreEventIntakeAccess({ eventId, eventSlug }: PreEventIntakeAcces
             Complete Intake Pre-Event
           </h3>
           <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-1">
-            Help us plan seating arrangements
+            Help us make better connections
           </p>
         </div>
       </div>
@@ -94,7 +94,7 @@ export function PreEventIntakeAccess({ eventId, eventSlug }: PreEventIntakeAcces
       </form>
 
       <p className="text-[9px] text-gray-600 text-center leading-relaxed pt-2">
-        Share your goals and offers to help us create better seating groups. This is optional and can be completed anytime before the event.
+        Share your goals and offers to help us facilitate better connections. This is optional and can be completed anytime before the event.
       </p>
     </div>
   );

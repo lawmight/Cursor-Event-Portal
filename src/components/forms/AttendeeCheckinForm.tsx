@@ -33,6 +33,7 @@ interface Attendee {
 interface AttendeeCheckinFormProps {
   eventId: string;
   eventSlug: string;
+  seatingEnabled?: boolean;
 }
 
 type Step =
@@ -106,6 +107,7 @@ const CURSOR_EXPERIENCE_OPTIONS: { value: CursorExperience; label: string }[] = 
 export function AttendeeCheckinForm({
   eventId,
   eventSlug,
+  seatingEnabled = true,
 }: AttendeeCheckinFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -697,7 +699,7 @@ export function AttendeeCheckinForm({
               </div>
               <div>
                 <h3 className="text-lg font-light text-white tracking-tight">
-                  Help Us Optimize Your Seating
+                  {seatingEnabled ? "Help Us Optimize Your Seating" : "Tell Us About Yourself"}
                 </h3>
                 <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] mt-0.5">
                   Optional · 10 seconds
@@ -705,8 +707,9 @@ export function AttendeeCheckinForm({
               </div>
             </div>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              Share what you're looking for and what you can offer. We will
-              use this to create meaningful table arrangements at 6:30 PM.
+              {seatingEnabled
+                ? "Share what you're looking for and what you can offer. We will use this to create meaningful table arrangements at 6:30 PM."
+                : "Share your goals and what you can offer. We'll use this to help facilitate better connections at the event."}
             </p>
           </div>
 
@@ -1169,29 +1172,31 @@ export function AttendeeCheckinForm({
             </div>
           </div>
 
-          {/* Seat Assignment Notice */}
-          <div className="glass rounded-3xl p-6 bg-white/[0.02] border-white/5 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <Phone className="w-6 h-6 text-white/60" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-light text-white tracking-tight">
-                  Your Table Is Registered
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock className="w-3.5 h-3.5 text-gray-500" />
-                  <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
-                    Seating updates will appear here
-                  </p>
+          {/* Seat Assignment Notice - only shown when seating is enabled */}
+          {seatingEnabled && (
+            <div className="glass rounded-3xl p-6 bg-white/[0.02] border-white/5 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-white/60" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-light text-white tracking-tight">
+                    Your Table Is Registered
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Clock className="w-3.5 h-3.5 text-gray-500" />
+                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">
+                      Seating updates will appear here
+                    </p>
+                  </div>
                 </div>
               </div>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Scan your table QR to register your seat. If smart seating activates,
+                you will see a new table assignment highlighted in the portal.
+              </p>
             </div>
-            <p className="text-[11px] text-gray-500 leading-relaxed">
-              Scan your table QR to register your seat. If smart seating activates,
-              you will see a new table assignment highlighted in the portal.
-            </p>
-          </div>
+          )}
 
           <button
             onClick={handleGoToAgenda}
