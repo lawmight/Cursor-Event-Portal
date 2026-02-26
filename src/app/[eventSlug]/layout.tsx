@@ -6,6 +6,9 @@ import { SeatAssignmentBanner } from "@/components/seating/SeatAssignmentBanner"
 import { PageTracker } from "@/components/analytics/PageTracker";
 import { CountdownBar } from "@/components/timer/CountdownBar";
 
+// Always run on server so getEventBySlug uses live DB (avoids static 404 at build time)
+export const dynamic = "force-dynamic";
+
 interface EventLayoutProps {
   children: React.ReactNode;
   params: Promise<{ eventSlug: string }>;

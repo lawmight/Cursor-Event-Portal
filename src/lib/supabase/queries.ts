@@ -28,30 +28,34 @@ import type {
 } from "@/types";
 
 // Event queries
+// Use limit(1) + take first row so we don't get PGRST116 when there are 0 or 2+ rows for a slug
 export async function getEventBySlug(slug: string): Promise<Event | null> {
-  // Prefer service role so event is always loadable even if RLS blocks anon (e.g. production)
-  try {
-    const service = await createServiceClient();
-    const { data, error } = await service
-      .from("events")
-      .select("*")
-      .eq("slug", slug)
-      .single();
-    if (!error && data) return data;
-  } catch {
-    // no service role (e.g. missing env), try anon
-  }
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  try {
-    const directSupabase = createDirectClient(url, anonKey);
-    const { data: directData, error: directError } = await directSupabase
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  const fetchOne = async (client: ReturnType<typeof createDirectClient>) => {
+    const { data, error } = await client
       .from("events")
       .select("*")
       .eq("slug", slug)
-      .single();
-    if (!directError && directData) return directData;
+      .limit(1);
+    if (error || !data?.length) return null;
+    return data[0] as Event;
+  };
+
+  if (url && serviceKey) {
+    try {
+      const event = await fetchOne(createDirectClient(url, serviceKey));
+      if (event) return event;
+    } catch {
+      // fall through
+    }
+  }
+
+  try {
+    const event = await fetchOne(createDirectClient(url, anonKey));
+    if (event) return event;
   } catch {
     // ignore
   }
@@ -62,8 +66,8 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
       .from("events")
       .select("*")
       .eq("slug", slug)
-      .single();
-    if (!error && data) return data;
+      .limit(1);
+    if (!error && data?.length) return data[0] as Event;
   } catch {
     // ignore
   }
