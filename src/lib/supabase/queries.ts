@@ -76,6 +76,37 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
   return null;
 }
 
+/** Look up an event by its admin_code (unique). Used for simplified admin URLs. */
+export async function getEventByAdminCode(adminCode: string): Promise<Event | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  const fetchOne = async (
+    client: ReturnType<typeof createDirectClient>
+  ): Promise<Event | null> => {
+    const { data, error } = await client
+      .from("events")
+      .select("*")
+      .eq("admin_code", adminCode)
+      .limit(1);
+    if (error || !data?.length) return null;
+    return data[0] as Event;
+  };
+
+  if (url && serviceKey) {
+    try {
+      const event = await fetchOne(createDirectClient(url, serviceKey));
+      if (event) return event;
+    } catch { /* fall through */ }
+  }
+  try {
+    const event = await fetchOne(createDirectClient(url, anonKey));
+    if (event) return event;
+  } catch { /* ignore */ }
+  return null;
+}
+
 /** Slug of the event currently shown to attendees (homepage link, etc.). Defaults to calgary-feb-2026 if unset. */
 export async function getActiveEventSlug(): Promise<string> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";

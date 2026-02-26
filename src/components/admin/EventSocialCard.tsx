@@ -109,7 +109,7 @@ export function EventSocialCard({
   }, [event.id, seenQuestionIds]);
 
   return (
-    <Link href={`/admin/${eventSlug}/${adminCode}/social`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>
+    <Link href={`/admin/${adminCode}/social`} className="animate-slide-up" style={{ animationDelay: "700ms" }}>
       <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group cursor-pointer relative overflow-hidden shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">

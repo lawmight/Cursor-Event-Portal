@@ -25,25 +25,25 @@ const TABS: Array<{ id: TabType; label: string; icon: typeof MessageCircle; href
     id: "qa",
     label: "Q&A",
     icon: MessageCircle,
-    href: (slug, code) => `/admin/${slug}/${code}/qa`,
+    href: (_slug, code) => `/admin/${code}/qa`,
   },
   {
     id: "surveys",
     label: "Surveys",
     icon: ClipboardCheck,
-    href: (slug, code) => `/admin/${slug}/${code}/surveys`,
+    href: (_slug, code) => `/admin/${code}/surveys`,
   },
   {
     id: "polls",
     label: "Polls",
     icon: Vote,
-    href: (slug, code) => `/admin/${slug}/${code}/polls`,
+    href: (_slug, code) => `/admin/${code}/polls`,
   },
   {
     id: "announcements",
     label: "Broadcast",
     icon: Megaphone,
-    href: (slug, code) => `/admin/${slug}/${code}/announcements`,
+    href: (_slug, code) => `/admin/${code}/announcements`,
   },
 ];
 

@@ -9,10 +9,15 @@ const nextConfig = {
   transpilePackages: ["pdfjs-dist"],
   async redirects() {
     return [
+      // Old attendee URL redirects
       { source: "/calgary-jan-2026", destination: "/calgary-feb-2026", permanent: true },
       { source: "/calgary-jan-2026/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
       { source: "/calgary-jan-26", destination: "/calgary-feb-2026", permanent: true },
       { source: "/calgary-jan-26/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
+      // Old admin URL format /admin/:slug/:code/:path* → /admin/:code/:path*
+      { source: "/admin/:slug/:code/:path*", destination: "/admin/:code/:path*", permanent: true },
+      // Old admin URL format /admin/:slug/:code → /admin/:code
+      { source: "/admin/:slug/:code", destination: "/admin/:code", permanent: true },
     ];
   },
   experimental: {

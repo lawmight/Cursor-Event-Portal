@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 interface AdminHeaderProps {
-  eventSlug: string;
   adminCode?: string;
+  eventSlug?: string; // kept for legacy compatibility, not used for routing
   title?: string;
   subtitle: string;
   rightElement?: React.ReactNode;
@@ -17,8 +17,8 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({
-  eventSlug,
   adminCode,
+  eventSlug,
   title = "Calgary Cursor Meetup",
   subtitle,
   rightElement,
@@ -27,8 +27,8 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   const router = useRouter();
 
-  // Always use adminCode format if available, otherwise fallback to old format
-  const adminPath = adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
+  // Use adminCode for new simplified routes; fall back to eventSlug for legacy
+  const adminPath = adminCode ? `/admin/${adminCode}` : (eventSlug ? `/admin/${eventSlug}` : "/admin/login");
 
   const handleLogout = async () => {
     const supabase = createClient();
