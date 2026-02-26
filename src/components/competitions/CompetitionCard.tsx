@@ -5,8 +5,33 @@ import { Trophy, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EntryCard } from "./EntryCard";
 import { SubmitEntryModal } from "./SubmitEntryModal";
-import { WinnerCelebration } from "./Confetti";
 import type { CompetitionWithEntries } from "@/types";
+
+/** Minimal winner celebration overlay (no external Confetti module). */
+function WinnerCelebration({ duration = 20000 }: { duration?: number }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), duration);
+    return () => clearTimeout(t);
+  }, [duration]);
+  if (!visible) return null;
+  return (
+    <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden rounded-[inherit]">
+      <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 to-transparent animate-pulse" />
+      {[...Array(12)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-2 h-2 rounded-full bg-yellow-400/80 animate-ping"
+          style={{
+            left: `${10 + (i * 8)}%`,
+            top: `${20 + (i % 3) * 25}%`,
+            animationDelay: `${i * 0.15}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 interface CompetitionCardProps {
   competition: CompetitionWithEntries;
