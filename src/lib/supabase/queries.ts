@@ -29,54 +29,45 @@ import type {
 
 // Event queries
 export async function getEventBySlug(slug: string): Promise<Event | null> {
-  console.log("[getEventBySlug] Looking for event with slug:", slug);
+  // Prefer service role so event is always loadable even if RLS blocks anon (e.g. production)
+  try {
+    const service = await createServiceClient();
+    const { data, error } = await service
+      .from("events")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    if (!error && data) return data;
+  } catch {
+    // no service role (e.g. missing env), try anon
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  console.log("[getEventBySlug] SUPABASE_URL:", url);
-  console.log("[getEventBySlug] ANON_KEY prefix:", anonKey.substring(0, 25));
-  console.log("[getEventBySlug] ANON_KEY length:", anonKey.length);
-
-  // Try direct client to bypass @supabase/ssr
   try {
-    console.log("[getEventBySlug] Trying DIRECT client...");
     const directSupabase = createDirectClient(url, anonKey);
     const { data: directData, error: directError } = await directSupabase
       .from("events")
       .select("*")
       .eq("slug", slug)
       .single();
-
-    if (directError) {
-      console.error("[getEventBySlug] DIRECT client error:", directError.message, directError.code);
-    } else {
-      console.log("[getEventBySlug] DIRECT client SUCCESS! Event:", directData?.id);
-      return directData;
-    }
-  } catch (err) {
-    console.error("[getEventBySlug] DIRECT client exception:", err);
+    if (!directError && directData) return directData;
+  } catch {
+    // ignore
   }
 
-  // Fallback to SSR client
   try {
-    console.log("[getEventBySlug] Trying SSR client...");
     const supabase = await createClient();
-    console.log("[getEventBySlug] SSR client created");
     const { data, error } = await supabase
       .from("events")
       .select("*")
       .eq("slug", slug)
       .single();
-
-    if (error) {
-      console.error("[getEventBySlug] SSR client error:", error.message, error.code);
-      return null;
-    }
-    console.log("[getEventBySlug] SSR client found event:", data?.id);
-    return data;
-  } catch (err) {
-    console.error("[getEventBySlug] SSR client exception:", err);
-    return null;
+    if (!error && data) return data;
+  } catch {
+    // ignore
   }
+  return null;
 }
 
 /** Slug of the event currently shown to attendees (homepage link, etc.). Defaults to calgary-feb-2026 if unset. */
