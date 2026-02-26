@@ -156,6 +156,8 @@ export async function updateEventDetails(
   revalidatePath(`/admin/${eventSlug}/agenda`);
   revalidatePath(`/${eventSlug}`);
   revalidatePath(`/${eventSlug}/agenda`);
+  // Revalidate event layout so attendee pages (header, check-in, agenda) show updated venue/address/image
+  revalidatePath(`/${eventSlug}`, "layout");
   return { success: true };
 }
 

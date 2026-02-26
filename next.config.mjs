@@ -7,6 +7,14 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["pdfjs-dist"],
+  async redirects() {
+    return [
+      { source: "/calgary-jan-2026", destination: "/calgary-feb-2026", permanent: true },
+      { source: "/calgary-jan-2026/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
+      { source: "/calgary-jan-26", destination: "/calgary-feb-2026", permanent: true },
+      { source: "/calgary-jan-26/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "2mb",
