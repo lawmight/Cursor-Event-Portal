@@ -34,7 +34,9 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  const fetchOne = async (client: ReturnType<typeof createDirectClient>) => {
+  const fetchOne = async (
+    client: ReturnType<typeof createDirectClient>
+  ): Promise<Event | null> => {
     const { data, error } = await client
       .from("events")
       .select("*")
