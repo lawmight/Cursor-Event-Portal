@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, ThumbsUp, ExternalLink, Code } from "lucide-react";
+import { Trophy, ThumbsUp, ExternalLink, Code, Users, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { castVote } from "@/lib/actions/competitions";
 import type { CompetitionEntry, VotingMode } from "@/types";
@@ -15,6 +15,9 @@ interface EntryCardProps {
   canVote: boolean;
   votingMode: VotingMode;
   isWinner: boolean;
+  isGroupWinner?: boolean;
+  isAdminWinner?: boolean;
+  isFinalist?: boolean;
 }
 
 function parseGitHubRepo(url: string): { owner: string; repo: string } | null {
@@ -60,6 +63,9 @@ export function EntryCard({
   canVote,
   votingMode,
   isWinner,
+  isGroupWinner = false,
+  isAdminWinner = false,
+  isFinalist = false,
 }: EntryCardProps) {
   const router = useRouter();
   const [voting, setVoting] = useState(false);
@@ -86,8 +92,14 @@ export function EntryCard({
     <div
       className={cn(
         "rounded-2xl border overflow-hidden transition-all",
-        isWinner
+        isAdminWinner
+          ? "border-yellow-500/40 bg-yellow-500/10"
+          : isGroupWinner
+          ? "border-blue-500/40 bg-blue-500/10"
+          : isWinner
           ? "border-yellow-500/30 bg-yellow-500/5"
+          : isFinalist
+          ? "border-purple-500/30 bg-purple-500/5"
           : "border-white/10 bg-white/5"
       )}
     >
@@ -139,10 +151,22 @@ export function EntryCard({
 
       <div className="p-5 space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {isWinner && <Trophy className="w-4 h-4 text-yellow-400" />}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {isAdminWinner && <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />}
+            {isGroupWinner && <Users className="w-4 h-4 text-blue-400 shrink-0" />}
+            {isWinner && !isAdminWinner && !isGroupWinner && <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />}
+            {isFinalist && !isAdminWinner && !isGroupWinner && <Star className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
             <h3 className="text-base font-medium text-white">{entry.title}</h3>
+            {isAdminWinner && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300">Admin Pick</span>
+            )}
+            {isGroupWinner && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300">People&apos;s Choice</span>
+            )}
+            {isFinalist && !isAdminWinner && !isGroupWinner && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300">Finalist</span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {entry.vote_count !== undefined && (
@@ -210,7 +234,7 @@ export function EntryCard({
           {/* Vote button */}
           {canVote && !isOwn && (
             <>
-              {votingMode === "judges" || votingMode === "both" ? (
+              {(votingMode === "judges" || votingMode === "both") ? (
                 <div className="flex items-center gap-2 ml-auto">
                   <select
                     value={judgeScore}
@@ -233,6 +257,7 @@ export function EntryCard({
                   </button>
                 </div>
               ) : (
+                // group + top3: simple upvote
                 <button
                   onClick={() => handleVote(1, false)}
                   disabled={voting}

@@ -12,6 +12,8 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Star,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +22,9 @@ import {
   deleteCompetition,
   updateCompetitionStatus,
   selectWinner,
+  selectTop3Entries,
+  selectAdminWinner,
+  finalizeGroupWinner,
 } from "@/lib/actions/competitions";
 import type { CompetitionWithEntries, CompetitionStatus } from "@/types";
 
@@ -53,15 +58,14 @@ export function CompetitionsAdminClient({
   const [competitions, setCompetitions] = useState(initialCompetitions);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Sync competitions from props when they change (after revalidation)
   useEffect(() => {
     setCompetitions(initialCompetitions);
   }, [initialCompetitions]);
 
-  // Debug: log on client mount
   useEffect(() => {
     console.log("[CompetitionsAdminClient] CLIENT MOUNTED:", { eventId, eventSlug, adminCode, competitionsCount: initialCompetitions.length });
   }, []);
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -73,9 +77,24 @@ export function CompetitionsAdminClient({
   const [newMaxEntries, setNewMaxEntries] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // top3: track which entries the admin has checked as finalists
+  const [top3Selections, setTop3Selections] = useState<Record<string, Set<string>>>({});
+
+  const toggleTop3Selection = (compId: string, entryId: string) => {
+    setTop3Selections((prev) => {
+      const current = new Set(prev[compId] || []);
+      if (current.has(entryId)) {
+        current.delete(entryId);
+      } else if (current.size < 3) {
+        current.add(entryId);
+      }
+      return { ...prev, [compId]: current };
+    });
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     console.log("[CompetitionsAdminClient] handleCreate START");
-    
+
     if (!newTitle.trim()) {
       setError("Title is required.");
       return;
@@ -83,7 +102,7 @@ export function CompetitionsAdminClient({
 
     setLoading("create");
     setError(null);
-    
+
     const payload = {
       title: newTitle.trim(),
       description: newDesc.trim() || undefined,
@@ -91,18 +110,15 @@ export function CompetitionsAdminClient({
       voting_mode: newVotingMode,
       max_entries: newMaxEntries ? (parseInt(newMaxEntries, 10) || undefined) : undefined,
     };
-    console.log("[CompetitionsAdminClient] Calling createCompetition with payload:", payload);
-    
+
     try {
       const result = await createCompetition(eventId, eventSlug, payload, adminCode);
-      console.log("[CompetitionsAdminClient] createCompetition result:", result);
 
       if (result && "error" in result && result.error) {
         setError(result.error);
         return;
       }
       if (result && "success" in result && result.success) {
-        console.log("[CompetitionsAdminClient] Success! Refreshing...");
         setNewTitle("");
         setNewDesc("");
         setNewRules("");
@@ -114,7 +130,6 @@ export function CompetitionsAdminClient({
       }
       setError("Create failed. No response from server.");
     } catch (err) {
-      console.error("[CompetitionsAdminClient] createCompetition failed:", err);
       const message = err instanceof Error ? err.message : "Create failed.";
       setError(message);
     } finally {
@@ -123,24 +138,20 @@ export function CompetitionsAdminClient({
   };
 
   const handleStatusChange = async (compId: string, nextStatus: string) => {
-    console.log("[CompetitionsAdminClient] handleStatusChange:", { compId, nextStatus });
     setLoading(compId);
     setError(null);
-    
+
     try {
       const result = await updateCompetitionStatus(compId, eventSlug, nextStatus, adminCode);
-      console.log("[CompetitionsAdminClient] updateCompetitionStatus result:", result);
-      
+
       if (result && "error" in result && result.error) {
         setError(result.error);
       } else if (result && "success" in result && result.success) {
-        console.log("[CompetitionsAdminClient] Status updated, refreshing...");
         router.refresh();
       } else {
         setError("Status update failed. No response from server.");
       }
     } catch (err) {
-      console.error("[CompetitionsAdminClient] handleStatusChange error:", err);
       setError(err instanceof Error ? err.message : "Status update failed.");
     } finally {
       setLoading(null);
@@ -158,6 +169,47 @@ export function CompetitionsAdminClient({
   const handleSelectWinner = async (compId: string, method: "auto" | "manual", entryId?: string) => {
     setLoading(compId);
     const result = await selectWinner(compId, eventSlug, method, entryId, adminCode);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+    }
+    setLoading(null);
+  };
+
+  const handleConfirmTop3 = async (compId: string) => {
+    const selected = top3Selections[compId];
+    if (!selected || selected.size !== 3) {
+      setError("Select exactly 3 finalists before confirming.");
+      return;
+    }
+    setLoading(compId);
+    setError(null);
+    const result = await selectTop3Entries(compId, eventSlug, Array.from(selected), adminCode);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+    }
+    setLoading(null);
+  };
+
+  const handleSelectAdminWinner = async (compId: string, entryId: string) => {
+    setLoading(compId);
+    setError(null);
+    const result = await selectAdminWinner(compId, eventSlug, entryId, adminCode);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      router.refresh();
+    }
+    setLoading(null);
+  };
+
+  const handleFinalizeGroupWinner = async (compId: string) => {
+    setLoading(compId);
+    setError(null);
+    const result = await finalizeGroupWinner(compId, eventSlug, adminCode);
     if (result.error) {
       setError(result.error);
     } else {
@@ -190,11 +242,10 @@ export function CompetitionsAdminClient({
 
       {/* Create form */}
       {showCreateForm && (
-        <form 
+        <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("[CompetitionsAdminClient] Form onSubmit fired");
             handleCreate(e);
           }}
           className="glass rounded-[32px] p-8 border-white/10 space-y-5"
@@ -245,6 +296,7 @@ export function CompetitionsAdminClient({
                 <option value="group" style={{ backgroundColor: "#fff", color: "#111" }}>Group (Upvote)</option>
                 <option value="judges" style={{ backgroundColor: "#fff", color: "#111" }}>Judges (1-5)</option>
                 <option value="both" style={{ backgroundColor: "#fff", color: "#111" }}>Both</option>
+                <option value="top3" style={{ backgroundColor: "#fff", color: "#111" }}>Top 3 (Admin picks finalists, dual prizes)</option>
               </select>
             </div>
             <div>
@@ -260,14 +312,23 @@ export function CompetitionsAdminClient({
             </div>
           </div>
 
+          {newVotingMode === "top3" && (
+            <div className="rounded-2xl bg-purple-500/10 border border-purple-500/20 p-4 text-xs text-purple-300 space-y-1">
+              <p className="font-medium">How Top 3 works:</p>
+              <ol className="list-decimal list-inside space-y-0.5 text-purple-400">
+                <li>Collect all project submissions (Active phase)</li>
+                <li>You select exactly 3 finalists from the entries</li>
+                <li>Open voting — the group upvotes their favorite finalist</li>
+                <li>You also pick your own winner from the 3 finalists</li>
+                <li>Two prizes are awarded: People&apos;s Choice + Admin Pick</li>
+              </ol>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
               disabled={loading === "create"}
-              onClick={(e) => {
-                console.log("[CompetitionsAdminClient] Create button onClick");
-                // Don't prevent default here - let form submit handle it
-              }}
               className="px-6 py-3 rounded-2xl bg-white text-black text-sm font-medium hover:bg-white/90 transition-all disabled:opacity-50"
             >
               {loading === "create" ? "Creating..." : "Create"}
@@ -287,6 +348,9 @@ export function CompetitionsAdminClient({
       {competitions.map((comp) => {
         const isExpanded = expandedId === comp.id;
         const action = statusActions[comp.status];
+        const isTop3 = comp.voting_mode === "top3";
+        const top3Ids = comp.top3_entry_ids || [];
+        const pendingTop3 = top3Selections[comp.id] || new Set<string>();
 
         return (
           <div key={comp.id} className="glass rounded-[32px] border-white/10 overflow-hidden">
@@ -302,10 +366,18 @@ export function CompetitionsAdminClient({
                     <span className={cn("text-[10px] uppercase tracking-[0.15em] font-medium px-2 py-0.5 rounded-full", statusBadge[comp.status])}>
                       {comp.status}
                     </span>
+                    {isTop3 && (
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400">
+                        Top 3 Mode
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500">
-                    {comp.entries?.length || 0} entries - {comp.voting_mode} voting
-                    {comp.winner_entry_id && " - Winner selected"}
+                    {comp.entries?.length || 0} entries
+                    {isTop3 && top3Ids.length === 3 && " - 3 finalists selected"}
+                    {isTop3 && comp.group_winner_entry_id && " - People's Choice set"}
+                    {isTop3 && comp.admin_winner_entry_id && " - Admin Pick set"}
+                    {!isTop3 && comp.winner_entry_id && " - Winner selected"}
                   </p>
                 </div>
                 {isExpanded ? (
@@ -336,15 +408,89 @@ export function CompetitionsAdminClient({
               </div>
             </div>
 
-            {/* Expanded: entries */}
+            {/* Expanded content */}
             {isExpanded && (
               <div className="border-t border-white/10 p-6 space-y-4">
                 {comp.description && (
                   <p className="text-sm text-gray-400">{comp.description}</p>
                 )}
 
-                {/* Winner selection (when ended or voting) */}
-                {(comp.status === "voting" || comp.status === "ended") && (
+                {/* ── TOP 3 MODE ── */}
+                {isTop3 && (
+                  <div className="space-y-4">
+                    {/* Step 1: Pick finalists (active phase, before top3 is locked) */}
+                    {comp.status === "active" && (
+                      <div className="bg-purple-500/10 rounded-2xl p-4 space-y-3 border border-purple-500/20">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-purple-400 font-medium">
+                          Step 1 — Select 3 Finalists
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Check exactly 3 entries below, then click Confirm Finalists. After that, open voting.
+                        </p>
+                        <p className="text-xs text-purple-300">
+                          {pendingTop3.size}/3 selected
+                          {top3Ids.length === 3 && (
+                            <span className="ml-2 text-green-400">
+                              (Finalists already saved — you can update them)
+                            </span>
+                          )}
+                        </p>
+                        {pendingTop3.size === 3 && (
+                          <button
+                            onClick={() => handleConfirmTop3(comp.id)}
+                            disabled={loading === comp.id}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/30 text-purple-200 text-xs font-medium hover:bg-purple-500/40 transition-all disabled:opacity-50"
+                          >
+                            <Star className="w-3.5 h-3.5" />
+                            Confirm Finalists
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 2: Admin winner + group winner (voting/ended) */}
+                    {(comp.status === "voting" || comp.status === "ended") && top3Ids.length === 3 && (
+                      <div className="space-y-3">
+                        {/* Admin Pick */}
+                        <div className="bg-yellow-500/10 rounded-2xl p-4 space-y-3 border border-yellow-500/20">
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-yellow-400 font-medium flex items-center gap-2">
+                            <Trophy className="w-3.5 h-3.5" />
+                            Admin Pick — click a finalist below to set your prize winner
+                          </p>
+                          {comp.admin_winner_entry_id && (
+                            <p className="text-xs text-yellow-300">
+                              Current Admin Pick: {comp.entries?.find((e) => e.id === comp.admin_winner_entry_id)?.title || "Unknown"}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* People's Choice */}
+                        <div className="bg-blue-500/10 rounded-2xl p-4 space-y-3 border border-blue-500/20">
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-blue-400 font-medium flex items-center gap-2">
+                            <Users className="w-3.5 h-3.5" />
+                            People&apos;s Choice — calculated from group votes on the 3 finalists
+                          </p>
+                          <button
+                            onClick={() => handleFinalizeGroupWinner(comp.id)}
+                            disabled={loading === comp.id}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 text-blue-300 text-xs font-medium hover:bg-blue-500/30 transition-all disabled:opacity-50"
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            Calculate People&apos;s Choice (by vote count)
+                          </button>
+                          {comp.group_winner_entry_id && (
+                            <p className="text-xs text-blue-300">
+                              Current People&apos;s Choice: {comp.entries?.find((e) => e.id === comp.group_winner_entry_id)?.title || "Unknown"}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── STANDARD MODES winner selection ── */}
+                {!isTop3 && (comp.status === "voting" || comp.status === "ended") && (
                   <div className="bg-white/5 rounded-2xl p-4 space-y-3">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
                       Winner Selection
@@ -373,60 +519,120 @@ export function CompetitionsAdminClient({
                     Entries ({comp.entries?.length || 0})
                   </p>
                   {comp.entries && comp.entries.length > 0 ? (
-                    comp.entries.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className={cn(
-                          "rounded-xl border p-4 flex items-center justify-between",
-                          entry.id === comp.winner_entry_id
-                            ? "border-yellow-500/30 bg-yellow-500/5"
-                            : "border-white/10 bg-white/5"
-                        )}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            {entry.id === comp.winner_entry_id && (
-                              <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-                            )}
-                            <span className="text-sm text-white">{entry.title}</span>
+                    comp.entries.map((entry) => {
+                      const isFinalist = top3Ids.includes(entry.id);
+                      const isPendingSelected = pendingTop3.has(entry.id);
+                      const isAdminWinner = entry.id === comp.admin_winner_entry_id;
+                      const isGroupWinner = entry.id === comp.group_winner_entry_id;
+                      const isWinner = entry.id === comp.winner_entry_id;
+
+                      return (
+                        <div
+                          key={entry.id}
+                          className={cn(
+                            "rounded-xl border p-4 flex items-center justify-between",
+                            isAdminWinner
+                              ? "border-yellow-500/40 bg-yellow-500/10"
+                              : isGroupWinner
+                              ? "border-blue-500/40 bg-blue-500/10"
+                              : isWinner
+                              ? "border-yellow-500/30 bg-yellow-500/5"
+                              : isFinalist
+                              ? "border-purple-500/30 bg-purple-500/5"
+                              : isPendingSelected
+                              ? "border-purple-500/50 bg-purple-500/10"
+                              : "border-white/10 bg-white/5"
+                          )}
+                        >
+                          <div className="space-y-1 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {isAdminWinner && <Trophy className="w-3.5 h-3.5 text-yellow-400 shrink-0" />}
+                              {isGroupWinner && <Users className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
+                              {isWinner && !isTop3 && <Trophy className="w-3.5 h-3.5 text-yellow-400 shrink-0" />}
+                              <span className="text-sm text-white">{entry.title}</span>
+                              {isFinalist && !isAdminWinner && !isGroupWinner && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300">Finalist</span>
+                              )}
+                              {isAdminWinner && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300">Admin Pick</span>
+                              )}
+                              {isGroupWinner && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300">People&apos;s Choice</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {entry.user?.name || "Unknown"} — {entry.vote_count || 0} vote{(entry.vote_count || 0) !== 1 ? "s" : ""}
+                            </p>
                           </div>
-                          <p className="text-xs text-gray-500">
-                            {entry.user?.name || "Unknown"} - {entry.vote_count || 0} votes
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={entry.repo_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg bg-white/5 text-gray-500 hover:text-white transition-all"
-                            title="GitHub"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                          {entry.project_url && (
+
+                          <div className="flex items-center gap-2 ml-3 shrink-0">
                             <a
-                              href={entry.project_url}
+                              href={entry.repo_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-1.5 rounded-lg bg-white/5 text-gray-500 hover:text-white transition-all"
-                              title="Live demo"
+                              title="GitHub"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
-                          )}
-                          {(comp.status === "voting" || comp.status === "ended") && (
-                            <button
-                              onClick={() => handleSelectWinner(comp.id, "manual", entry.id)}
-                              disabled={loading === comp.id}
-                              className="px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs hover:bg-yellow-500/20 transition-all disabled:opacity-50"
-                            >
-                              Pick Winner
-                            </button>
-                          )}
+                            {entry.project_url && (
+                              <a
+                                href={entry.project_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 rounded-lg bg-white/5 text-gray-500 hover:text-white transition-all"
+                                title="Live demo"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+
+                            {/* top3: checkbox for finalist selection (active phase) */}
+                            {isTop3 && comp.status === "active" && (
+                              <button
+                                onClick={() => toggleTop3Selection(comp.id, entry.id)}
+                                disabled={!isPendingSelected && pendingTop3.size >= 3}
+                                className={cn(
+                                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40",
+                                  isPendingSelected
+                                    ? "bg-purple-500/40 text-purple-200 hover:bg-purple-500/50"
+                                    : "bg-white/5 text-gray-400 hover:bg-white/10"
+                                )}
+                              >
+                                {isPendingSelected ? "Selected" : "Select"}
+                              </button>
+                            )}
+
+                            {/* top3: admin winner button (voting/ended) */}
+                            {isTop3 && (comp.status === "voting" || comp.status === "ended") && isFinalist && (
+                              <button
+                                onClick={() => handleSelectAdminWinner(comp.id, entry.id)}
+                                disabled={loading === comp.id}
+                                className={cn(
+                                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50",
+                                  isAdminWinner
+                                    ? "bg-yellow-500/30 text-yellow-200"
+                                    : "bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"
+                                )}
+                              >
+                                {isAdminWinner ? "Admin Pick" : "Set Admin Pick"}
+                              </button>
+                            )}
+
+                            {/* Standard modes: manual pick winner */}
+                            {!isTop3 && (comp.status === "voting" || comp.status === "ended") && (
+                              <button
+                                onClick={() => handleSelectWinner(comp.id, "manual", entry.id)}
+                                disabled={loading === comp.id}
+                                className="px-3 py-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 text-xs hover:bg-yellow-500/20 transition-all disabled:opacity-50"
+                              >
+                                Pick Winner
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="text-xs text-gray-600">No entries yet.</p>
                   )}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Trophy, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EntryCard } from "./EntryCard";
 import { SubmitEntryModal } from "./SubmitEntryModal";
+import { WinnerCelebration } from "./Confetti";
 import type { CompetitionWithEntries } from "@/types";
 
 interface CompetitionCardProps {
@@ -28,17 +29,93 @@ const statusColors: Record<string, string> = {
 export function CompetitionCard({ competition, eventSlug, userId }: CompetitionCardProps) {
   const [expanded, setExpanded] = useState(true);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const prevWinnerRef = useRef<string | null>(null);
+
+  const isTop3 = competition.voting_mode === "top3";
+  const top3Ids = competition.top3_entry_ids || [];
 
   const userHasEntry = competition.entries?.some((e) => e.user_id === userId);
   const canSubmit = competition.status === "active" && !userHasEntry;
   const canVote = competition.status === "voting";
 
+  const isInitialMount = useRef(true);
+
+  // Detect when any winner is newly announced (supports both single and dual winner modes)
+  const anyWinnerId = isTop3
+    ? competition.group_winner_entry_id || competition.admin_winner_entry_id
+    : competition.winner_entry_id;
+
+  useEffect(() => {
+    const currentWinnerId = anyWinnerId;
+    const previousWinnerId = prevWinnerRef.current;
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevWinnerRef.current = currentWinnerId ?? null;
+      return;
+    }
+
+    if (currentWinnerId && !previousWinnerId) {
+      setShowCelebration(true);
+      const timer = setTimeout(() => {
+        setShowCelebration(false);
+      }, 20000);
+      return () => clearTimeout(timer);
+    }
+
+    prevWinnerRef.current = currentWinnerId ?? null;
+  }, [anyWinnerId]);
+
   return (
-    <div className="glass rounded-[32px] border border-white/10 min-w-0 overflow-visible">
-      {/* Winner banner */}
-      {competition.winner_entry && (
-        <div className="bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-4 flex items-center gap-3">
-          <Trophy className="w-5 h-5 text-yellow-400" />
+    <div className="glass rounded-[32px] border border-white/10 min-w-0 overflow-visible relative">
+      {showCelebration && <WinnerCelebration duration={20000} />}
+
+      {/* ── top3 mode: dual winner banners ── */}
+      {isTop3 && (competition.group_winner_entry || competition.admin_winner_entry) && (
+        <div className="rounded-t-[32px] overflow-hidden">
+          {competition.group_winner_entry && (
+            <div className={cn(
+              "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 border-b border-blue-500/20 px-8 py-3 flex items-center gap-3",
+              showCelebration && "animate-pulse"
+            )}>
+              <Users className="w-4 h-4 text-blue-400 shrink-0" />
+              <span className="text-sm text-blue-300 font-medium">
+                People&apos;s Choice: {competition.group_winner_entry.title}
+                {competition.group_winner_entry.user && (
+                  <span className="text-blue-400/60 ml-1">
+                    by {competition.group_winner_entry.user.name}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+          {competition.admin_winner_entry && (
+            <div className={cn(
+              "bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-3 flex items-center gap-3",
+              showCelebration && "animate-pulse"
+            )}>
+              <Trophy className={cn("w-4 h-4 text-yellow-400 shrink-0", showCelebration && "animate-bounce")} />
+              <span className="text-sm text-yellow-300 font-medium">
+                Admin Pick: {competition.admin_winner_entry.title}
+                {competition.admin_winner_entry.user && (
+                  <span className="text-yellow-400/60 ml-1">
+                    by {competition.admin_winner_entry.user.name}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── standard mode: single winner banner ── */}
+      {!isTop3 && competition.winner_entry && (
+        <div className={cn(
+          "bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-4 flex items-center gap-3 rounded-t-[32px]",
+          showCelebration && "animate-pulse ring-2 ring-yellow-400/50 ring-offset-2 ring-offset-transparent"
+        )}>
+          <Trophy className={cn("w-5 h-5 text-yellow-400", showCelebration && "animate-bounce")} />
           <span className="text-sm text-yellow-300 font-medium">
             Winner: {competition.winner_entry.title}
             {competition.winner_entry.user && (
@@ -59,14 +136,19 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
           <h2 className="text-xl font-light text-white tracking-tight">
             {competition.title}
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <span className={cn("text-[10px] uppercase tracking-[0.2em] font-medium", statusColors[competition.status])}>
               {statusLabels[competition.status]}
             </span>
             <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">
               {competition.entries?.length || 0} entries
             </span>
-            {competition.voting_mode !== "group" && (
+            {isTop3 && (
+              <span className="text-[10px] uppercase tracking-[0.2em] text-purple-500 font-medium">
+                Top 3 — Dual Prizes
+              </span>
+            )}
+            {!isTop3 && competition.voting_mode !== "group" && (
               <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">
                 {competition.voting_mode} voting
               </span>
@@ -100,7 +182,17 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
             </div>
           )}
 
-          {/* Submit button - only when status is "active" */}
+          {/* top3 info banner during voting */}
+          {isTop3 && competition.status === "voting" && top3Ids.length === 3 && (
+            <div className="rounded-2xl bg-purple-500/10 border border-purple-500/20 px-5 py-4">
+              <p className="text-xs text-purple-300 font-medium mb-1">3 Finalists Selected</p>
+              <p className="text-xs text-gray-400">
+                Vote for your favorite finalist below. Two prizes will be awarded: a People&apos;s Choice (group votes) and an Admin Pick.
+              </p>
+            </div>
+          )}
+
+          {/* Submit button */}
           {canSubmit && (
             <button
               onClick={() => setShowSubmitModal(true)}
@@ -110,11 +202,11 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
             </button>
           )}
 
-          {/* Voting open but no entries yet */}
+          {/* Voting open but no entries */}
           {canVote && (!competition.entries || competition.entries.length === 0) && (
             <div className="rounded-2xl bg-white/5 border border-white/10 px-6 py-6 text-center">
               <p className="text-sm text-gray-400">
-                Voting is open, but there are no submissions yet. Vote buttons will appear here when projects are submitted.
+                Voting is open, but there are no submissions yet.
               </p>
             </div>
           )}
@@ -128,24 +220,41 @@ export function CompetitionCard({ competition, eventSlug, userId }: CompetitionC
             </div>
           )}
 
-          {/* Entries list - with vote buttons when voting is open */}
+          {/* Entries list */}
           {competition.entries && competition.entries.length > 0 && (
             <div className="space-y-4">
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                Submissions
+                {isTop3 && canVote && top3Ids.length === 3 ? "Finalists" : "Submissions"}
               </p>
-              {competition.entries.map((entry) => (
-                <EntryCard
-                  key={entry.id}
-                  entry={entry}
-                  competitionId={competition.id}
-                  eventSlug={eventSlug}
-                  userId={userId}
-                  canVote={canVote}
-                  votingMode={competition.voting_mode}
-                  isWinner={entry.id === competition.winner_entry_id}
-                />
-              ))}
+              {competition.entries.map((entry) => {
+                const isFinalist = top3Ids.includes(entry.id);
+                // In top3 mode during voting, only show/voteable the 3 finalists
+                const showEntry = !isTop3 || !canVote || isFinalist || competition.status !== "voting";
+                if (!showEntry) return null;
+
+                return (
+                  <EntryCard
+                    key={entry.id}
+                    entry={entry}
+                    competitionId={competition.id}
+                    eventSlug={eventSlug}
+                    userId={userId}
+                    canVote={canVote && (!isTop3 || isFinalist)}
+                    votingMode={competition.voting_mode}
+                    isWinner={entry.id === competition.winner_entry_id}
+                    isGroupWinner={entry.id === competition.group_winner_entry_id}
+                    isAdminWinner={entry.id === competition.admin_winner_entry_id}
+                    isFinalist={isTop3 && isFinalist}
+                  />
+                );
+              })}
+
+              {/* Show non-finalist entries collapsed during voting in top3 mode */}
+              {isTop3 && canVote && competition.entries.some((e) => !top3Ids.includes(e.id)) && (
+                <p className="text-xs text-gray-600 text-center pt-2">
+                  Other submissions are hidden during voting — only the 3 finalists are eligible.
+                </p>
+              )}
             </div>
           )}
         </div>

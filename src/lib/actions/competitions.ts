@@ -458,13 +458,21 @@ export async function castVote(
   // Check competition is in voting phase
   const { data: competition } = await supabase
     .from("competitions")
-    .select("status, voting_mode")
+    .select("status, voting_mode, top3_entry_ids")
     .eq("id", competitionId)
     .single();
 
   if (!competition) return { error: "Competition not found" };
   if (competition.status !== "voting") {
     return { error: "Voting is not open" };
+  }
+
+  // In top3 mode, only allow voting on the 3 selected finalists
+  if (competition.voting_mode === "top3") {
+    const top3 = competition.top3_entry_ids as string[] | null;
+    if (!top3 || !top3.includes(entryId)) {
+      return { error: "You can only vote on the three finalists" };
+    }
   }
 
   // Don't let users vote on their own entry
@@ -478,7 +486,7 @@ export async function castVote(
     return { error: "Cannot vote on your own entry" };
   }
 
-  // For group voting, score is always 1
+  // For group/top3 voting, score is always 1; for judges/both use 1-5
   const finalScore = isJudge ? Math.min(Math.max(score, 1), 5) : 1;
 
   // Upsert vote
@@ -502,6 +510,160 @@ export async function castVote(
 
   revalidatePath(`/${eventSlug}/competitions`);
   return { success: true };
+}
+
+// --- top3 mode actions ---
+
+export async function selectTop3Entries(
+  competitionId: string,
+  eventSlug: string,
+  entryIds: string[],
+  adminCode?: string
+): Promise<{ success?: true; error?: string }> {
+  if (entryIds.length !== 3) {
+    return { error: "You must select exactly 3 finalists" };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id, status, voting_mode")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+  if (competition.voting_mode !== "top3") return { error: "Not a top3 competition" };
+  if (!["active", "voting"].includes(competition.status)) {
+    return { error: "Can only select finalists while active or voting" };
+  }
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error ?? "Not authorized" };
+
+  const { error } = await supabase
+    .from("competitions")
+    .update({ top3_entry_ids: entryIds })
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[selectTop3Entries] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function selectAdminWinner(
+  competitionId: string,
+  eventSlug: string,
+  entryId: string,
+  adminCode?: string
+): Promise<{ success?: true; error?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id, status, voting_mode, top3_entry_ids")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+  if (competition.voting_mode !== "top3") return { error: "Not a top3 competition" };
+  if (!["voting", "ended"].includes(competition.status)) {
+    return { error: "Can only pick admin winner during voting or after competition ends" };
+  }
+
+  const top3 = competition.top3_entry_ids as string[] | null;
+  if (!top3 || !top3.includes(entryId)) {
+    return { error: "Admin winner must be one of the three finalists" };
+  }
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error ?? "Not authorized" };
+
+  const { error } = await supabase
+    .from("competitions")
+    .update({ admin_winner_entry_id: entryId })
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[selectAdminWinner] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function finalizeGroupWinner(
+  competitionId: string,
+  eventSlug: string,
+  adminCode?: string
+): Promise<{ success?: true; error?: string; winnerEntryId?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("event_id, status, voting_mode, top3_entry_ids")
+    .eq("id", competitionId)
+    .single();
+
+  if (!competition) return { error: "Competition not found" };
+  if (competition.voting_mode !== "top3") return { error: "Not a top3 competition" };
+
+  const top3 = competition.top3_entry_ids as string[] | null;
+  if (!top3 || top3.length !== 3) {
+    return { error: "Top 3 finalists have not been selected yet" };
+  }
+
+  const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
+  if (!auth.valid) return { error: auth.error ?? "Not authorized" };
+
+  // Count group votes (is_judge=false) only for the top3 entries
+  const { data: votes } = await supabase
+    .from("competition_votes")
+    .select("entry_id, score")
+    .eq("competition_id", competitionId)
+    .eq("is_judge", false)
+    .in("entry_id", top3);
+
+  if (!votes || votes.length === 0) {
+    return { error: "No group votes to calculate winner" };
+  }
+
+  const voteCounts = new Map<string, number>();
+  for (const v of votes) {
+    voteCounts.set(v.entry_id, (voteCounts.get(v.entry_id) || 0) + 1);
+  }
+
+  let winnerEntryId = "";
+  let maxVotes = 0;
+  for (const [eid, count] of Array.from(voteCounts)) {
+    if (count > maxVotes) {
+      maxVotes = count;
+      winnerEntryId = eid;
+    }
+  }
+
+  if (!winnerEntryId) return { error: "Could not determine group winner" };
+
+  const { error } = await supabase
+    .from("competitions")
+    .update({ group_winner_entry_id: winnerEntryId })
+    .eq("id", competitionId);
+
+  if (error) {
+    console.error("[finalizeGroupWinner] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true, winnerEntryId };
 }
 
 export async function removeVote(

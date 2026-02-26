@@ -1177,6 +1177,12 @@ export async function getActiveCompetitions(eventId: string): Promise<Competitio
         if (comp.winner_entry_id) {
           comp.winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.winner_entry_id) || null;
         }
+        if (comp.group_winner_entry_id) {
+          comp.group_winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.group_winner_entry_id) || null;
+        }
+        if (comp.admin_winner_entry_id) {
+          comp.admin_winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.admin_winner_entry_id) || null;
+        }
       }
     }
   }
@@ -1246,10 +1252,16 @@ export async function getAllCompetitions(eventId: string): Promise<CompetitionWi
           if (comp.winner_entry_id) {
             comp.winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.winner_entry_id) || null;
           }
+          if (comp.group_winner_entry_id) {
+            comp.group_winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.group_winner_entry_id) || null;
+          }
+          if (comp.admin_winner_entry_id) {
+            comp.admin_winner_entry = comp.entries.find((e: { id: string }) => e.id === comp.admin_winner_entry_id) || null;
+          }
         }
       }
     }
-    
+
     console.log("[getAllCompetitions] Found", data?.length || 0, "competitions with entries");
     return data || [];
   } catch (err) {

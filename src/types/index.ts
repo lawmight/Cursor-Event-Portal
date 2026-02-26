@@ -40,6 +40,7 @@ export interface Event {
   status: EventStatus;
   seat_lockout_active: boolean;
   smart_seating_active: boolean;
+  seating_enabled: boolean;
   survey_popup_visible: boolean;
   timezone: string;
   admin_code: string;
@@ -416,7 +417,7 @@ export interface PollWithVotes extends Poll {
 
 // Competition types
 export type CompetitionStatus = "draft" | "active" | "voting" | "ended";
-export type VotingMode = "group" | "judges" | "both";
+export type VotingMode = "group" | "judges" | "both" | "top3";
 export type WinnerMethod = "auto" | "manual";
 
 export interface Competition {
@@ -429,6 +430,10 @@ export interface Competition {
   voting_mode: VotingMode;
   winner_entry_id: string | null;
   winner_method: WinnerMethod | null;
+  // top3 mode fields
+  top3_entry_ids: string[] | null;
+  group_winner_entry_id: string | null;
+  admin_winner_entry_id: string | null;
   starts_at: string | null;
   ends_at: string | null;
   max_entries: number | null;
@@ -465,4 +470,7 @@ export interface CompetitionVote {
 export interface CompetitionWithEntries extends Competition {
   entries: CompetitionEntry[];
   winner_entry?: CompetitionEntry | null;
+  // top3 mode resolved entries
+  group_winner_entry?: CompetitionEntry | null;
+  admin_winner_entry?: CompetitionEntry | null;
 }
