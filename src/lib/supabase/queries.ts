@@ -136,6 +136,13 @@ export async function getActiveEventSlug(): Promise<string> {
   return "calgary-feb-2026";
 }
 
+/** Admin code of the active event (for /admin → /admin/[code] redirects). Returns null if not found. */
+export async function getActiveEventAdminCode(): Promise<string | null> {
+  const slug = await getActiveEventSlug();
+  const event = await getEventBySlug(slug);
+  return event?.admin_code ?? null;
+}
+
 /** All events (for admin venue selector). */
 export async function getAllEvents(): Promise<Pick<Event, "id" | "slug" | "name" | "venue" | "start_time" | "status">[]> {
   const supabase = await createClient();
