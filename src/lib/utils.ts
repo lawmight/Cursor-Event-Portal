@@ -30,12 +30,13 @@ export function formatTime(date: string | Date, timezone: string = "America/Edmo
   return `${formatter.format(d)} ${tzAbbr}`;
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date, timezone: string = "America/Edmonton"): string {
   const d = new Date(date);
   return d.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
+    timeZone: timezone,
   });
 }
 

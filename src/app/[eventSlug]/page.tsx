@@ -62,7 +62,7 @@ export default async function EventPage({ params }: EventPageProps) {
             <div className="flex flex-col items-center gap-1 text-gray-400 text-sm font-light tracking-wide">
               {event.start_time && (
                 <p className="text-white/70">
-                  {formatDate(event.start_time)} · {formatTime(event.start_time)}
+                  {formatDate(event.start_time, event.timezone || "America/Edmonton")} · {formatTime(event.start_time, event.timezone || "America/Edmonton")}
                 </p>
               )}
               {event.venue && (
