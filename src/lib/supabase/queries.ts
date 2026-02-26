@@ -133,7 +133,20 @@ export async function getActiveEventSlug(): Promise<string> {
   } catch {
     // ignore
   }
-  return "calgary-feb-2026";
+  // Last resort: return the most recently started event's slug
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("events")
+      .select("slug")
+      .order("start_time", { ascending: false })
+      .limit(1)
+      .single();
+    if (data?.slug) return data.slug;
+  } catch {
+    // ignore
+  }
+  return "";
 }
 
 /** Admin code of the active event (for /admin → /admin/[code] redirects). Returns null if not found. */

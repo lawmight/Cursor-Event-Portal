@@ -170,11 +170,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Admin access required" }, { status: 403 });
       }
 
-      // Fall back to hardcoded slug for legacy calls
+      // Fall back to active event slug for legacy calls
+      const { getActiveEventSlug } = await import("@/lib/supabase/queries");
+      const activeSlug = await getActiveEventSlug();
       const { data: event, error: eventError } = await supabase
         .from("events")
         .select("id")
-        .eq("slug", "calgary-feb-2026")
+        .eq("slug", activeSlug)
         .single();
 
       if (eventError || !event) {

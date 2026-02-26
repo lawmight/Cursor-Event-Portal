@@ -33,8 +33,8 @@ export default function AdminLoginPage() {
       }
 
       if (data.user) {
-        // Redirect to admin dashboard
-        router.push("/admin/feb2026");
+        // Redirect to admin root which auto-redirects to the active event
+        router.push("/admin");
         router.refresh();
       }
     } catch (err) {
