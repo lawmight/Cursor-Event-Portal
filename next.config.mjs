@@ -18,6 +18,23 @@ const nextConfig = {
       { source: "/admin/:slug/:code/:path+", destination: "/admin/:code/:path+", permanent: true },
       // Old admin URL format /admin/:slug/:code → /admin/:code (exact, no trailing path)
       { source: "/admin/:slug(calgary-[^/]+)/:code", destination: "/admin/:code", permanent: true },
+      // Short admin sub-page redirects → /admin/feb2026/:page
+      { source: "/admin/agenda", destination: "/admin/feb2026/agenda", permanent: false },
+      { source: "/admin/analytics", destination: "/admin/feb2026/analytics", permanent: false },
+      { source: "/admin/announcements", destination: "/admin/feb2026/announcements", permanent: false },
+      { source: "/admin/checkin", destination: "/admin/feb2026/checkin", permanent: false },
+      { source: "/admin/competitions", destination: "/admin/feb2026/competitions", permanent: false },
+      { source: "/admin/data", destination: "/admin/feb2026/data", permanent: false },
+      { source: "/admin/export", destination: "/admin/feb2026/export", permanent: false },
+      { source: "/admin/groups", destination: "/admin/feb2026/groups", permanent: false },
+      { source: "/admin/help", destination: "/admin/feb2026/help", permanent: false },
+      { source: "/admin/polls", destination: "/admin/feb2026/polls", permanent: false },
+      { source: "/admin/qa", destination: "/admin/feb2026/qa", permanent: false },
+      { source: "/admin/registrations", destination: "/admin/feb2026/registrations", permanent: false },
+      { source: "/admin/slides", destination: "/admin/feb2026/slides", permanent: false },
+      { source: "/admin/social", destination: "/admin/feb2026/social", permanent: false },
+      { source: "/admin/surveys", destination: "/admin/feb2026/surveys", permanent: false },
+      { source: "/admin/timer", destination: "/admin/feb2026/timer", permanent: false },
     ];
   },
   experimental: {
