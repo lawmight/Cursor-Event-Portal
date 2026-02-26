@@ -418,6 +418,85 @@ export async function addRegistrationByEmail(
   return { success: true, registration };
 }
 
+export async function saveRegistrationList(
+  eventId: string,
+  eventSlug: string,
+  adminCode?: string
+) {
+  const supabase = await createServiceClient();
+  let isAuthorized = false;
+
+  if (adminCode) {
+    const { data: event, error } = await supabase
+      .from("events")
+      .select("id, admin_code")
+      .eq("id", eventId)
+      .single();
+
+    if (!error && event && event.admin_code === adminCode) {
+      isAuthorized = true;
+    }
+  }
+
+  if (!isAuthorized) {
+    const session = await getSession();
+    if (session) {
+      const { data: staffUser } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.userId)
+        .single();
+
+      if (staffUser && ["staff", "admin"].includes(staffUser.role)) {
+        isAuthorized = true;
+      }
+    }
+  }
+
+  if (!isAuthorized) {
+    return { error: "Not authorized" };
+  }
+
+  const { data: registrations, error: fetchError } = await supabase
+    .from("registrations")
+    .select("user_id, created_at, checked_in_at, source, user:users(name, email)")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: true });
+
+  if (fetchError) {
+    return { error: "Failed to fetch registrations" };
+  }
+
+  const regs = registrations || [];
+  const totalRegistered = regs.length;
+  const totalCheckedIn = regs.filter((r) => r.checked_in_at).length;
+
+  const attendees = regs.map((r) => ({
+    user_id: r.user_id,
+    name: (r.user as { name?: string; email?: string } | null)?.name || "Unknown",
+    email: (r.user as { name?: string; email?: string } | null)?.email || null,
+    registered_at: r.created_at,
+    checked_in_at: r.checked_in_at || null,
+    source: r.source,
+  }));
+
+  const label = new Date().toLocaleString("en-CA", {
+    timeZone: "America/Edmonton",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const { error: insertError } = await supabase
+    .from("registration_list_snapshots")
+    .insert({ event_id: eventId, total_registered: totalRegistered, total_checked_in: totalCheckedIn, attendees, label });
+
+  if (insertError) {
+    return { error: "Failed to save registration list" };
+  }
+
+  return { success: true, totalRegistered, totalCheckedIn };
+}
+
 export async function clearEventRegistrations(
   eventId: string,
   eventSlug: string,

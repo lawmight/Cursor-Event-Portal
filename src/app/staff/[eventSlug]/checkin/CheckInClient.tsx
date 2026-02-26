@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
-import { checkIn, undoCheckIn, deregister, addRegistrationByEmail, clearEventRegistrations } from "@/lib/actions/registration";
+import { checkIn, undoCheckIn, deregister, addRegistrationByEmail, clearEventRegistrations, saveRegistrationList } from "@/lib/actions/registration";
 import type { Event, Registration, AgendaItem } from "@/types";
-import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2 } from "lucide-react";
+import { Search, UserCheck, UserX, Users, Clock, ArrowLeft, Trash2, Save } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AttendeeDetailModal } from "@/components/admin/AttendeeDetailModal";
@@ -63,6 +63,8 @@ export function CheckInClient({
     userName: string;
     userEmail: string | null;
   } | null>(null);
+  const [isSavingList, setIsSavingList] = useState(false);
+  const [saveListStatus, setSaveListStatus] = useState<"idle" | "success" | "error">("idle");
 
   const filteredRegistrations = registrations.filter((reg) => {
     const query = searchQuery.toLowerCase();
@@ -183,6 +185,22 @@ export function CheckInClient({
     }
   };
 
+  const handleSaveList = async () => {
+    setIsSavingList(true);
+    setSaveListStatus("idle");
+    try {
+      const result = await saveRegistrationList(event.id, event.slug, adminCode);
+      setSaveListStatus(result.success ? "success" : "error");
+      if (!result.success) setError(result.error || "Failed to save registration list");
+    } catch {
+      setSaveListStatus("error");
+      setError("Failed to save registration list");
+    } finally {
+      setIsSavingList(false);
+      setTimeout(() => setSaveListStatus("idle"), 3000);
+    }
+  };
+
   const handleClearAll = async () => {
     setError(null);
     setConfirmClearAll(false);
@@ -237,7 +255,31 @@ export function CheckInClient({
           </div>
         </div>
 
-        <div className="w-full">
+        <div className="flex flex-col gap-3 w-full">
+          {/* Save Registration List */}
+          <button
+            onClick={handleSaveList}
+            disabled={isSavingList || registrations.length === 0}
+            className={cn(
+              "w-full h-12 rounded-2xl border text-[10px] font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed",
+              saveListStatus === "success"
+                ? "bg-white/10 border-white/30 text-white"
+                : saveListStatus === "error"
+                ? "bg-red-500/10 border-red-500/30 text-red-400"
+                : "bg-white/[0.02] border-white/10 text-gray-400 hover:border-white/20 hover:text-white"
+            )}
+          >
+            <Save className="w-3.5 h-3.5" />
+            {isSavingList
+              ? "Saving..."
+              : saveListStatus === "success"
+              ? `Saved — ${registrations.length} registered, ${checkedInCount} checked in`
+              : saveListStatus === "error"
+              ? "Save Failed"
+              : "Save Registration List"}
+          </button>
+
+          {/* Remove All */}
           {confirmClearAll ? (
             <div className="flex items-center gap-3">
               <button
