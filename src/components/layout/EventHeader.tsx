@@ -210,12 +210,8 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
     return () => clearInterval(interval);
   }, [event.id, userId]);
 
-  // Event opens at 5:00 PM MST on Jan 28, 2026 = 2026-01-29T00:00:00Z (midnight UTC on Jan 29)
-  // Event starts at 5:30 PM MST = 2026-01-29T00:30:00Z
-  // Event ends at 8:30 PM MST = 2026-01-29T03:30:00Z
-  // Red threshold at 8:30 PM = 3 hours from start = 180 minutes
-  const eventStartTime = "2026-01-29T00:00:00Z";
-  const redThreshold = 180; // 3 hours = 8:30 PM
+  const eventStartTime = event.start_time || "2026-01-29T00:00:00Z";
+  const redThreshold = 180; // 3 hours from start
 
   return (
     <header className="sticky top-0 z-40">
