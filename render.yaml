@@ -17,3 +17,35 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      # Optional but recommended: secure cron endpoints
+      - key: CRON_SECRET
+        sync: false
+      - key: CRON_SECRET_KEY
+        sync: false
+
+  # Process scheduled announcements/polls
+  - type: cron
+    name: cursor-popup-portal-process-scheduled
+    env: node
+    schedule: "*/1 * * * *"
+    buildCommand: ""
+    startCommand: curl -sS -X GET "$APP_BASE_URL/api/cron/process-scheduled" -H "Authorization: Bearer $CRON_SECRET"
+    envVars:
+      # e.g. https://cursor-popup-portal.onrender.com (no trailing slash)
+      - key: APP_BASE_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+
+  # Delete expired attendee intake data based on event retention window
+  - type: cron
+    name: cursor-popup-portal-cleanup-intake-data
+    env: node
+    schedule: "0 2 * * *"
+    buildCommand: ""
+    startCommand: curl -sS -X POST "$APP_BASE_URL/api/cron/cleanup-intake-data" -H "Authorization: Bearer $CRON_SECRET_KEY"
+    envVars:
+      - key: APP_BASE_URL
+        sync: false
+      - key: CRON_SECRET_KEY
+        sync: false
