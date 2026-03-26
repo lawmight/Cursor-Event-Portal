@@ -20,6 +20,7 @@
 NUL
 test-build*.js
 test-bisect.js
+/.cursor/hooks/state/
 
 # debug
 npm-debug.log*

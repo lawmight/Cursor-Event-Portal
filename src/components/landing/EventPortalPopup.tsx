@@ -66,8 +66,8 @@ export default function EventPortalPopup({ isOpen, onClose, activeEventSlug }: E
             <div className="space-y-6">
               <div className="relative w-full max-w-[280px] mx-auto slow-spin">
                 <Image
-                  src="/cursor-calgary.avif"
-                  alt="Cursor Calgary"
+                  src="/cursor_china_photo/china-03.jpg"
+                  alt="Cursor community"
                   width={280}
                   height={140}
                   className="w-full h-auto rounded-2xl shadow-[0_0_60px_rgba(255,255,255,0.1)]"

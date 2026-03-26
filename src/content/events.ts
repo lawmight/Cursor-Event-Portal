@@ -17,8 +17,8 @@ export const events: CursorEvent[] = [
     displayDate: 'March 14–15, 2026',
     attendees: 72,
     location: 'Calgary, Canada',
-    thumbnail: '/event-venue-wide.jpg',
-    galleryImages: ['/event-winners-1st.jpg', '/event-winners-3rd.jpg'],
+    thumbnail: '/cursor_china_photo/china-10.png',
+    galleryImages: ['/cursor_china_photo/china-13.png', '/cursor_china_photo/china-08.png'],
     status: 'past',
   },
   {
@@ -27,8 +27,8 @@ export const events: CursorEvent[] = [
     date: '2026-03-11',
     displayDate: 'March 11, 2026',
     location: 'Calgary, Canada',
-    thumbnail: '/coworking-venue.jpg',
-    galleryImages: ['/coworking-whiteboard.jpg', '/coworking-group.jpg'],
+    thumbnail: '/cursor_china_photo/china-04.jpg',
+    galleryImages: ['/cursor_china_photo/china-05.png', '/cursor_china_photo/china-14.png'],
     status: 'past',
   },
   {
@@ -38,8 +38,8 @@ export const events: CursorEvent[] = [
     displayDate: 'February 25, 2026',
     attendees: 40,
     location: 'Calgary, Canada',
-    thumbnail: '/feb-meetup-group.jpg',
-    galleryImages: ['/feb-meetup-vr.jpg', '/feb-meetup-coding.jpg'],
+    thumbnail: '/cursor_china_photo/china-07.png',
+    galleryImages: ['/cursor_china_photo/china-09.png', '/cursor_china_photo/china-01.jpg'],
     status: 'past',
   },
 ];
