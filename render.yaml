@@ -1,5 +1,9 @@
 # Use this when Render is connected to the Cursor-Popup repo (app at repo root).
 # Root Directory in Render must be blank.
+#
+# Render cron jobs are commented out until launch (no scheduler cost or traffic).
+# To enable: uncomment CRON_* env vars on the web service below, then uncomment
+# both cron service blocks and set APP_BASE_URL / secrets in the Dashboard.
 services:
   - type: web
     name: cursor-popup-portal
@@ -17,3 +21,35 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      # Cron auth — uncomment when enabling Render cron services below
+      # - key: CRON_SECRET
+      #   sync: false
+      # - key: CRON_SECRET_KEY
+      #   sync: false
+
+  # --- Cron: process scheduled announcements/polls (every minute) ---
+  # - type: cron
+  #   name: cursor-popup-portal-process-scheduled
+  #   env: node
+  #   schedule: "*/1 * * * *"
+  #   buildCommand: ""
+  #   startCommand: curl -sS -X GET "$APP_BASE_URL/api/cron/process-scheduled" -H "Authorization: Bearer $CRON_SECRET"
+  #   envVars:
+  #     # e.g. https://cursor-popup-portal.onrender.com (no trailing slash)
+  #     - key: APP_BASE_URL
+  #       sync: false
+  #     - key: CRON_SECRET
+  #       sync: false
+
+  # --- Cron: delete expired attendee intake data (daily 2 AM UTC) ---
+  # - type: cron
+  #   name: cursor-popup-portal-cleanup-intake-data
+  #   env: node
+  #   schedule: "0 2 * * *"
+  #   buildCommand: ""
+  #   startCommand: curl -sS -X POST "$APP_BASE_URL/api/cron/cleanup-intake-data" -H "Authorization: Bearer $CRON_SECRET_KEY"
+  #   envVars:
+  #     - key: APP_BASE_URL
+  #       sync: false
+  #     - key: CRON_SECRET_KEY
+  #       sync: false
