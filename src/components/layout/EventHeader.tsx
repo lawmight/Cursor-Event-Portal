@@ -11,6 +11,7 @@ import { hasUserSeenItem, markItemAsSeen } from "@/lib/supabase/seenItems";
 import { MapPin } from "lucide-react";
 import { DemoStatusBadge } from "@/components/demos/DemoStatusBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { communityDisplayName, isEasterEggEventSlug, siteConfig } from "@/content/site.config";
 
 interface EventHeaderProps {
   event: Event;
@@ -35,7 +36,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
 
   // Listen for egg_1 being claimed by anyone
   useEffect(() => {
-    if (event.slug !== "calgary-march-2026") return;
+    if (!isEasterEggEventSlug(event.slug)) return;
     const handler = (e: globalThis.Event) => {
       if ((e as CustomEvent).detail?.eggId === "egg_1") setEgg1Found(true);
     };
@@ -220,7 +221,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
     <DemoStatusBadge
       eventId={event.id}
       eventSlug={event.slug}
-      timezone={event.timezone || "America/Edmonton"}
+      timezone={event.timezone || siteConfig.defaultTimezone}
     />
     <header className="sticky top-0 z-40">
       {showTimer && <EventTimer startTime={eventStartTime} redThreshold={redThreshold} />}
@@ -239,8 +240,8 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
               <div className="w-[86px] h-[86px] rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-2xl group-hover:scale-105 transition-all flex items-center justify-center p-1">
                 <div className="w-full h-full rounded-[14px] overflow-hidden">
                   <Image
-                    src="/cursor-calgary.avif"
-                    alt="Cursor Calgary"
+                    src={siteConfig.brandImagePath}
+                    alt={event.name || communityDisplayName()}
                     width={86}
                     height={86}
                     className="w-full h-full object-cover"
@@ -303,11 +304,11 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                     {event.venue_image_url && (
                       <div
                         className="w-full h-36 overflow-hidden relative group/venue-img cursor-pointer"
-                        title={event.slug === "calgary-march-2026" ? "👀" : undefined}
+                        title={isEasterEggEventSlug(event.slug) ? "👀" : undefined}
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          if (event.slug === "calgary-march-2026") {
+                          if (isEasterEggEventSlug(event.slug)) {
                             window.dispatchEvent(
                               new CustomEvent("egg-found", {
                                 detail: { eggId: "egg_1" },
@@ -318,7 +319,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                         onTouchEnd={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          if (event.slug === "calgary-march-2026") {
+                          if (isEasterEggEventSlug(event.slug)) {
                             window.dispatchEvent(
                               new CustomEvent("egg-found", {
                                 detail: { eggId: "egg_1" },

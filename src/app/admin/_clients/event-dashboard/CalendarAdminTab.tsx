@@ -1,5 +1,6 @@
 "use client";
 
+import { siteConfig } from "@/content/site.config";
 import { useState, useRef, useEffect } from "react";
 import {
   createPlannedEvent,
@@ -82,12 +83,14 @@ function groupByMonth(events: PlannedEvent[]) {
 
 function monthLabel(key: string) {
   const [y, m] = key.split("-").map(Number);
-  return new Date(y, m - 1).toLocaleDateString("en-CA", { month: "long", year: "numeric" });
+  return new Date(y, m - 1).toLocaleDateString("zh-CN", { month: "long", year: "numeric" });
 }
 
 export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }: CalendarAdminTabProps) {
   const [cities, setCities] = useState<EventCalendarCity[]>(initialCities);
-  const [activeCity, setActiveCity] = useState<string>(initialCities[0]?.name ?? "Calgary");
+  const [activeCity, setActiveCity] = useState<string>(
+    initialCities[0]?.name ?? siteConfig.city
+  );
   const [events, setEvents] = useState<PlannedEvent[]>(initialEvents);
   const [venues, setVenues] = useState<Venue[]>(initialVenues);
 
@@ -505,7 +508,7 @@ export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }
                         {/* Date block */}
                         <div className="shrink-0 text-center min-w-[44px]">
                           <p className="text-[10px] uppercase tracking-widest text-gray-600 font-medium leading-none">
-                            {new Date(ev.event_date + "T12:00:00").toLocaleDateString("en-CA", { month: "short" })}
+                            {new Date(ev.event_date + "T12:00:00").toLocaleDateString("zh-CN", { month: "short" })}
                           </p>
                           {ev.end_date && ev.end_date !== ev.event_date ? (
                             <p className="text-base font-light text-white/80 leading-tight">
@@ -781,7 +784,10 @@ function EventForm({
           >
             <option value="" className="bg-black text-gray-500">— select venue —</option>
             {venues.map((v) => (
-              <option key={v.id} value={v.id} className="bg-black">{v.name}{v.city !== "Calgary" ? ` · ${v.city}` : ""}</option>
+              <option key={v.id} value={v.id} className="bg-black">
+                {v.name}
+                {v.city !== siteConfig.city ? ` · ${v.city}` : ""}
+              </option>
             ))}
             <option value="__new__" className="bg-black text-gray-400">+ Add new venue…</option>
           </select>

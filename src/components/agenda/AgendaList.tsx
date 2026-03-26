@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { siteConfig } from "@/content/site.config";
 import { formatTime, isNow, isNext } from "@/lib/utils";
 import type { AgendaItem } from "@/types";
 import { MapPin, User, X, ChevronRight, Clock } from "lucide-react";
@@ -75,7 +76,7 @@ function getAgendaImage(title: string): { url: string; caption: string } | null 
   return null;
 }
 
-export function AgendaList({ items: initialItems, eventId, eventTimezone = "America/Edmonton", eventStartTime = null }: AgendaListProps) {
+export function AgendaList({ items: initialItems, eventId, eventTimezone = siteConfig.defaultTimezone, eventStartTime = null }: AgendaListProps) {
   const router = useRouter();
   const [items, setItems] = useState<AgendaItem[]>(initialItems);
   const [selectedItem, setSelectedItem] = useState<AgendaItem | null>(null);

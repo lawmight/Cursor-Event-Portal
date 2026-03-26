@@ -2,7 +2,7 @@
 -- Run this in Supabase SQL Editor with service role permissions
 
 -- Create admin users in auth.users table
--- Password: CursorCalgary2026
+-- Password: CursorShanghai2026
 
 -- First, delete existing users if they exist (to reset)
 DELETE FROM auth.users WHERE email IN (
@@ -12,7 +12,7 @@ DELETE FROM auth.users WHERE email IN (
   'carterhjm@hotmail.com'
 );
 
--- Insert admin users with the password "CursorCalgary2026"
+-- Insert admin users with the password "CursorShanghai2026"
 -- The password is hashed using bcrypt (Supabase's default)
 INSERT INTO auth.users (
   instance_id,
@@ -35,7 +35,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'simonloewen@gmail.com',
-    crypt('CursorCalgary2026', gen_salt('bf')),
+    crypt('CursorShanghai2026', gen_salt('bf')),
     NOW(),
     NOW(),
     NOW(),
@@ -50,7 +50,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'cal@neweraintelligence.com',
-    crypt('CursorCalgary2026', gen_salt('bf')),
+    crypt('CursorShanghai2026', gen_salt('bf')),
     NOW(),
     NOW(),
     NOW(),
@@ -65,7 +65,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'jia@jiaminghuang.com',
-    crypt('CursorCalgary2026', gen_salt('bf')),
+    crypt('CursorShanghai2026', gen_salt('bf')),
     NOW(),
     NOW(),
     NOW(),
@@ -80,7 +80,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'carterhjm@hotmail.com',
-    crypt('CursorCalgary2026', gen_salt('bf')),
+    crypt('CursorShanghai2026', gen_salt('bf')),
     NOW(),
     NOW(),
     NOW(),

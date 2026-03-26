@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { submitIntake, skipIntake } from "@/lib/actions/intake";
 import { submitSurveyConsent } from "@/lib/actions/consent";
+import { communityPortalName } from "@/content/site.config";
 import type {
   IntakeGoalTag,
   IntakeOfferTag,
@@ -437,7 +438,7 @@ export function AttendeeCheckinForm({
         <div className="space-y-8">
           <div className="text-center space-y-2">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
-              Cursor Calgary Portal
+              {communityPortalName()}
             </p>
             <p className="text-gray-500 text-sm font-light">
               Enter your registered email to access the portal
@@ -686,7 +687,7 @@ export function AttendeeCheckinForm({
                 Welcome!
               </h2>
               <p className="text-gray-500 text-sm font-light max-w-xs mx-auto">
-                You're now in the Cursor Calgary Portal, {foundAttendee?.name?.split(" ")[0]}!
+                You&apos;re now in the {communityPortalName()}, {foundAttendee?.name?.split(" ")[0]}!
               </p>
             </div>
           </div>

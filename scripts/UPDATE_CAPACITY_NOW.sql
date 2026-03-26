@@ -1,1 +1,1 @@
-UPDATE events SET capacity = 65 WHERE slug = 'calgary-jan-2026';
+UPDATE events SET capacity = 65 WHERE slug = 'shanghai-feb-2026';

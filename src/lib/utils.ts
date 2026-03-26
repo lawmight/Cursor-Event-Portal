@@ -1,3 +1,4 @@
+import { siteConfig } from "@/content/site.config";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -9,7 +10,10 @@ export function cn(...inputs: ClassValue[]) {
  * Format time in event's local timezone with timezone abbreviation
  * e.g., "6:00 PM MT"
  */
-export function formatTime(date: string | Date, timezone: string = "America/Edmonton"): string {
+export function formatTime(
+  date: string | Date,
+  timezone: string = siteConfig.defaultTimezone
+): string {
   const d = new Date(date);
   const formatter = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
@@ -20,7 +24,7 @@ export function formatTime(date: string | Date, timezone: string = "America/Edmo
   
   // Get timezone abbreviation
   const tzFormatter = new Intl.DateTimeFormat("en-US", {
-    timeZoneName: "short",
+    timeZoneName: "shortOffset",
     timeZone: timezone,
   });
   
@@ -30,7 +34,10 @@ export function formatTime(date: string | Date, timezone: string = "America/Edmo
   return `${formatter.format(d)} ${tzAbbr}`;
 }
 
-export function formatDate(date: string | Date, timezone: string = "America/Edmonton"): string {
+export function formatDate(
+  date: string | Date,
+  timezone: string = siteConfig.defaultTimezone
+): string {
   const d = new Date(date);
   return d.toLocaleDateString("en-US", {
     weekday: "long",

@@ -6,6 +6,7 @@ import { getIntakeStatus } from "@/lib/actions/intake";
 import { getSurveyConsentStatus } from "@/lib/actions/consent";
 import { createServiceClient } from "@/lib/supabase/server";
 import { IntakeForm } from "@/components/forms/IntakeForm";
+import { communityDisplayName, siteConfig } from "@/content/site.config";
 
 interface IntakePageProps {
   params: Promise<{ eventSlug: string }>;
@@ -63,8 +64,8 @@ export default async function IntakePage({ params }: IntakePageProps) {
         <div className="text-center space-y-4 floating">
           <div className="inline-flex w-20 h-20 rounded-3xl bg-white/5 backdrop-blur-3xl items-center justify-center border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.1)] mb-4 overflow-hidden">
             <Image
-              src="/cursor-calgary.avif"
-              alt="Cursor Calgary"
+              src={siteConfig.brandImagePath}
+              alt={communityDisplayName()}
               width={80}
               height={80}
               className="w-full h-full object-cover"

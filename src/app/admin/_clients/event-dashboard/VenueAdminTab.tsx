@@ -6,6 +6,7 @@ import { MapPin, Check } from "lucide-react";
 import { ActiveVenueSelector } from "@/components/admin/ActiveVenueSelector";
 import { updateEventDetails } from "@/lib/actions/agenda";
 import { updateVenue } from "@/lib/actions/event-dashboard";
+import { siteConfig } from "@/content/site.config";
 import type { Event, Venue } from "@/types";
 
 type EventOption = {
@@ -208,7 +209,7 @@ export function VenueAdminTab({
               value={eventAddress}
               onChange={(e) => setEventAddress(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
-              placeholder="e.g., 831 17 Ave SW, Calgary"
+              placeholder={siteConfig.venueAddressPlaceholder}
             />
           </div>
         </div>

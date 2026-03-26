@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { siteConfig } from "@/content/site.config";
 
 // ─── Theme Selection ──────────────────────────────────────────────────────────
 
@@ -146,7 +147,13 @@ export async function createVenue(data: { name: string; address?: string | null;
 
   const { data: row, error } = await supabase
     .from("venues")
-    .insert({ name, address: data.address?.trim() || null, city: data.city || "Calgary", image_url: data.image_url ?? null, sort_order: nextOrder })
+    .insert({
+      name,
+      address: data.address?.trim() || null,
+      city: data.city || siteConfig.city,
+      image_url: data.image_url ?? null,
+      sort_order: nextOrder,
+    })
     .select()
     .single();
 

@@ -1,5 +1,5 @@
--- Update agenda items for Calgary Jan 2026 event with correct times and titles
--- Correct schedule (MST):
+-- Update agenda items for the January 2026 event with correct times and titles
+-- Correct schedule (local event time):
 -- 5:30-6:00 PM - Arrivals and mingle
 -- 6:00-6:10 PM - Intro to Cursor
 -- 6:10-6:30 PM - Community demos
@@ -27,7 +27,7 @@ SET
   end_time = '2026-01-29T01:00:00Z',
   sort_order = 0,
   speaker = NULL
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 0;
 
 -- Update item 1: Welcome & Introductions -> Intro to Cursor (6:00-6:10 PM MST)
@@ -38,7 +38,7 @@ SET
   start_time = '2026-01-29T01:00:00Z',
   end_time = '2026-01-29T01:10:00Z',
   sort_order = 1
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 1;
 
 -- Update item 2: Short Demos -> Community Demos (6:10-6:30 PM MST)
@@ -49,7 +49,7 @@ SET
   start_time = '2026-01-29T01:10:00Z',
   end_time = '2026-01-29T01:30:00Z',
   sort_order = 2
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 2;
 
 -- Update item 3: Build Session -> Building (6:30-7:30 PM MST)
@@ -60,7 +60,7 @@ SET
   start_time = '2026-01-29T01:30:00Z',
   end_time = '2026-01-29T02:30:00Z',
   sort_order = 3
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 3;
 
 -- Update item 4: Blitz Demos & Community Voting -> Networking and Judging (7:30-7:45 PM MST)
@@ -71,7 +71,7 @@ SET
   start_time = '2026-01-29T02:30:00Z',
   end_time = '2026-01-29T02:45:00Z',
   sort_order = 4
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 4;
 
 -- Update item 5: Networking & Tear-Down -> Build Showcase (7:45-8:00 PM MST)
@@ -82,7 +82,7 @@ SET
   start_time = '2026-01-29T02:45:00Z',
   end_time = '2026-01-29T03:00:00Z',
   sort_order = 5
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 5;
 
 -- Insert item 6: Wind-Down (8:00-8:30 PM MST) if it doesn't exist
@@ -95,10 +95,10 @@ SELECT
   '2026-01-29T03:30:00Z',
   6
 FROM events
-WHERE slug = 'calgary-jan-2026'
+WHERE slug = 'legacy-jan-2026'
 AND NOT EXISTS (
   SELECT 1 FROM agenda_items 
-  WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+  WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
   AND sort_order = 6
 );
 
@@ -111,5 +111,5 @@ SELECT
   end_time,
   sort_order
 FROM agenda_items
-WHERE event_id IN (SELECT id FROM events WHERE slug = 'calgary-jan-2026')
+WHERE event_id IN (SELECT id FROM events WHERE slug = 'legacy-jan-2026')
 ORDER BY sort_order;

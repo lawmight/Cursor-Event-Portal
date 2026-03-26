@@ -1,7 +1,7 @@
 /**
  * Script to remove speaker from Build Session agenda item
- * 
- * This removes "Jia Ming Huang" from the Build Session since it's a group activity
+ *
+ * This removes "Jia Ming Huang" from the Build Session since it's a group activity.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -16,7 +16,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-const EVENT_SLUG = "calgary-jan-2026";
+const EVENT_SLUG = "shanghai-march-2026";
 
 async function removeBuildSessionSpeaker() {
   // Get event ID

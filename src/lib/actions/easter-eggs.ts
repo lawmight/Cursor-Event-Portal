@@ -3,8 +3,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 import { getEventBySlug } from "@/lib/supabase/queries";
-
-const EASTER_EVENT_SLUG = "calgary-march-2026";
+import { isEasterEggEventSlug } from "@/content/site.config";
 
 export interface EggRow {
   egg_id: string;
@@ -50,7 +49,7 @@ export async function claimEasterEgg(
   eggId: string,
   eventSlug: string
 ): Promise<{ success: boolean; message: string }> {
-  if (eventSlug !== EASTER_EVENT_SLUG) {
+  if (!isEasterEggEventSlug(eventSlug)) {
     return { success: false, message: "Cursor eggs are not available for this event." };
   }
 
@@ -163,7 +162,7 @@ export async function resetEasterEggs(
 }
 
 export async function getMyClaimedEggs(eventSlug: string): Promise<string[]> {
-  if (eventSlug !== EASTER_EVENT_SLUG) return [];
+  if (!isEasterEggEventSlug(eventSlug)) return [];
 
   const session = await getSession();
   if (!session) return [];

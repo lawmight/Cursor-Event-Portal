@@ -7,6 +7,7 @@ import { EventSubNav } from "@/components/agenda/EventSubNav";
 import { AttendeeThemesView } from "@/components/agenda/AttendeeThemesView";
 import { AttendeeCreditsView } from "@/components/agenda/AttendeeCreditsView";
 import { fetchMyCredits } from "@/lib/actions/cursor-credits";
+import { isEasterEggEventSlug, siteConfig } from "@/content/site.config";
 import type { AgendaItem, Event, ConversationTheme, CursorCredit } from "@/types";
 
 interface SeriesEvent {
@@ -47,7 +48,7 @@ export function EventPageClient({
     }
   };
 
-  const isEasterEvent = event.slug === "calgary-march-2026";
+  const isEasterEvent = isEasterEggEventSlug(event.slug);
 
   return (
     <main className="max-w-[704px] mx-auto w-full px-6 py-12 space-y-8 relative">
@@ -112,7 +113,7 @@ export function EventPageClient({
             <AgendaList
               items={agendaItems}
               eventId={event.id}
-              eventTimezone={event.timezone || "America/Edmonton"}
+              eventTimezone={event.timezone || siteConfig.defaultTimezone}
               eventStartTime={event.start_time}
             />
           </div>

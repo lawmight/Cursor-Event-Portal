@@ -5,6 +5,7 @@ import { getEventBySlug } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { getIntakeStatus } from "@/lib/actions/intake";
 import { createServiceClient } from "@/lib/supabase/server";
+import { siteConfig } from "@/content/site.config";
 import {
   getDemoAvailability,
   getDemoSlotsWithCounts,
@@ -68,7 +69,10 @@ export default async function DemosPage({ params }: DemoPageProps) {
       .maybeSingle(),
   ]);
 
-  const availability = getDemoAvailability(settings, event.timezone || "America/Edmonton");
+  const availability = getDemoAvailability(
+    settings,
+    event.timezone || siteConfig.defaultTimezone
+  );
 
   return (
     <main className="max-w-2xl mx-auto w-full px-6 py-12 space-y-8">
@@ -94,7 +98,7 @@ export default async function DemosPage({ params }: DemoPageProps) {
 
       <DemoSignupPanel
         eventSlug={eventSlug}
-        timezone={event.timezone || "America/Edmonton"}
+        timezone={event.timezone || siteConfig.defaultTimezone}
         availability={availability}
         speakerName={settings.speaker_name}
         slots={slots}

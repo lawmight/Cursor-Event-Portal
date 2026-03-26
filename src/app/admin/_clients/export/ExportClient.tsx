@@ -13,7 +13,7 @@ import {
   getAllEventsSurveyResponses,
 } from "@/lib/actions/export";
 
-const DOWNLOAD_PASSWORD = "CursorCalgary2026";
+const DOWNLOAD_PASSWORD = "EVENT_PORTAL_EXPORT_2026";
 
 interface ExportClientProps {
   event: Event;

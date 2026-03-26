@@ -1,6 +1,7 @@
 import { createClient, createServiceClient } from "./server";
 import { createClient as createDirectClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
+import { siteConfig } from "@/content/site.config";
 import type {
   Event,
   User,
@@ -112,7 +113,7 @@ export async function getEventByAdminCode(adminCode: string): Promise<Event | nu
   return null;
 }
 
-/** Slug of the event currently shown to attendees (homepage link, etc.). Defaults to calgary-feb-2026 if unset. */
+/** Slug of the event currently shown to attendees (homepage link, etc.). */
 export async function getActiveEventSlug(): Promise<string> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -151,7 +152,7 @@ export async function getActiveEventSlug(): Promise<string> {
   } catch {
     // ignore
   }
-  return "";
+  return siteConfig.defaultActiveEventSlug;
 }
 
 /** Admin code of the active event (for /admin → /admin/[code] redirects). Returns null if not found. */

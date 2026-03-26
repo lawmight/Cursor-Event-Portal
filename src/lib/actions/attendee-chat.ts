@@ -10,6 +10,7 @@ import {
   getOpenExchangePosts,
   getActiveCompetitions,
 } from "../supabase/queries";
+import { isEasterEggEventSlug } from "@/content/site.config";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -18,7 +19,6 @@ export interface ChatMessage {
   content: string;
 }
 
-const EASTER_EVENT_SLUG = "calgary-march-2026";
 const EASTER_KEYWORDS = [
   "easter",
   "egg hunt",
@@ -43,7 +43,7 @@ export async function attendeeChat(
     if (!event) return { reply: "", error: "Event not found." };
 
     // Easter egg trigger — chatbot egg_3
-    if (eventSlug === EASTER_EVENT_SLUG) {
+    if (isEasterEggEventSlug(eventSlug)) {
       const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() ?? "";
       const isEasterQuery = EASTER_KEYWORDS.some((kw) => lastUserMsg.includes(kw));
       if (isEasterQuery) {

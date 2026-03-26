@@ -4,6 +4,7 @@ import { ActiveVenueSelector } from "@/components/admin/ActiveVenueSelector";
 import { getEventForAdmin } from "@/lib/utils/admin";
 import { CalendarDays, CheckCircle2, Clock, Circle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { siteConfig } from "@/content/site.config";
 
 export const revalidate = 0;
 
@@ -79,7 +80,7 @@ export default async function AdminEventsPage({ params }: AdminEventsPageProps) 
                       {ev.start_time && (
                         <p className="text-[11px] text-gray-600 mt-0.5 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {formatDate(ev.start_time, "America/Edmonton")}
+                          {formatDate(ev.start_time, siteConfig.defaultTimezone)}
                         </p>
                       )}
                     </div>

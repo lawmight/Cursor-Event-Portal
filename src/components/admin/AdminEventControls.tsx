@@ -5,6 +5,7 @@ import { useTransition } from "react";
 import { setActiveEventSlug } from "@/lib/actions/settings";
 import { cn } from "@/lib/utils";
 import type { EventSummary } from "@/lib/supabase/queries";
+import { siteConfig } from "@/content/site.config";
 
 interface AdminEventControlsProps {
   events: EventSummary[];
@@ -14,8 +15,8 @@ interface AdminEventControlsProps {
 
 function eventLabel(ev: EventSummary) {
   if (!ev.start_time) return ev.name;
-  return new Date(ev.start_time).toLocaleDateString("en-CA", {
-    timeZone: "America/Edmonton",
+  return new Date(ev.start_time).toLocaleDateString("zh-CN", {
+    timeZone: siteConfig.defaultTimezone,
     month: "short",
     day: "numeric",
   });

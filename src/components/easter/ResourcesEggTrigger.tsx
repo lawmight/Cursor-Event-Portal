@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Info } from "lucide-react";
-
-const EASTER_EVENT_SLUG = "calgary-march-2026";
+import { isEasterEggEventSlug } from "@/content/site.config";
 
 export function ResourcesEggTrigger({ eventSlug }: { eventSlug: string }) {
   const [egg2Found, setEgg2Found] = useState(false);
 
   useEffect(() => {
-    if (eventSlug !== EASTER_EVENT_SLUG) return;
+    if (!isEasterEggEventSlug(eventSlug)) return;
     const handler = (e: globalThis.Event) => {
       if ((e as CustomEvent).detail?.eggId === "egg_2") setEgg2Found(true);
     };
@@ -17,7 +16,7 @@ export function ResourcesEggTrigger({ eventSlug }: { eventSlug: string }) {
     return () => window.removeEventListener("egg-globally-claimed", handler);
   }, [eventSlug]);
 
-  if (eventSlug !== EASTER_EVENT_SLUG) return null;
+  if (!isEasterEggEventSlug(eventSlug)) return null;
 
   const handleClick = () => {
     window.dispatchEvent(
