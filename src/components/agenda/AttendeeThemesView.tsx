@@ -75,7 +75,7 @@ export function AttendeeThemesView({ activeTheme }: AttendeeThemesViewProps) {
               <div
                 key={i}
                 className={cn(
-                  "h-12 rounded-xl border border-white/[0.06] bg-white/[0.02] animate-pulse",
+                  "h-12 rounded-xl border border-white/6 bg-white/2 animate-pulse",
                 )}
                 style={{ animationDelay: `${i * 80}ms`, animationDuration: "2s" }}
               />

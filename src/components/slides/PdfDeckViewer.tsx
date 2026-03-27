@@ -36,7 +36,11 @@ export function PdfDeckViewer({
 
     const configureWorker = () => {
       if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        const version = pdfjsLib.version || "5.4.530";
+        const version = pdfjsLib.version;
+        if (!version) {
+          console.error("Unable to determine pdfjs-dist version for worker setup");
+          return;
+        }
         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
       }
     };

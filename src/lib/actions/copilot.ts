@@ -3,7 +3,14 @@
 import OpenAI from "openai";
 import { createServiceClient } from "@/lib/supabase/server";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
+
+  return new OpenAI({ apiKey });
+}
 
 // ============================================================================
 // TYPES
@@ -141,6 +148,7 @@ export async function getOpsRecommendations(
   eventId: string
 ): Promise<{ recommendations: Recommendation[]; metrics: OpsMetrics }> {
   const metrics = await getOpsMetrics(eventId);
+  const openai = getOpenAIClient();
 
   const prompt = `You are an AI ops copilot for a live tech event facilitator. Analyze the real-time event metrics below and return a JSON array of actionable recommendations.
 

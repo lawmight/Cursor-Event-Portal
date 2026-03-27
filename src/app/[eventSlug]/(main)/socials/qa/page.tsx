@@ -48,7 +48,7 @@ export default async function SocialsQAPage({ params, searchParams }: SocialsQAP
     .single();
 
   return (
-    <main className="max-w-[40rem] mx-auto w-full px-6 py-12 space-y-12">
+    <main className="max-w-160 mx-auto w-full px-6 py-12 space-y-12">
       <SocialsSubNav eventSlug={eventSlug} />
 
       {/* Inner sub-toggle */}
@@ -87,7 +87,7 @@ export default async function SocialsQAPage({ params, searchParams }: SocialsQAP
               </h1>
             </div>
 
-            <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1 backdrop-blur-sm">
+            <div className="relative flex items-center bg-white/3 border border-white/10 rounded-full p-1 backdrop-blur-xs">
               <a
                 href={`/${eventSlug}/socials/qa?sort=trending`}
                 className={`relative px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] font-bold rounded-full transition-all duration-300 z-10 ${

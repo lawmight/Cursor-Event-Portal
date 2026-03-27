@@ -77,7 +77,7 @@ export function NotificationsListClient({ userId, eventId, initialNotifications 
   return (
     <div className="glass rounded-[40px] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-white/[0.04]">
+      <div className="flex items-center justify-between px-8 py-5 border-b border-white/4">
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">
           {unread > 0 ? `${unread} unread` : "All caught up"}
         </p>
@@ -106,8 +106,8 @@ export function NotificationsListClient({ userId, eventId, initialNotifications 
             <div
               key={n.id}
               className={cn(
-                "flex items-start gap-4 px-8 py-5 border-b border-white/[0.03] last:border-0 transition-all animate-slide-up",
-                !n.read_at && "bg-white/[0.02]"
+                "flex items-start gap-4 px-8 py-5 border-b border-white/3 last:border-0 transition-all animate-slide-up",
+                !n.read_at && "bg-white/2"
               )}
               style={{ animationDelay: `${i * 30}ms` }}
             >
@@ -124,7 +124,7 @@ export function NotificationsListClient({ userId, eventId, initialNotifications 
               {!n.read_at && (
                 <button
                   onClick={() => handleRead(n.id)}
-                  className="p-2 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-green-400 hover:border-green-400/20 transition-all shrink-0"
+                  className="p-2 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-green-400 hover:border-green-400/20 transition-all shrink-0"
                   title="Mark as read"
                 >
                   <Check className="w-3.5 h-3.5" />

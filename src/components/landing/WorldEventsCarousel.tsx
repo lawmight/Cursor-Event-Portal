@@ -39,7 +39,7 @@ const WorldEventsCarousel: React.FC = () => {
               className="object-cover group-hover:scale-110 transition-transform duration-300"
               sizes="(max-width: 768px) 50vw, 33vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent">
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <p className="text-white text-sm font-medium">{photo.location}</p>
                 {photo.date ? <p className="text-white/80 text-xs">{photo.date}</p> : null}

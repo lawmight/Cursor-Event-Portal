@@ -31,7 +31,7 @@ export default async function AdminEventsPage({ params }: AdminEventsPageProps) 
   return (
     <div className="min-h-screen bg-black-gradient text-white flex flex-col relative overflow-hidden">
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/1 rounded-full blur-[150px] pointer-events-none" />
 
       <AdminHeader
         eventSlug={event.slug}
@@ -95,7 +95,7 @@ export default async function AdminEventsPage({ params }: AdminEventsPageProps) 
         </div>
       </main>
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10 mt-auto">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10 mt-auto">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Events</p>
       </footer>

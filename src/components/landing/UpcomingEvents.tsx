@@ -87,7 +87,7 @@ const UpcomingEvents: React.FC = () => {
                 className="py-3 first:pt-0 last:pb-0"
               >
                 <div className="flex items-start gap-4">
-                  <span className="text-sm font-medium text-cursor-text-muted w-28 flex-shrink-0 pt-0.5">
+                  <span className="text-sm font-medium text-cursor-text-muted w-28 shrink-0 pt-0.5">
                     {shortDate}
                   </span>
                   <div className="flex-1 min-w-0">

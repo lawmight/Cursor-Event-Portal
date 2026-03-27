@@ -90,7 +90,7 @@ export function DemosAdminClient({ event, adminCode, settings, slots, embedded }
                 value={speakerName}
                 onChange={(e) => setSpeakerName(e.target.value)}
                 placeholder="Optional speaker name"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20"
               />
             </div>
             <div>
@@ -99,7 +99,7 @@ export function DemosAdminClient({ event, adminCode, settings, slots, embedded }
                 type="datetime-local"
                 value={opensAtLocal}
                 onChange={(e) => setOpensAtLocal(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-hidden focus:border-white/20"
               />
             </div>
             <div>
@@ -108,7 +108,7 @@ export function DemosAdminClient({ event, adminCode, settings, slots, embedded }
                 type="datetime-local"
                 value={closesAtLocal}
                 onChange={(e) => setClosesAtLocal(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-hidden focus:border-white/20"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@ export function DemosAdminClient({ event, adminCode, settings, slots, embedded }
 
           <div className="space-y-3">
             {slots.map((slot) => (
-              <div key={slot.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+              <div key={slot.id} className="rounded-2xl border border-white/10 bg-white/2 p-4">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm text-white">
                     {formatTime(slot.starts_at, timezone)} - {formatTime(slot.ends_at, timezone)}

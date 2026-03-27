@@ -209,10 +209,10 @@ export function ImportRegistrationsClient({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* CSV Input */}
-      <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+      <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
         <div className="flex items-center gap-4">
           <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Source Material</h3>
-          <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          <div className="h-px flex-1 bg-white/3" />
         </div>
 
         <div className="grid grid-cols-1 gap-8">
@@ -223,7 +223,7 @@ export function ImportRegistrationsClient({
               onChange={handleFileUpload}
               className="hidden"
             />
-            <div className="border border-dashed border-white/10 rounded-3xl p-12 text-center cursor-pointer hover:bg-white/[0.02] hover:border-white/20 transition-all">
+            <div className="border border-dashed border-white/10 rounded-3xl p-12 text-center cursor-pointer hover:bg-white/2 hover:border-white/20 transition-all">
               <Upload className="w-10 h-10 mx-auto mb-4 text-gray-700 group-hover:text-white transition-colors" />
               <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-600 group-hover:text-gray-400">
                 Transmit CSV File
@@ -236,7 +236,7 @@ export function ImportRegistrationsClient({
               placeholder={`Raw data input...\nname,email\nJohn Doe,john@example.com`}
               value={csvText}
               onChange={(e) => handleTextChange(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/[0.05] rounded-3xl p-8 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/20 transition-all text-sm font-mono min-h-[200px] resize-none"
+              className="w-full bg-white/2 border border-white/5 rounded-3xl p-8 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/20 transition-all text-sm font-mono min-h-[200px] resize-none"
             />
           </div>
         </div>
@@ -244,11 +244,11 @@ export function ImportRegistrationsClient({
 
       {/* Preview */}
       {parsed.length > 0 && (
-        <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+        <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-700 font-medium">Data Preview</h3>
-              <div className="h-[1px] w-20 bg-white/[0.03]" />
+              <div className="h-px w-20 bg-white/3" />
             </div>
             <div className="flex gap-6">
               <div className="flex items-center gap-3">
@@ -271,18 +271,18 @@ export function ImportRegistrationsClient({
                   <th className="pb-6 text-[10px] uppercase tracking-[0.3em] text-gray-800 font-medium">Contact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.02]">
+              <tbody className="divide-y divide-white/2">
                 {parsed.map((attendee, idx) => (
                   <tr key={idx} className="group">
                     <td className="py-4">
                       {attendee.status === "new" ? (
                         <span className="text-emerald-500 text-[10px] font-bold tracking-widest uppercase bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10">Active</span>
                       ) : (
-                        <span className="text-gray-700 text-[10px] font-bold tracking-widest uppercase bg-white/[0.02] px-3 py-1 rounded-full border border-white/[0.05]">Redundant</span>
+                        <span className="text-gray-700 text-[10px] font-bold tracking-widest uppercase bg-white/2 px-3 py-1 rounded-full border border-white/5">Redundant</span>
                       )}
                     </td>
                     <td className="py-4 text-sm font-light tracking-tight text-white/90">{attendee.name}</td>
-                    <td className="py-4 text-[10px] font-medium tracking-[0.1em] text-gray-700 uppercase">{attendee.email}</td>
+                    <td className="py-4 text-[10px] font-medium tracking-widest text-gray-700 uppercase">{attendee.email}</td>
                   </tr>
                 ))}
               </tbody>
@@ -351,7 +351,7 @@ export function ImportRegistrationsClient({
             setParsed([]);
             setResult(null);
           }}
-          className="px-10 h-16 rounded-full bg-white/[0.02] border border-white/10 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-white/5 transition-all"
+          className="px-10 h-16 rounded-full bg-white/2 border border-white/10 text-white font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-white/5 transition-all"
         >
           Reset
         </button>

@@ -84,7 +84,7 @@ export default async function DemosPage({ params }: DemoPageProps) {
             Choose one 5-minute slot. Each slot supports up to two attendees.
           </p>
         </div>
-        <div className="relative w-full sm:w-64 sm:flex-shrink-0 rounded-2xl overflow-hidden border border-white/10 bg-white/[0.02]">
+        <div className="relative w-full sm:w-64 sm:shrink-0 rounded-2xl overflow-hidden border border-white/10 bg-white/2">
           <Image
             src="/Adventure.png"
             alt="Live demos and immersive experiences"

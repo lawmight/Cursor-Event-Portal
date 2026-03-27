@@ -62,7 +62,7 @@ const PastEvents: React.FC = () => {
                 {event.thumbnail ? (
                   <div className="relative">
                     <div
-                      className={`aspect-[2/1] overflow-hidden ${hasGallery ? 'grid grid-cols-3 gap-1' : ''}`}
+                      className={`aspect-2/1 overflow-hidden ${hasGallery ? 'grid grid-cols-3 gap-1' : ''}`}
                     >
                       <div className={`relative ${hasGallery ? 'col-span-2' : ''}`}>
                         <Image

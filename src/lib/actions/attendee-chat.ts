@@ -12,7 +12,13 @@ import {
 } from "../supabase/queries";
 import { isEasterEggEventSlug } from "@/content/site.config";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -106,6 +112,7 @@ App features you can mention:
 
 If you don't know something specific, direct them to the relevant section of the app or suggest they ask the facilitator.`;
 
+    const openai = getOpenAIClient();
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "system", content: systemPrompt }, ...messages],

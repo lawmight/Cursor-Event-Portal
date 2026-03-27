@@ -160,7 +160,7 @@ export function PollsAdminClient({
           {scheduledItems.map((item) => (
             <div
               key={item.id}
-              className="glass rounded-[28px] p-5 border-white/[0.04] flex items-center gap-4"
+              className="glass rounded-[28px] p-5 border-white/4 flex items-center gap-4"
             >
               <CalendarClock className="w-4 h-4 text-amber-400 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ export function PollsAdminClient({
               </div>
               <button
                 onClick={() => handleCancelScheduled(item.id)}
-                className="w-8 h-8 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-400 hover:border-red-400/20 transition-all flex items-center justify-center"
+                className="w-8 h-8 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-red-400 hover:border-red-400/20 transition-all flex items-center justify-center"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -306,7 +306,7 @@ export function PollsAdminClient({
 
       {content}
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Live Polls</p>
       </footer>
@@ -392,7 +392,7 @@ function CreatePollModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
       <div
         className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-[32px] p-8 animate-slide-up overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
@@ -420,7 +420,7 @@ function CreatePollModal({
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="What would you like to ask?"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30"
             />
           </div>
 
@@ -440,7 +440,7 @@ function CreatePollModal({
                     setOptions(newOptions);
                   }}
                   placeholder={`Option ${index + 1}`}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30"
                 />
                 {options.length > 2 && (
                   <button type="button" onClick={() => handleRemoveOption(index)} className="p-2 text-gray-600 hover:text-red-400 transition-colors">
@@ -509,7 +509,7 @@ function CreatePollModal({
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-hidden focus:border-white/30"
                 />
               </div>
             )}

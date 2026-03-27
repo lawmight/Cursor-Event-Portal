@@ -102,7 +102,7 @@ export function NotificationPreferencesPanel({ userId, eventId, hasEmail }: Noti
       <div className="glass rounded-[40px] p-8 animate-pulse">
         <div className="h-4 w-32 bg-white/5 rounded-full mb-6" />
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex justify-between items-center py-4 border-b border-white/[0.03]">
+          <div key={i} className="flex justify-between items-center py-4 border-b border-white/3">
             <div className="h-3 w-40 bg-white/5 rounded-full" />
             <div className="flex gap-6">
               <div className="w-10 h-5 bg-white/5 rounded-full" />
@@ -128,7 +128,7 @@ export function NotificationPreferencesPanel({ userId, eventId, hasEmail }: Noti
       </div>
 
       {/* Column headers */}
-      <div className="flex items-center justify-end gap-6 px-1 pb-1 border-b border-white/[0.04]">
+      <div className="flex items-center justify-end gap-6 px-1 pb-1 border-b border-white/4">
         <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] text-gray-700 font-medium">
           <Smartphone className="w-3 h-3" />
           In-App
@@ -147,7 +147,7 @@ export function NotificationPreferencesPanel({ userId, eventId, hasEmail }: Noti
         {ROWS.map((row) => (
           <div
             key={row.label}
-            className="flex items-center justify-between py-3 border-b border-white/[0.03] last:border-0"
+            className="flex items-center justify-between py-3 border-b border-white/3 last:border-0"
           >
             <div>
               <p className="text-sm text-white font-light">{row.label}</p>

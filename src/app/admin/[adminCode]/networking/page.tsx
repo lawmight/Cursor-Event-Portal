@@ -24,8 +24,8 @@ export default async function AdminNetworkingPage({
 
   return (
     <div className="min-h-screen bg-black-gradient text-white flex flex-col relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.01] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/2 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/1 rounded-full blur-[150px] pointer-events-none" />
 
       <AdminHeader adminCode={adminCode} subtitle="Speed Networking" />
 
@@ -39,7 +39,7 @@ export default async function AdminNetworkingPage({
         />
       </main>
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Speed Networking</p>
       </footer>

@@ -75,11 +75,11 @@ export function PreEventIntakeAccess({ eventId, eventSlug }: PreEventIntakeAcces
           }}
           placeholder="Enter your registered email"
           disabled={isLoading}
-          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all text-sm"
+          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all text-sm"
         />
 
         {error && (
-          <p className="text-[10px] text-red-400/80 uppercase tracking-[0.1em]">
+          <p className="text-[10px] text-red-400/80 uppercase tracking-widest">
             {error}
           </p>
         )}

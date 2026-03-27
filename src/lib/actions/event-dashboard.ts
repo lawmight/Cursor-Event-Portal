@@ -207,7 +207,6 @@ function localDateTime(utcIso: string, timezone: string) {
   return { date, time };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseNextDataEvent(ev: any): ScrapedLumaEvent {
   const tz: string = ev.timezone ?? "UTC";
 
@@ -231,7 +230,6 @@ function parseNextDataEvent(ev: any): ScrapedLumaEvent {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseJsonLdEvent(ld: any): ScrapedLumaEvent {
   const startRaw: string = ld.startDate ?? "";
   const endRaw: string = ld.endDate ?? "";

@@ -266,7 +266,7 @@ export function CheckInClient({
                 ? "bg-white/10 border-white/30 text-white"
                 : saveListStatus === "error"
                 ? "bg-red-500/10 border-red-500/30 text-red-400"
-                : "bg-white/[0.02] border-white/10 text-gray-400 hover:border-white/20 hover:text-white"
+                : "bg-white/2 border-white/10 text-gray-400 hover:border-white/20 hover:text-white"
             )}
           >
             <Save className="w-3.5 h-3.5" />
@@ -299,7 +299,7 @@ export function CheckInClient({
           ) : (
             <button
               onClick={() => setConfirmClearAll(true)}
-              className="w-full h-12 rounded-2xl bg-white/[0.02] border border-white/10 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:border-red-500/30 hover:bg-red-500/10 transition-all"
+              className="w-full h-12 rounded-2xl bg-white/2 border border-white/10 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] hover:border-red-500/30 hover:bg-red-500/10 transition-all"
             >
               Remove All
             </button>
@@ -325,7 +325,7 @@ export function CheckInClient({
               <span className="text-blue-400/70">Registered</span>
               <span className="text-blue-400/70">{registrations.length} / {event.capacity}</span>
             </div>
-            <div className="h-[3px] bg-white/[0.05] rounded-full overflow-hidden">
+            <div className="h-[3px] bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-400 transition-all duration-1000 ease-out"
                 style={{ width: `${Math.min((registrations.length / event.capacity) * 100, 100)}%` }}
@@ -338,7 +338,7 @@ export function CheckInClient({
               <span className="text-green-400/70">Checked In</span>
               <span className="text-green-400/70">{checkedInCount} / {event.capacity}</span>
             </div>
-            <div className="h-[3px] bg-white/[0.05] rounded-full overflow-hidden">
+            <div className="h-[3px] bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-green-400 transition-all duration-1000 ease-out"
                 style={{ width: `${Math.min((checkedInCount / event.capacity) * 100, 100)}%` }}
@@ -363,7 +363,7 @@ export function CheckInClient({
               placeholder="Search attendees"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-16 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
+              className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-16 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-2xl font-light"
             />
           </div>
 
@@ -380,7 +380,7 @@ export function CheckInClient({
                   handleAddRegistration();
                 }
               }}
-              className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-4 h-12 text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
+              className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-4 h-12 text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30 transition-all text-sm font-light"
             />
             <button
               onClick={handleAddRegistration}
@@ -410,7 +410,7 @@ export function CheckInClient({
                   key={registration.id}
                   className={cn(
                     "glass rounded-[32px] p-6 transition-all duration-500 animate-slide-up flex items-center justify-between gap-6 group relative overflow-hidden",
-                    isCheckedIn ? "bg-white/[0.04] border-white/20" : "bg-white/[0.01] border-white/5"
+                    isCheckedIn ? "bg-white/4 border-white/20" : "bg-white/1 border-white/5"
                   )}
                   style={{ animationDelay: `${index * 30}ms` }}
                   onClick={(e) => {
@@ -434,7 +434,7 @@ export function CheckInClient({
                           "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-light transition-all border",
                           isCheckedIn
                             ? "bg-white border-white text-black"
-                            : "bg-white/[0.02] border-white/5 text-gray-600"
+                            : "bg-white/2 border-white/5 text-gray-600"
                         )}
                       >
                         {registration.user?.name.charAt(0).toUpperCase()}
@@ -474,7 +474,7 @@ export function CheckInClient({
                                 "w-10 h-10 rounded-xl flex items-center justify-center text-base font-light transition-all border",
                                 isCheckedIn
                                   ? "bg-white border-white text-black"
-                                  : "bg-white/[0.1] border-white/20 text-white"
+                                  : "bg-white/10 border-white/20 text-white"
                               )}
                             >
                               {registration.user?.name.charAt(0).toUpperCase()}
@@ -545,7 +545,7 @@ export function CheckInClient({
                         <button
                           onClick={() => setConfirmDeregisterId(registration.id)}
                           disabled={isPending}
-                          className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-10 h-10 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Remove registration"
                         >
                           <Trash2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
@@ -558,7 +558,7 @@ export function CheckInClient({
                               handleUndoCheckIn(registration.id);
                             }}
                             disabled={isPending && activeId === registration.id}
-                            className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-orange-500 hover:border-orange-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-12 h-12 rounded-2xl bg-white/2 border border-white/5 text-gray-700 hover:text-orange-500 hover:border-orange-500/20 transition-all flex items-center justify-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Undo check-in"
                           >
                             <UserX className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
@@ -595,7 +595,7 @@ export function CheckInClient({
         />
       )}
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Check-In</p>

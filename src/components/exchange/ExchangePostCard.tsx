@@ -78,7 +78,7 @@ export function ExchangePostCard({ post, currentUserId, eventSlug, isMatch }: Ex
 
           {/* Category */}
           {cat && (
-            <span className="px-3 py-1 rounded-full text-[9px] font-medium uppercase tracking-[0.1em] bg-white/5 border border-white/5 text-gray-400">
+            <span className="px-3 py-1 rounded-full text-[9px] font-medium uppercase tracking-widest bg-white/5 border border-white/5 text-gray-400">
               {cat.emoji} {cat.label}
             </span>
           )}

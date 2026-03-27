@@ -141,7 +141,7 @@ export function AnnouncementsClient({
             onChange={(e) => setNewContent(e.target.value)}
             placeholder="What needs to be heard?"
             rows={2}
-            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
           />
 
           <div className="flex gap-3">
@@ -175,13 +175,13 @@ export function AnnouncementsClient({
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
               Scheduled
             </p>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
           <div className="space-y-3">
             {scheduledItems.map((item) => (
               <div
                 key={item.id}
-                className="glass rounded-[28px] p-6 border-white/[0.04] flex items-center gap-4"
+                className="glass rounded-[28px] p-6 border-white/4 flex items-center gap-4"
               >
                 <CalendarClock className="w-4 h-4 text-amber-400 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export function AnnouncementsClient({
                 </div>
                 <button
                   onClick={() => handleCancelScheduled(item.id)}
-                  className="w-8 h-8 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-400 hover:border-red-400/20 transition-all flex items-center justify-center"
+                  className="w-8 h-8 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-red-400 hover:border-red-400/20 transition-all flex items-center justify-center"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -208,7 +208,7 @@ export function AnnouncementsClient({
           <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
             History
           </p>
-          <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          <div className="h-px flex-1 bg-white/3" />
         </div>
 
         {announcements.length === 0 ? (
@@ -222,7 +222,7 @@ export function AnnouncementsClient({
             {announcements.map((announcement, index) => (
               <div
                 key={announcement.id}
-                className="glass rounded-[32px] p-8 border-white/[0.03] bg-white/[0.01] transition-all duration-500 animate-slide-up group"
+                className="glass rounded-[32px] p-8 border-white/3 bg-white/1 transition-all duration-500 animate-slide-up group"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex items-start justify-between gap-6">
@@ -237,7 +237,7 @@ export function AnnouncementsClient({
                   <button
                     onClick={() => handleDelete(announcement.id)}
                     disabled={isPending}
-                    className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn"
+                    className="w-10 h-10 rounded-2xl bg-white/2 border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center group/btn"
                   >
                     <Trash2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                   </button>
@@ -258,7 +258,7 @@ export function AnnouncementsClient({
         <div className="min-h-screen bg-black-gradient text-white pb-20">
           <AdminHeader eventSlug={event.slug} subtitle="Announcements" />
           {content}
-          <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+          <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
             <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Bulletin</p>
           </footer>
@@ -307,7 +307,7 @@ function ScheduleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
       <div
         className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-[32px] p-8 animate-slide-up space-y-6"
         onClick={(e) => e.stopPropagation()}
@@ -324,7 +324,9 @@ function ScheduleModal({
         </div>
 
         <div className="glass rounded-[20px] p-5 border-white/5">
-          <p className="text-sm text-gray-400 font-light leading-relaxed">"{content}"</p>
+          <p className="text-sm text-gray-400 font-light leading-relaxed">
+            &quot;{content}&quot;
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -335,7 +337,7 @@ function ScheduleModal({
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-hidden focus:border-white/30"
           />
         </div>
 

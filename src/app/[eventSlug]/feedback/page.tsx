@@ -26,8 +26,8 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
 
   return (
     <div className="min-h-screen bg-black-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/[0.03] rounded-full blur-[120px] pointer-events-none animate-pulse" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: "2s" }} />
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-white/3 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-white/2 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: "2s" }} />
 
       <div className="w-full max-w-xl z-10 space-y-12">
         <div className="text-center space-y-4 floating">

@@ -9,7 +9,7 @@ export default function AgendaLoading() {
       </div>
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="glass rounded-[24px] p-6 border-white/5 bg-white/[0.02] space-y-4">
+          <div key={i} className="glass rounded-[24px] p-6 border-white/5 bg-white/2 space-y-4">
             <div className="flex items-center gap-3">
               <Skeleton className="h-3 w-12" />
               <Skeleton className="h-3 w-16 opacity-30" />

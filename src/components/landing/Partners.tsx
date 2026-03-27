@@ -27,7 +27,7 @@ const Partners: React.FC = () => {
             className="bg-cursor-bg-dark border border-cursor-border rounded-md p-3 flex flex-col items-center justify-center gap-2 min-h-[96px] hover:border-cursor-border-emphasis transition-colors group"
           >
             <div
-              className="w-full rounded-sm overflow-hidden px-2 py-2"
+              className="w-full rounded-xs overflow-hidden px-2 py-2"
               style={{ backgroundColor: partner.logoBg ?? '#ffffff' }}
             >
               <div className={`relative ${partner.logoHeight ?? 'h-10'} w-full`}>

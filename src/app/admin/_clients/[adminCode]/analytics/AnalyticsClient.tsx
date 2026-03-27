@@ -62,7 +62,7 @@ export function AnalyticsClient({
   return (
     <div className="space-y-12 animate-fade-in">
       {/* Check-In Curve */}
-      <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+      <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
         <div className="flex items-center gap-4">
           <TrendingUp className="w-6 h-6 text-white/60" />
           <h2 className="text-2xl font-light tracking-tight text-white/90">Check-In Curve</h2>
@@ -114,7 +114,7 @@ export function AnalyticsClient({
       {/* Q&A Analytics */}
       <div className="grid md:grid-cols-2 gap-8">
         {/* Most Upvoted */}
-        <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-6">
+        <div className="glass rounded-[40px] p-10 border-white/3 space-y-6">
           <div className="flex items-center gap-4">
             <MessageCircle className="w-6 h-6 text-white/60" />
             <h3 className="text-xl font-light tracking-tight text-white/90">Most Upvoted</h3>
@@ -124,7 +124,7 @@ export function AnalyticsClient({
               {qaAnalytics.mostUpvoted.slice(0, 10).map((q, idx) => (
                 <div
                   key={q.id}
-                  className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-all"
+                  className="p-4 rounded-2xl bg-white/2 border border-white/5 hover:bg-white/5 transition-all"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
@@ -151,7 +151,7 @@ export function AnalyticsClient({
         </div>
 
         {/* Unanswered Aging */}
-        <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-6">
+        <div className="glass rounded-[40px] p-10 border-white/3 space-y-6">
           <div className="flex items-center gap-4">
             <Clock className="w-6 h-6 text-white/60" />
             <h3 className="text-xl font-light tracking-tight text-white/90">Unanswered Aging</h3>
@@ -170,8 +170,8 @@ export function AnalyticsClient({
                     className={`p-4 rounded-2xl border transition-all ${
                       isUrgent
                         ? "bg-red-500/5 border-red-500/20"
-                        : "bg-white/[0.02] border-white/[0.05]"
-                    } hover:bg-white/[0.05]`}
+                        : "bg-white/2 border-white/5"
+                    } hover:bg-white/5`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-2">
@@ -207,7 +207,7 @@ export function AnalyticsClient({
       </div>
 
       {/* Poll Participation */}
-      <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+      <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
         <div className="flex items-center gap-4">
           <BarChart3 className="w-6 h-6 text-white/60" />
           <h2 className="text-2xl font-light tracking-tight text-white/90">Poll Participation Rate</h2>
@@ -240,7 +240,10 @@ export function AnalyticsClient({
                     borderRadius: "12px",
                     color: "#fff",
                   }}
-                  formatter={(value: number | undefined) => [`${value ?? 0}%`, "Participation Rate"]}
+                  formatter={(value) => {
+                    const numericValue = typeof value === "number" ? value : Number(value) || 0;
+                    return [`${numericValue}%`, "Participation Rate"];
+                  }}
                 />
                 <Bar dataKey="participation" fill="#fff" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -254,7 +257,7 @@ export function AnalyticsClient({
       </div>
 
       {/* Networking Intake Completion */}
-      <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+      <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
         <div className="flex items-center gap-4">
           <Users className="w-6 h-6 text-white/60" />
           <h2 className="text-2xl font-light tracking-tight text-white/90">Networking Intake</h2>

@@ -143,7 +143,7 @@ export function AgendaAdminClient({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="glass rounded-[32px] p-8 border-white/[0.03] hover:bg-white/[0.01] transition-all"
+                className="glass rounded-[32px] p-8 border-white/3 hover:bg-white/1 transition-all"
               >
                 {item.image_url && (
                   <div className="w-full h-32 rounded-2xl overflow-hidden border border-white/10 mb-5">
@@ -192,14 +192,14 @@ export function AgendaAdminClient({
                     <button
                       onClick={() => setEditingItem(item)}
                       disabled={isPending}
-                      className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center"
+                      className="w-10 h-10 rounded-2xl bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
                       disabled={isPending}
-                      className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
+                      className="w-10 h-10 rounded-2xl bg-white/2 border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -211,7 +211,7 @@ export function AgendaAdminClient({
         )}
       </main>
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Agenda</p>
@@ -375,7 +375,7 @@ function CreateEditModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
       <div
         className="relative w-full max-w-2xl glass rounded-[40px] p-10 space-y-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -407,7 +407,7 @@ function CreateEditModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
               placeholder="e.g., Welcome & Introductions"
               required
             />
@@ -421,7 +421,7 @@ function CreateEditModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all resize-none"
               placeholder="Additional details about this agenda item..."
             />
           </div>
@@ -435,7 +435,7 @@ function CreateEditModal({
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-hidden focus:border-white/20 transition-all"
               />
             </div>
             <div>
@@ -446,7 +446,7 @@ function CreateEditModal({
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-hidden focus:border-white/20 transition-all"
               />
             </div>
           </div>
@@ -460,7 +460,7 @@ function CreateEditModal({
                 type="text"
                 value={speaker}
                 onChange={(e) => setSpeaker(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
                 placeholder="e.g., Jia Ming Huang"
               />
             </div>
@@ -472,7 +472,7 @@ function CreateEditModal({
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
                 placeholder="e.g., Main Hall"
               />
             </div>
