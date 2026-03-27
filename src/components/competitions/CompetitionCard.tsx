@@ -17,7 +17,7 @@ function WinnerCelebration({ duration = 20000 }: { duration?: number }) {
   if (!visible) return null;
   return (
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden rounded-[inherit]">
-      <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 to-transparent animate-pulse" />
+      <div className="absolute inset-0 bg-linear-to-b from-yellow-400/10 to-transparent animate-pulse" />
       {[...Array(12)].map((_, i) => (
         <div
           key={i}
@@ -102,7 +102,7 @@ export function CompetitionCard({ competition, eventSlug, userId, isAdmin = fals
         <div className="rounded-t-[32px] overflow-hidden">
           {competition.group_winner_entry && (
             <div className={cn(
-              "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 border-b border-blue-500/20 px-8 py-3 flex items-center gap-3",
+              "bg-linear-to-r from-blue-500/20 to-cyan-500/10 border-b border-blue-500/20 px-8 py-3 flex items-center gap-3",
               showCelebration && "animate-pulse"
             )}>
               <Users className="w-4 h-4 text-blue-400 shrink-0" />
@@ -118,7 +118,7 @@ export function CompetitionCard({ competition, eventSlug, userId, isAdmin = fals
           )}
           {competition.admin_winner_entry && (
             <div className={cn(
-              "bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-3 flex items-center gap-3",
+              "bg-linear-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-3 flex items-center gap-3",
               showCelebration && "animate-pulse"
             )}>
               <Trophy className={cn("w-4 h-4 text-yellow-400 shrink-0", showCelebration && "animate-bounce")} />
@@ -138,7 +138,7 @@ export function CompetitionCard({ competition, eventSlug, userId, isAdmin = fals
       {/* ── standard mode: single winner banner ── */}
       {!isTop3 && competition.winner_entry && (
         <div className={cn(
-          "bg-gradient-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-4 flex items-center gap-3 rounded-t-[32px]",
+          "bg-linear-to-r from-yellow-500/20 to-amber-500/10 border-b border-yellow-500/20 px-8 py-4 flex items-center gap-3 rounded-t-[32px]",
           showCelebration && "animate-pulse ring-2 ring-yellow-400/50 ring-offset-2 ring-offset-transparent"
         )}>
           <Trophy className={cn("w-5 h-5 text-yellow-400", showCelebration && "animate-bounce")} />

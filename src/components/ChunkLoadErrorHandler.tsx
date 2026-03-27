@@ -27,7 +27,7 @@ export function ChunkLoadErrorHandler() {
               <span>A new version of the app is available.</span>
               <button
                 type="button"
-                className="text-sm font-medium underline focus:outline-none"
+                className="text-sm font-medium underline focus:outline-hidden"
                 onClick={() => {
                   toast.dismiss(t.id);
                   window.location.reload();

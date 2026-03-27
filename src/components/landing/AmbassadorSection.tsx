@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Globe, Linkedin } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { siGithub, siX } from 'simple-icons';
 import { ambassadors } from '@/content/ambassadors';
 import { siteConfig } from '@/content/site.config';
@@ -27,7 +27,13 @@ type SocialIconProps = {
 
 const SocialIcon: React.FC<SocialIconProps> = ({ kind }) => {
   if (kind === 'x') return <BrandIcon iconPath={siX.path} />;
-  if (kind === 'linkedin') return <Linkedin className="w-4 h-4" />;
+  if (kind === 'linkedin') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current">
+        <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.05-1.86-3.05-1.87 0-2.16 1.46-2.16 2.95v5.67H9.31V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45z" />
+      </svg>
+    );
+  }
   if (kind === 'github') return <BrandIcon iconPath={siGithub.path} />;
   return <Globe className="w-4 h-4" />;
 };
@@ -98,7 +104,7 @@ const AmbassadorSection: React.FC = () => {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded border border-cursor-border text-cursor-text-muted hover:text-cursor-text hover:border-cursor-border-emphasis transition-colors"
+                      className="p-2 rounded-sm border border-cursor-border text-cursor-text-muted hover:text-cursor-text hover:border-cursor-border-emphasis transition-colors"
                       aria-label={`${ambassador.name} ${link.kind}`}
                     >
                       <SocialIcon kind={link.kind} />

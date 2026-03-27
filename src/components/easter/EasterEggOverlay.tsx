@@ -385,7 +385,7 @@ export function EasterEggOverlay({
       {/* "Egg Found!" notification banner for other attendees */}
       {notification && phase === "idle" && (
         <div
-          className="fixed top-4 left-1/2 z-[400] pointer-events-none"
+          className="fixed top-4 left-1/2 z-400 pointer-events-none"
           style={{
             transform: "translateX(-50%)",
             animation: "notif-slide-in 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards",
@@ -428,7 +428,7 @@ export function EasterEggOverlay({
 
       {/* Backdrop — only when egg animation is active */}
       {phase !== "idle" && <div
-        className="fixed inset-0 z-[300] flex items-center justify-center"
+        className="fixed inset-0 z-300 flex items-center justify-center"
         style={{
           background: "rgba(0,0,0,0.78)",
           backdropFilter: "blur(12px)",
@@ -588,7 +588,7 @@ export function EasterEggOverlay({
 
                 {/* Shimmer bar decoration */}
                 <div
-                  className="h-[1px] w-full mb-6 rounded-full"
+                  className="h-px w-full mb-6 rounded-full"
                   style={{
                     background:
                       "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), rgba(200,200,200,0.4), transparent)",

@@ -241,7 +241,7 @@ export function FollowUpAdminClient({
 
         {/* Published survey */}
         {publishedSurvey ? (
-          <div className="glass rounded-[32px] p-7 border border-green-500/20 bg-green-500/[0.03] space-y-5">
+          <div className="glass rounded-[32px] p-7 border border-green-500/20 bg-green-500/3 space-y-5">
             {/* Header row */}
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -262,7 +262,7 @@ export function FollowUpAdminClient({
                   {publishedSurvey.schema.fields.length} questions · /{eventSlug}/feedback
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => handleUnpublish(publishedSurvey.id)}
                   disabled={isPending}
@@ -274,7 +274,7 @@ export function FollowUpAdminClient({
                 <button
                   onClick={() => handleDelete(publishedSurvey.id)}
                   disabled={isPending}
-                  className="w-9 h-9 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
+                  className="w-9 h-9 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -282,7 +282,7 @@ export function FollowUpAdminClient({
             </div>
 
             {/* Survey popup toggle */}
-            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-white/2 border border-white/5">
               <div className="flex items-center gap-3">
                 <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", popupVisible ? "bg-green-500/20 text-green-400" : "bg-white/5 text-gray-600")}>
                   {popupVisible ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
@@ -312,7 +312,7 @@ export function FollowUpAdminClient({
             {/* Question preview */}
             <div className="space-y-2">
               {publishedSurvey.schema.fields.slice(0, 3).map((field, idx) => (
-                <div key={field.id} className="px-4 py-2.5 rounded-xl bg-white/[0.01] border border-white/[0.03]">
+                <div key={field.id} className="px-4 py-2.5 rounded-xl bg-white/1 border border-white/3">
                   <p className="text-xs text-white/60 font-light">{idx + 1}. {field.label}</p>
                   <p className="text-[9px] text-gray-700 uppercase tracking-[0.15em] mt-0.5">{field.type}</p>
                 </div>
@@ -355,14 +355,14 @@ export function FollowUpAdminClient({
           <div className="space-y-3">
             <p className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium px-1">Drafts</p>
             {draftSurveys.map((survey) => (
-              <div key={survey.id} className="glass rounded-[24px] p-5 border border-white/[0.05] flex items-center justify-between gap-4">
+              <div key={survey.id} className="glass rounded-[24px] p-5 border border-white/5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-light text-white/80">{survey.title}</p>
                   <p className="text-[9px] text-gray-600 uppercase tracking-[0.15em] mt-0.5">
                     {survey.schema.fields.length} questions · Draft
                   </p>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handlePublish(survey.id)}
                     disabled={isPending}
@@ -374,7 +374,7 @@ export function FollowUpAdminClient({
                   <button
                     onClick={() => handleDelete(survey.id)}
                     disabled={isPending}
-                    className="w-8 h-8 rounded-xl bg-white/[0.02] border border-white/5 text-gray-700 hover:text-red-500 transition-all flex items-center justify-center"
+                    className="w-8 h-8 rounded-xl bg-white/2 border border-white/5 text-gray-700 hover:text-red-500 transition-all flex items-center justify-center"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -387,9 +387,9 @@ export function FollowUpAdminClient({
 
       {/* Divider */}
       <div className="flex items-center gap-4">
-        <div className="h-[1px] flex-1 bg-white/[0.04]" />
+        <div className="h-px flex-1 bg-white/4" />
         <p className="text-[9px] uppercase tracking-[0.3em] text-gray-700 font-medium">Email Outreach</p>
-        <div className="h-[1px] flex-1 bg-white/[0.04]" />
+        <div className="h-px flex-1 bg-white/4" />
       </div>
 
       {/* ── EMAIL SECTION ──────────────────────────────────────── */}
@@ -437,7 +437,7 @@ export function FollowUpAdminClient({
                 onClick={() => { setSelectedMode(mode.id); setSendResult(null); setSendConfirmed(false); }}
                 className={cn(
                   "w-full text-left glass rounded-2xl p-5 border transition-all duration-200",
-                  isActive ? "border-white/25 bg-white/[0.05]" : "border-white/[0.06] hover:border-white/15"
+                  isActive ? "border-white/25 bg-white/5" : "border-white/6 hover:border-white/15"
                 )}
               >
                 <div className="flex items-start gap-4">
@@ -477,7 +477,7 @@ export function FollowUpAdminClient({
               value={surveyUrl}
               onChange={(e) => setSurveyUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+              className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-hidden focus:border-white/30 transition-colors"
             />
             {publishedSurvey && surveyUrl.includes("/feedback") && (
               <p className="text-[9px] text-gray-700">
@@ -580,11 +580,11 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-xs">
       <div className="glass rounded-[40px] p-10 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-light tracking-tight">Create Survey</h2>
-          <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white transition-all flex items-center justify-center">
+          <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/2 border border-white/5 text-gray-600 hover:text-white transition-all flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -599,19 +599,19 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Event Feedback Survey"
-              className="w-full bg-transparent border-b border-white/10 py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-xl font-light"
+              className="w-full bg-transparent border-b border-white/10 py-4 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-xl font-light"
             />
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-bold text-gray-700 uppercase tracking-[0.3em]">Questions</label>
-              <button type="button" onClick={addField} className="px-4 py-2 rounded-xl bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white transition-all text-[10px] uppercase tracking-[0.2em] font-bold">
+              <button type="button" onClick={addField} className="px-4 py-2 rounded-xl bg-white/2 border border-white/5 text-gray-600 hover:text-white transition-all text-[10px] uppercase tracking-[0.2em] font-bold">
                 + Add Question
               </button>
             </div>
             {fields.map((field, idx) => (
-              <div key={field.id} className="p-6 rounded-2xl bg-white/[0.01] border border-white/[0.02] space-y-4">
+              <div key={field.id} className="p-6 rounded-2xl bg-white/1 border border-white/2 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">Question {idx + 1}</span>
                   {fields.length > 1 && (
@@ -625,13 +625,13 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
                   value={field.label}
                   onChange={(e) => updateField(field.id, { label: e.target.value })}
                   placeholder="Question text"
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                 />
                 <div className="flex items-center gap-6">
                   <select
                     value={field.type}
                     onChange={(e) => updateField(field.id, { type: e.target.value as SurveyField["type"] })}
-                    className="bg-transparent border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                    className="bg-transparent border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-hidden focus:border-white/30"
                   >
                     <option value="text" className="bg-black">Text</option>
                     <option value="textarea" className="bg-black">Textarea</option>
@@ -644,7 +644,7 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
                       type="checkbox"
                       checked={field.required}
                       onChange={(e) => updateField(field.id, { required: e.target.checked })}
-                      className="w-4 h-4 rounded border-white/10 bg-transparent"
+                      className="w-4 h-4 rounded-sm border-white/10 bg-transparent"
                     />
                     Required
                   </label>
@@ -657,7 +657,7 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
                       value={field.options?.join(", ") || ""}
                       onChange={(e) => updateField(field.id, { options: e.target.value.split(",").map((o) => o.trim()).filter(Boolean) })}
                       placeholder="Option 1, Option 2, Option 3"
-                      className="w-full bg-transparent border-b border-white/10 py-2 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-sm font-light"
+                      className="w-full bg-transparent border-b border-white/10 py-2 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-sm font-light"
                     />
                   </div>
                 )}
@@ -676,7 +676,7 @@ function CreateSurveyModal({ onClose, onCreate, isPending }: CreateSurveyModalPr
             <button
               type="button"
               onClick={onClose}
-              className="px-8 h-14 rounded-full bg-white/[0.03] border border-white/5 text-gray-600 hover:text-white transition-all text-[10px] uppercase tracking-[0.2em] font-bold"
+              className="px-8 h-14 rounded-full bg-white/3 border border-white/5 text-gray-600 hover:text-white transition-all text-[10px] uppercase tracking-[0.2em] font-bold"
             >
               Cancel
             </button>

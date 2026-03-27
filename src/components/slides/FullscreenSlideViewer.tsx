@@ -84,14 +84,14 @@ export function FullscreenSlideViewer({ slideDeck }: FullscreenSlideViewerProps)
         className={cn(
           "rounded-2xl overflow-hidden bg-black border border-white/5 transition-all",
           isFullscreen
-            ? "fixed inset-0 z-[9999] rounded-none border-none flex items-center justify-center"
+            ? "fixed inset-0 z-9999 rounded-none border-none flex items-center justify-center"
             : "aspect-video"
         )}
       >
         {isFullscreen && (
           <button
             onClick={toggleFullscreen}
-            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-sm border border-white/20 hover:bg-black/80 transition-all flex items-center justify-center group"
+            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xs border border-white/20 hover:bg-black/80 transition-all flex items-center justify-center group"
             title="Exit fullscreen (Esc)"
           >
             <Minimize2 className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />

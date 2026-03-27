@@ -204,7 +204,7 @@ export function SurveyPopupAlert({
     <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-sm z-40 animate-slide-up">
       <div className="glass rounded-3xl p-5 border border-green-500/20 bg-green-500/5 shadow-[0_0_40px_rgba(74,222,128,0.1)]">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center shrink-0">
             <ClipboardCheck className="w-6 h-6 text-green-400" />
           </div>
           <div className="flex-1 min-w-0">
@@ -217,7 +217,7 @@ export function SurveyPopupAlert({
               </div>
               <button
                 onClick={handleDismiss}
-                className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
+                className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 transition-all shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>

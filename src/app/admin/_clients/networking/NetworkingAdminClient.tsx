@@ -264,7 +264,7 @@ export function NetworkingAdminClient({
             <button
               onClick={handleStartRound}
               disabled={loading}
-              className="px-8 py-3.5 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] disabled:opacity-40"
+              className="px-8 py-3.5 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-glow disabled:opacity-40"
             >
               {loading ? "Generating..." : session.status === "idle" ? "Start Round 1" : `Start Round ${session.current_round + 1}`}
             </button>
@@ -323,7 +323,7 @@ export function NetworkingAdminClient({
             <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">
               Round {round.round_number} Pairs
             </h3>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
             <span className="text-[10px] text-gray-600 uppercase tracking-widest">{pairs.filter(p => p.user2_id).length} pairs · {pairs.filter(p => !p.user2_id).length > 0 ? `${pairs.filter(p => !p.user2_id).length} wildcard` : ""}</span>
           </div>
 
@@ -334,10 +334,10 @@ export function NetworkingAdminClient({
               const label = colorDef?.label ?? pair.color_code.toUpperCase();
 
               return (
-                <div key={pair.id} className="glass rounded-[32px] p-6 border-white/[0.03] flex items-center gap-5">
+                <div key={pair.id} className="glass rounded-[32px] p-6 border-white/3 flex items-center gap-5">
                   {/* Color swatch */}
                   <div
-                    className="w-14 h-14 rounded-2xl flex-shrink-0 shadow-lg"
+                    className="w-14 h-14 rounded-2xl shrink-0 shadow-lg"
                     style={{ backgroundColor: bg }}
                   />
                   <div className="flex-1 min-w-0">
@@ -366,14 +366,14 @@ export function NetworkingAdminClient({
 
       {/* Empty state for active session with no pairs yet */}
       {session.status === "idle" && (
-        <div className="glass rounded-[40px] p-10 border-white/[0.03] text-center">
+        <div className="glass rounded-[40px] p-10 border-white/3 text-center">
           <p className="text-gray-600 text-sm uppercase tracking-[0.3em] font-medium">No rounds yet</p>
           <p className="text-gray-700 text-xs mt-2">Hit Start Round 1 to generate pairings from checked-in attendees.</p>
         </div>
       )}
 
       {isEnded && (
-        <div className="glass rounded-[40px] p-10 border-white/[0.03] text-center space-y-3">
+        <div className="glass rounded-[40px] p-10 border-white/3 text-center space-y-3">
           <p className="text-white/60 font-light text-lg">Session complete</p>
           <p className="text-gray-600 text-xs uppercase tracking-[0.2em]">{session.current_round} round{session.current_round !== 1 ? "s" : ""} completed</p>
           <button

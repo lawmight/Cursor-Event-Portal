@@ -1,12 +1,13 @@
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["pdfjs-dist"],
+  turbopack: {
+    resolveAlias: {
+      "@/lib/supabase/queries": process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true"
+        ? "./src/lib/mock/queries.ts"
+        : "./src/lib/supabase/queries.ts",
+    },
+  },
   async redirects() {
     return [
       // Old attendee URL redirects
@@ -73,19 +74,6 @@ const nextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
-  },
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "@": path.resolve(__dirname, "./src"),
-    };
-    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
-      config.resolve.alias["@/lib/supabase/queries"] = path.resolve(
-        __dirname,
-        "./src/lib/mock/queries.ts"
-      );
-    }
-    return config;
   },
 };
 

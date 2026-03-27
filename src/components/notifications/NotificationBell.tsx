@@ -115,7 +115,7 @@ export function NotificationBell({ userId, eventId, eventSlug }: NotificationBel
           "relative flex items-center justify-center w-10 h-10 rounded-2xl border transition-all",
           open
             ? "bg-white/10 border-white/20 text-white"
-            : "bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.06]"
+            : "bg-white/3 border-white/10 text-gray-400 hover:text-white hover:bg-white/6"
         )}
         aria-label="Notifications"
       >
@@ -173,8 +173,8 @@ export function NotificationBell({ userId, eventId, eventSlug }: NotificationBel
                 <div
                   key={n.id}
                   className={cn(
-                    "flex items-start gap-3 px-5 py-3.5 border-b border-white/[0.03] transition-all group",
-                    !n.read_at && "bg-white/[0.02]"
+                    "flex items-start gap-3 px-5 py-3.5 border-b border-white/3 transition-all group",
+                    !n.read_at && "bg-white/2"
                   )}
                 >
                   <span className="text-base shrink-0 mt-0.5">
@@ -216,7 +216,7 @@ export function NotificationBell({ userId, eventId, eventSlug }: NotificationBel
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-3 border-t border-white/[0.03] flex items-center justify-between">
+          <div className="px-5 py-3 border-t border-white/3 flex items-center justify-between">
             <Link
               href={`/${eventSlug}/notifications`}
               onClick={() => setOpen(false)}

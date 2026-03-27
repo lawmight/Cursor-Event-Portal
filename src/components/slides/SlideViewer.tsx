@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +19,14 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
     const liveIndex = initialSlides.findIndex((s) => s.is_live);
     return liveIndex >= 0 ? liveIndex : 0;
   });
+
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : slides.length - 1));
+  }, [slides.length]);
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev < slides.length - 1 ? prev + 1 : 0));
+  }, [slides.length]);
 
   // Subscribe to slide changes
   useEffect(() => {
@@ -64,18 +72,6 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
 
   const currentSlide = slides[currentIndex];
 
-  if (!currentSlide) {
-    return null;
-  }
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : slides.length - 1));
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev < slides.length - 1 ? prev + 1 : 0));
-  };
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -88,10 +84,14 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides.length]);
+  }, [goToNext, goToPrevious]);
+
+  if (!currentSlide) {
+    return null;
+  }
 
   return (
-    <div className="glass rounded-[40px] p-6 border-white/[0.03]">
+    <div className="glass rounded-[40px] p-6 border-white/3">
       {/* Main slide display */}
       <div className="relative aspect-video rounded-[28px] overflow-hidden bg-black/40 border border-white/10">
         <Image
@@ -109,13 +109,13 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center text-white/70 hover:text-white"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xs border border-white/10 hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center text-white/70 hover:text-white"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center text-white/70 hover:text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xs border border-white/10 hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center text-white/70 hover:text-white"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -124,7 +124,7 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
 
         {/* Live indicator */}
         {currentSlide.is_live && (
-          <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 backdrop-blur-sm border border-green-500/30">
+          <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 backdrop-blur-xs border border-green-500/30">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-[10px] uppercase tracking-wider text-green-400 font-medium">
               Live
@@ -167,8 +167,8 @@ export function SlideViewer({ slides: initialSlides, eventId }: SlideViewerProps
 
         {/* Keyboard hint */}
         <p className="text-[9px] text-gray-600">
-          Use <kbd className="px-1 py-0.5 rounded bg-white/5 text-gray-500">←</kbd>{" "}
-          <kbd className="px-1 py-0.5 rounded bg-white/5 text-gray-500">→</kbd> keys
+          Use <kbd className="px-1 py-0.5 rounded-sm bg-white/5 text-gray-500">←</kbd>{" "}
+          <kbd className="px-1 py-0.5 rounded-sm bg-white/5 text-gray-500">→</kbd> keys
         </p>
       </div>
     </div>

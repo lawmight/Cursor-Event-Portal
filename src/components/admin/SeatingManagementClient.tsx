@@ -75,7 +75,7 @@ export function SeatingManagementClient({
           <div className="flex items-center gap-6">
             <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center transition-all ${
               isSeatingEnabled
-                ? "bg-white/10 border-white/[0.05]"
+                ? "bg-white/10 border-white/5"
                 : "bg-orange-500/15 border-orange-500/25"
             }`}>
               {isSeatingEnabled ? (
@@ -134,7 +134,7 @@ export function SeatingManagementClient({
                 relative px-8 py-5 rounded-t-[32px] text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-500 group flex items-center gap-3
                 ${isActive
                   ? "bg-[#0A0A0A] text-white border-t border-l border-r border-white/10 shadow-[0_-4px_30px_rgba(0,0,0,0.5)] z-20"
-                  : "bg-white/[0.02] text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
+                  : "bg-white/2 text-gray-500 hover:bg-white/5 hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
               `}
             >
               <Icon
@@ -146,7 +146,7 @@ export function SeatingManagementClient({
               {isActive && (
                 <>
                   <div className="absolute -bottom-[2px] left-0 right-0 h-[4px] bg-[#0A0A0A] z-30" />
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
                 </>
               )}
             </button>

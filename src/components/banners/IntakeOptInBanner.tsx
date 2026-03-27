@@ -54,7 +54,7 @@ export function IntakeOptInBanner({ eventSlug, eventId, userId, onDismiss }: Int
   return (
     <div className={cn(
       "glass rounded-[40px] p-6 border-white/10 relative overflow-hidden animate-slide-up",
-      "bg-gradient-to-br from-white/[0.08] to-white/[0.02]"
+      "bg-linear-to-br from-white/8 to-white/2"
     )}>
       {/* Dismiss button */}
       <button
@@ -66,7 +66,7 @@ export function IntakeOptInBanner({ eventSlug, eventId, userId, onDismiss }: Int
       </button>
 
       <div className="flex items-start gap-4 pr-8">
-        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/5 flex items-center justify-center shrink-0">
           <Sparkles className="w-6 h-6 text-white/60" />
         </div>
 
@@ -76,7 +76,7 @@ export function IntakeOptInBanner({ eventSlug, eventId, userId, onDismiss }: Int
               Enhance Your Networking
             </h3>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              Share what you're looking for and what you can offer to help us match you with the right people. This is completely optional and only used to enhance your experience.
+              Share what you&apos;re looking for and what you can offer to help us match you with the right people. This is completely optional and only used to enhance your experience.
             </p>
           </div>
 

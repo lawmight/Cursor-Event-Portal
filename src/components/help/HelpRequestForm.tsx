@@ -80,10 +80,10 @@ export function HelpRequestForm({ eventId, eventSlug }: HelpRequestFormProps) {
                 type="button"
                 onClick={() => setCategory(tag)}
                 className={cn(
-                  "px-5 py-2 rounded-full text-[9px] font-bold uppercase tracking-[0.1em] transition-all border",
+                  "px-5 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all border",
                   category === tag
-                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                    : "bg-white/[0.01] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                    ? "bg-white border-white text-black shadow-glow"
+                    : "bg-white/1 border-white/5 text-gray-600 hover:text-white hover:border-white/20"
                 )}
               >
                 {tag}
@@ -99,7 +99,7 @@ export function HelpRequestForm({ eventId, eventSlug }: HelpRequestFormProps) {
             placeholder="Describe the issue or question you need help with..."
             rows={4}
             disabled={loading}
-            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-500 focus:outline-hidden focus:border-white/30 transition-all text-2xl font-light leading-tight resize-none"
           />
         </div>
 

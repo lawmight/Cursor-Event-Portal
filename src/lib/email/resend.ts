@@ -1,12 +1,19 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  return new Resend(apiKey);
+}
 
 export async function sendMagicLink(email: string, token: string, eventName: string) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
   try {
+    const resend = getResend();
     const { error } = await resend.emails.send({
       from: "Cursor Pop-Up Portal <onboarding@resend.dev>",
       to: email,

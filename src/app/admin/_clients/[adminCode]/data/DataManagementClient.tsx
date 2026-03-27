@@ -298,10 +298,10 @@ export function DataManagementClient({
           </div>
 
           {/* Registrations */}
-          <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+          <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
             <div className="flex items-center justify-between gap-8">
               <div className="flex items-center gap-6 flex-1">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                   <Users className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                 </div>
                 <div className="space-y-1">
@@ -334,10 +334,10 @@ export function DataManagementClient({
           </div>
 
           {/* Questions */}
-          <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+          <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
             <div className="flex items-center justify-between gap-8">
               <div className="flex items-center gap-6 flex-1">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                   <MessageCircle className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                 </div>
                 <div className="space-y-1">
@@ -370,10 +370,10 @@ export function DataManagementClient({
           </div>
 
           {/* Detailed Attendee Data */}
-          <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+          <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
             <div className="flex items-center justify-between gap-8">
               <div className="flex items-center gap-6 flex-1">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                   <UserCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                 </div>
                 <div className="space-y-1">
@@ -407,10 +407,10 @@ export function DataManagementClient({
 
           {/* Analytics & Engagement — single-event only */}
           {!allEvents && (
-            <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+            <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
               <div className="flex items-center justify-between gap-8">
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                  <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                     <Activity className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
@@ -445,10 +445,10 @@ export function DataManagementClient({
 
           {/* Survey Responses */}
           {allEvents ? (
-            <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+            <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
               <div className="flex items-center justify-between gap-8">
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                  <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                     <ClipboardCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
@@ -475,10 +475,10 @@ export function DataManagementClient({
               </div>
             </div>
           ) : survey ? (
-            <div className="glass rounded-[40px] p-10 border-white/[0.03] group hover:bg-white/[0.01] transition-all">
+            <div className="glass rounded-[40px] p-10 border-white/3 group hover:bg-white/1 transition-all">
               <div className="flex items-center justify-between gap-8">
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all">
+                  <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all">
                     <ClipboardCheck className="w-6 h-6 text-gray-700 group-hover:text-white transition-colors" />
                   </div>
                   <div className="space-y-1">
@@ -531,7 +531,7 @@ export function DataManagementClient({
 
       {/* Password Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center z-50">
           <div className="glass rounded-[32px] p-8 max-w-md w-full mx-4 border border-white/10">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -569,7 +569,7 @@ export function DataManagementClient({
                   if (e.key === "Enter") verifyPassword();
                 }}
                 placeholder="Enter password"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-white/30 transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-hidden focus:border-white/30 transition-colors"
                 autoFocus
               />
 

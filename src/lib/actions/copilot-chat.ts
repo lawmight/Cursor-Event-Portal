@@ -4,7 +4,13 @@ import OpenAI from "openai";
 import { getOpsMetrics } from "./copilot";
 import { getAgendaItems, getQuestionsForAdmin, getHelpRequestsForAdmin, getAllPolls, getAllSurveys } from "../supabase/queries";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -17,6 +23,7 @@ export async function adminChat(
   messages: ChatMessage[]
 ): Promise<{ reply: string; error?: string }> {
   try {
+    const openai = getOpenAIClient();
     const [metrics, agendaItems, questions, helpRequests, polls, surveys] = await Promise.all([
       getOpsMetrics(eventId),
       getAgendaItems(eventId),

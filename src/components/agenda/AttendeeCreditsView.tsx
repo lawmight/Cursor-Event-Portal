@@ -153,7 +153,7 @@ function EasterCreditCard({ credit, userId }: { credit: CursorCredit; userId: st
       </div>
 
       {isPending ? (
-        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] px-5 py-4">
+        <div className="rounded-2xl bg-white/3 border border-white/6 px-5 py-4">
           <p className="text-xs text-gray-500 leading-relaxed">
             Your $50 credit code will appear here shortly — we&apos;re assigning your referral link now.
           </p>
@@ -184,7 +184,7 @@ function EasterCreditCard({ credit, userId }: { credit: CursorCredit; userId: st
             </code>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 transition-all flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 transition-all shrink-0"
             >
               {copied ? (
                 <><Check className="w-4 h-4 text-green-400" /><span className="text-green-400">Copied!</span></>
@@ -286,7 +286,7 @@ function SponsorCreditCard({ credit, userId }: { credit: CursorCredit; userId: s
         </code>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 transition-all flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm text-white hover:bg-white/20 transition-all shrink-0"
         >
           {copied ? (
             <><Check className="w-4 h-4 text-green-400" /><span className="text-green-400">Copied!</span></>
@@ -305,7 +305,7 @@ function SponsorCreditCard({ credit, userId }: { credit: CursorCredit; userId: s
           {instructionsOpen ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
         </button>
         {instructionsOpen && (
-          <div className="px-5 pb-5 space-y-2 border-t border-white/[0.06] pt-4">
+          <div className="px-5 pb-5 space-y-2 border-t border-white/6 pt-4">
             {[
               "Open cursor.com in your browser",
               "Sign in to your Cursor account (or create one)",
@@ -313,7 +313,7 @@ function SponsorCreditCard({ credit, userId }: { credit: CursorCredit; userId: s
               "Credits are applied automatically to your account",
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-3">
-                <span className="text-[10px] font-medium text-gray-600 mt-0.5 flex-shrink-0 w-4 text-right">{i + 1}.</span>
+                <span className="text-[10px] font-medium text-gray-600 mt-0.5 shrink-0 w-4 text-right">{i + 1}.</span>
                 <p className="text-sm text-gray-400">{step}</p>
               </div>
             ))}

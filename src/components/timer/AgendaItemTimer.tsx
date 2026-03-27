@@ -35,14 +35,14 @@ export function AgendaItemTimer({ startTime, endTime, eventStartTime }: AgendaIt
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-medium uppercase tracking-[0.1em]",
+        "flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-medium uppercase tracking-widest",
         timerState.state === "live"
           ? "bg-green-500/20 text-green-400 border border-green-500/30"
           : timerState.state === "starts-in"
             ? "bg-white/5 text-gray-500 border border-white/10"
             : timerState.state === "scheduled"
               ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-              : "bg-white/[0.02] text-gray-700 border border-white/5"
+              : "bg-white/2 text-gray-700 border border-white/5"
       )}
     >
       <Clock className="w-3 h-3" />

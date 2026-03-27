@@ -288,7 +288,7 @@ export function CompetitionsAdminClient({
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20"
+              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-hidden focus:border-white/20"
               placeholder="Competition title"
             />
           </div>
@@ -299,7 +299,7 @@ export function CompetitionsAdminClient({
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20 resize-none"
+              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-hidden focus:border-white/20 resize-none"
               placeholder="What is this competition about?"
             />
           </div>
@@ -310,7 +310,7 @@ export function CompetitionsAdminClient({
               value={newRules}
               onChange={(e) => setNewRules(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20 resize-none"
+              className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-hidden focus:border-white/20 resize-none"
               placeholder="Competition rules..."
             />
           </div>
@@ -321,7 +321,7 @@ export function CompetitionsAdminClient({
               <select
                 value={newVotingMode}
                 onChange={(e) => setNewVotingMode(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20 [&_option]:bg-white [&_option]:text-gray-900"
+                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-hidden focus:border-white/20 [&_option]:bg-white [&_option]:text-gray-900"
               >
                 <option value="group" style={{ backgroundColor: "#fff", color: "#111" }}>Group (Upvote)</option>
                 <option value="judges" style={{ backgroundColor: "#fff", color: "#111" }}>Judges (1-5)</option>
@@ -335,7 +335,7 @@ export function CompetitionsAdminClient({
                 type="number"
                 value={newMaxEntries}
                 onChange={(e) => setNewMaxEntries(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-white/20"
+                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm focus:outline-hidden focus:border-white/20"
                 placeholder="Unlimited"
                 min={1}
               />

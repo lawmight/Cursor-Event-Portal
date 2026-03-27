@@ -123,7 +123,7 @@ export function QuestionCard({
 
   return (
     <div className={`glass rounded-[40px] p-8 transition-all duration-500 animate-slide-up relative overflow-hidden group ${
-      question.status === "pinned" ? "border-white/20 bg-white/[0.04]" : "border-white/[0.03] bg-white/[0.01]"
+      question.status === "pinned" ? "border-white/20 bg-white/4" : "border-white/3 bg-white/1"
     }`}>
       {question.status === "pinned" && (
         <div className="absolute top-0 right-0 p-4">
@@ -140,7 +140,7 @@ export function QuestionCard({
             className={`w-12 h-12 rounded-full border transition-all flex items-center justify-center ${
               question.user_has_upvoted
                 ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-                : "bg-white/[0.02] border-white/10 text-gray-600 hover:text-white hover:border-white/30"
+                : "bg-white/2 border-white/10 text-gray-600 hover:text-white hover:border-white/30"
             }`}
           >
             <ChevronUp className={`w-5 h-5 stroke-[2.5px] transition-transform ${question.user_has_upvoted ? "scale-110" : "group-hover:-translate-y-0.5"}`} />
@@ -156,7 +156,7 @@ export function QuestionCard({
           {question.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {question.tags.map((tag) => (
-                <div key={tag} className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/5 text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
+                <div key={tag} className="px-3 py-1 rounded-full bg-white/3 border border-white/5 text-[8px] font-bold uppercase tracking-[0.2em] text-gray-600">
                   {tag}
                 </div>
               ))}
@@ -190,8 +190,8 @@ export function QuestionCard({
                   key={answer.id}
                   className={`p-6 rounded-[32px] relative ${
                     answer.is_accepted
-                      ? "bg-white/[0.03] border border-white/10"
-                      : "bg-black/20 border border-white/[0.02]"
+                      ? "bg-white/3 border border-white/10"
+                      : "bg-black/20 border border-white/2"
                   }`}
                 >
                   <p className="text-[15px] text-gray-400 font-light leading-relaxed mb-4">
@@ -230,7 +230,7 @@ export function QuestionCard({
           )}
 
           {/* Actions - Subtle */}
-          <div className="mt-6 flex items-center gap-8 border-t border-white/[0.03] pt-6">
+          <div className="mt-6 flex items-center gap-8 border-t border-white/3 pt-6">
             <button
               onClick={() => setShowAnswerForm(!showAnswerForm)}
               className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gray-700 font-bold hover:text-white transition-colors"
@@ -279,7 +279,7 @@ export function QuestionCard({
                 value={answerContent}
                 onChange={(e) => setAnswerContent(e.target.value)}
                 placeholder="Compose response..."
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all min-h-[100px] text-lg font-light resize-none"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all min-h-[100px] text-lg font-light resize-none"
               />
               <div className="flex gap-4">
                 <button
@@ -291,7 +291,7 @@ export function QuestionCard({
                 </button>
                 <button
                   onClick={() => setShowAnswerForm(false)}
-                  className="px-8 h-12 rounded-full bg-white/[0.03] border border-white/5 text-gray-600 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white/20 transition-all"
+                  className="px-8 h-12 rounded-full bg-white/3 border border-white/5 text-gray-600 text-[10px] font-bold uppercase tracking-[0.2em] hover:text-white hover:border-white/20 transition-all"
                 >
                   Cancel
                 </button>

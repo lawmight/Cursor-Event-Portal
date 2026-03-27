@@ -275,7 +275,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                   {/* Venue Popup — fully isolated from parent Link */}
                   {venueHovered && (
                     <div
-                      className="fixed inset-0 z-[99]"
+                      className="fixed inset-0 z-99"
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -289,7 +289,7 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                   )}
                   <div
                     className={cn(
-                      "absolute top-full left-0 mt-3 w-72 rounded-[20px] overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl bg-black/90 transition-all duration-300 origin-top-left z-[100]",
+                      "absolute top-full left-0 mt-3 w-72 rounded-[20px] overflow-hidden border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl bg-black/90 transition-all duration-300 origin-top-left z-100",
                       venueHovered
                         ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                         : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
@@ -333,9 +333,9 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
                           alt={event.venue}
                           className="w-full h-full object-cover group-hover/venue-img:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
                         {egg1Found && (
-                          <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 border border-white/20 backdrop-blur-sm pointer-events-none">
+                          <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 border border-white/20 backdrop-blur-xs pointer-events-none">
                             <svg viewBox="0 0 100 130" width="12" height="16">
                               <path d="M50 5 C22 5 5 40 5 68 C5 103 22 128 50 128 C78 128 95 103 95 68 C95 40 78 5 50 5Z" fill="#1a1a1a" stroke="rgba(255,255,255,0.5)" strokeWidth="4" />
                             </svg>
@@ -380,10 +380,10 @@ export function EventHeader({ event, announcement: initialAnnouncement, showTime
 
             {tableAssignment && (
               <div className={cn(
-                "flex items-center gap-3 px-5 py-2.5 rounded-2xl border shadow-xl backdrop-blur-xl group hover:bg-white/[0.05] transition-all duration-500",
+                "flex items-center gap-3 px-5 py-2.5 rounded-2xl border shadow-xl backdrop-blur-xl group hover:bg-white/5 transition-all duration-500",
                 isFirstView
-                  ? "bg-white/[0.15] border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-105"
-                  : "bg-white/[0.03] border-white/10"
+                  ? "bg-white/15 border-white/60 shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-105"
+                  : "bg-white/3 border-white/10"
               )}>
                 <MapPin className={cn(
                   "w-4 h-4 transition-colors duration-500",

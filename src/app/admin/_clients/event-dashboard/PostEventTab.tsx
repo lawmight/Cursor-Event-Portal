@@ -139,8 +139,8 @@ export function PostEventTab({ eventId, adminCode }: PostEventTabProps) {
               className={cn(
                 "w-full text-left glass rounded-2xl p-5 border transition-all duration-200",
                 isActive
-                  ? "border-white/30 bg-white/[0.06]"
-                  : "border-white/10 hover:border-white/20 hover:bg-white/[0.03]"
+                  ? "border-white/30 bg-white/6"
+                  : "border-white/10 hover:border-white/20 hover:bg-white/3"
               )}
             >
               <div className="flex items-start gap-4">
@@ -174,7 +174,7 @@ export function PostEventTab({ eventId, adminCode }: PostEventTabProps) {
             value={surveyUrl}
             onChange={(e) => setSurveyUrl(e.target.value)}
             placeholder="https://forms.gle/... or https://typeform.com/..."
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-hidden focus:border-white/30 transition-colors"
           />
         </div>
       )}
@@ -202,7 +202,7 @@ export function PostEventTab({ eventId, adminCode }: PostEventTabProps) {
             {selectedMode === "connection-recommend" && (
               <>
                 <p>• One personalized email per eligible attendee ({stats.eligibleRecipients} total)</p>
-                <p>• Shows each groupmate's name + AI match reason</p>
+                <p>• Shows each groupmate&apos;s name + AI match reason</p>
                 <p>• Only reveals profiles of people who also consented</p>
                 <p>• From: Cursor Pop-Up Portal</p>
               </>

@@ -63,7 +63,7 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
               {category.category}
             </p>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
 
           <div className="space-y-4">
@@ -77,11 +77,11 @@ export default async function ResourcesPage({ params }: ResourcesPageProps) {
                   rel="noopener noreferrer"
                   className="block group"
                 >
-                  <div className="glass rounded-[32px] p-6 flex items-center gap-6 transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 hover:translate-x-1 border-white/[0.03] relative overflow-hidden">
+                  <div className="glass rounded-[32px] p-6 flex items-center gap-6 transition-all duration-500 hover:bg-white/3 hover:border-white/10 hover:translate-x-1 border-white/3 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                       <ExternalLink className="w-3 h-3 text-white/40" />
                     </div>
-                    <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/5 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.02)]">
+                    <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.02)]">
                       <Icon className="w-6 h-6 stroke-[1.5px] opacity-60 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex-1 min-w-0">

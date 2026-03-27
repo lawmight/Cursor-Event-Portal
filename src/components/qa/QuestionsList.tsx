@@ -202,7 +202,7 @@ export function QuestionsList({
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
               Featured
             </p>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
           <div className="space-y-6">
             {pinnedQuestions.map((question) => (
@@ -225,12 +225,12 @@ export function QuestionsList({
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
               Recent
             </p>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
         )}
 
         {otherQuestions.length === 0 ? (
-          <div className="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[40px] border-dashed opacity-40">
+          <div className="text-center py-24 bg-white/1 border border-white/5 rounded-[40px] border-dashed opacity-40">
             <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-medium">
               Awaiting first inquiry
             </p>

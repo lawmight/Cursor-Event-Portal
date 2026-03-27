@@ -79,7 +79,7 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
       {open && (
         <div className="fixed bottom-20 right-4 z-50 w-[340px] max-h-[520px] flex flex-col rounded-[28px] bg-[#0a0a0a] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)] overflow-hidden animate-slide-up">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white/50" />
@@ -111,7 +111,7 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
                     Hi there!
                   </p>
                   <p className="text-xs text-gray-600">
-                    Ask me anything about tonight's event.
+                    Ask me anything about tonight&apos;s event.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -119,7 +119,7 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
                     <button
                       key={q}
                       onClick={() => send(q)}
-                      className="w-full text-left px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs text-gray-400 hover:text-white hover:border-white/20 transition-all"
+                      className="w-full text-left px-4 py-2.5 rounded-xl bg-white/3 border border-white/6 text-xs text-gray-400 hover:text-white hover:border-white/20 transition-all"
                     >
                       {q}
                     </button>
@@ -135,14 +135,14 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
                       "max-w-[86%] px-4 py-3 rounded-2xl text-sm leading-relaxed",
                       msg.role === "user"
                         ? "ml-auto bg-white text-black rounded-br-sm"
-                        : "bg-white/[0.06] text-white/80 rounded-bl-sm"
+                        : "bg-white/6 text-white/80 rounded-bl-sm"
                     )}
                   >
                     {msg.content}
                   </div>
                 ))}
                 {loading && (
-                  <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.04] rounded-2xl rounded-bl-sm max-w-[55%]">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-white/4 rounded-2xl rounded-bl-sm max-w-[55%]">
                     {[0, 1, 2].map((i) => (
                       <div
                         key={i}
@@ -158,7 +158,7 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
           </div>
 
           {/* Input */}
-          <div className="px-4 py-3 border-t border-white/[0.06] flex items-center gap-2">
+          <div className="px-4 py-3 border-t border-white/6 flex items-center gap-2">
             <input
               ref={inputRef}
               type="text"
@@ -167,12 +167,12 @@ export function AttendeeChatWidget({ eventSlug, eventName }: AttendeeChatWidgetP
               onKeyDown={handleKeyDown}
               placeholder="Ask about tonight..."
               disabled={loading}
-              className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+              className="flex-1 bg-white/4 border border-white/8 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-hidden focus:border-white/20 transition-colors disabled:opacity-50"
             />
             <button
               onClick={() => send(input)}
               disabled={!input.trim() || loading}
-              className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+              className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
             >
               <Send className="w-3.5 h-3.5 text-black" />
             </button>
