@@ -1,127 +1,295 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --cursor-purple: #7c3aed;
-  --cursor-purple-light: #a78bfa;
-  --cursor-purple-dark: #5b21b6;
-  --card-bg: rgba(10, 10, 10, 0.4);
-  --card-border: rgba(255, 255, 255, 0.05);
-  --accent-grey: #1f1f1f;
-}
+@theme {
+  --color-cursor-purple: #7c3aed;
+  --color-cursor-purple-dark: #5b21b6;
+  --color-cursor-purple-light: #a78bfa;
+  --color-cursor-bg: #14120b;
+  --color-cursor-bg-dark: #0f0d06;
+  --color-cursor-surface: #1c1a12;
+  --color-cursor-surface-raised: #262318;
+  --color-cursor-text: #edecec;
+  --color-cursor-text-secondary: rgba(237, 236, 236, 0.75);
+  --color-cursor-text-muted: rgba(237, 236, 236, 0.55);
+  --color-cursor-text-faint: rgba(237, 236, 236, 0.35);
+  --color-cursor-border: rgba(237, 236, 236, 0.08);
+  --color-cursor-border-emphasis: rgba(237, 236, 236, 0.15);
+  --color-cursor-overlay: rgba(237, 236, 236, 0.05);
+  --color-cursor-accent-blue: #a8b4c8;
+  --color-cursor-accent-green: #a8c4a0;
+  --color-cursor-accent-red: #c4a0a0;
+  --color-cursor-accent-purple: #b8a8c8;
+  --color-cursor-accent-yellow: #c8bfa0;
+  --color-cursor-accent-orange: #c8b4a0;
+  --color-cursor-accent-blue-bg: rgba(26, 29, 46, 0.3);
+  --color-cursor-accent-green-bg: rgba(26, 36, 24, 0.3);
+  --color-cursor-accent-red-bg: rgba(42, 26, 24, 0.3);
+  --color-cursor-accent-purple-bg: rgba(34, 26, 46, 0.3);
+  --color-cursor-accent-yellow-bg: rgba(42, 36, 24, 0.3);
+  --color-cursor-accent-orange-bg: rgba(42, 32, 24, 0.3);
 
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.1);
+  --shadow-glow-lg: 0 0 30px rgba(255, 255, 255, 0.15);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-glass: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 
-html {
-  scroll-behavior: smooth;
-}
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+  --animate-slide-up: slideUp 0.25s ease-out forwards;
+  --animate-slide-down: slideDown 0.25s ease-out forwards;
+  --animate-slide-right: slideRight 0.25s ease-out forwards;
+  --animate-scale-in: scaleIn 0.2s ease-out forwards;
+  --animate-reveal: reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Glass effect */
-.glass {
-  background: rgba(20, 20, 20, 0.6);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  .glass {
-    background: rgba(10, 10, 10, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes slideRight {
+    0% {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes reveal {
+    0% {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
   }
 }
 
-.floating {
-  animation: floating 8s ease-in-out infinite;
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
 }
 
-.floating-delayed {
-  animation: floating 8s ease-in-out infinite -4s;
-}
-
-@keyframes floating {
-  0% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-15px) rotate(1deg); }
-  66% { transform: translateY(-5px) rotate(-1deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
-}
-
-/* Slow rotation for popup logo */
-.slow-spin {
-  animation: slow-spin 20s linear infinite;
-}
-
-@keyframes slow-spin {
-  0% { transform: perspective(800px) rotateY(0deg); }
-  50% { transform: perspective(800px) rotateY(8deg); }
-  100% { transform: perspective(800px) rotateY(0deg); }
-}
-
-/* Beam animation for buttons */
-@keyframes beam {
-  0% { left: -100%; opacity: 0; }
-  50% { opacity: 0.5; }
-  100% { left: 100%; opacity: 0; }
-}
-
-.animate-beam {
-  position: relative;
-  overflow: hidden;
-}
-
-.animate-beam::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 100%
+@utility bg-black-gradient {
+  background: radial-gradient(
+    circle at top center,
+    #1a1a1a 0%,
+    #0a0a0a 50%,
+    #000000 100%
   );
-  animation: beam 3s infinite;
+}
+
+@utility text-shadow-glow {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+@utility border-glow {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+@utility transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 @layer utilities {
-  .bg-black-gradient {
-    background: radial-gradient(circle at top center, #1a1a1a 0%, #0a0a0a 50%, #000000 100%);
-  }
-  
-  .text-shadow-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-
-  .border-glow {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
-  }
-
-  .transition-smooth {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+    --cursor-purple: #7c3aed;
+    --cursor-purple-light: #a78bfa;
+    --cursor-purple-dark: #5b21b6;
+    --card-bg: rgba(10, 10, 10, 0.4);
+    --card-border: rgba(255, 255, 255, 0.05);
+    --accent-grey: #1f1f1f;
   }
 
-  .text-balance {
-    text-wrap: balance;
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: var(--foreground);
+    background: var(--background);
+    font-family:
+      'Inter',
+      -apple-system,
+      BlinkMacSystemFont,
+      'SF Pro Display',
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Glass effect */
+  .glass {
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .glass {
+      background: rgba(10, 10, 10, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .floating {
+    animation: floating 8s ease-in-out infinite;
+  }
+
+  .floating-delayed {
+    animation: floating 8s ease-in-out infinite -4s;
+  }
+
+  @keyframes floating {
+    0% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    33% {
+      transform: translateY(-15px) rotate(1deg);
+    }
+    66% {
+      transform: translateY(-5px) rotate(-1deg);
+    }
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+  }
+
+  /* Slow rotation for popup logo */
+  .slow-spin {
+    animation: slow-spin 20s linear infinite;
+  }
+
+  @keyframes slow-spin {
+    0% {
+      transform: perspective(800px) rotateY(0deg);
+    }
+    50% {
+      transform: perspective(800px) rotateY(8deg);
+    }
+    100% {
+      transform: perspective(800px) rotateY(0deg);
+    }
+  }
+
+  /* Beam animation for buttons */
+  @keyframes beam {
+    0% {
+      left: -100%;
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+
+  .animate-beam {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-beam::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    animation: beam 3s infinite;
   }
 }
 

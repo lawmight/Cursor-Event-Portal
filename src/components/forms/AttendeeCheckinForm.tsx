@@ -434,7 +434,7 @@ export function AttendeeCheckinForm({
   if (step === "email") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8">
           <div className="text-center space-y-2">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-bold">
@@ -453,7 +453,7 @@ export function AttendeeCheckinForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-14 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-xl font-light"
+              className="w-full bg-transparent border-b border-white/10 rounded-none pl-10 pr-4 h-14 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-xl font-light"
               autoFocus
               autoComplete="email"
             />
@@ -462,7 +462,7 @@ export function AttendeeCheckinForm({
           {/* Error message */}
           {error && (
             <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 animate-fade-in">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 shrink-0" />
               <p className="text-sm font-light">{error}</p>
             </div>
           )}
@@ -489,7 +489,7 @@ export function AttendeeCheckinForm({
   if (step === "confirm" && foundAttendee) {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8 animate-fade-in">
           <div className="text-center space-y-6">
             <div className="w-16 h-16 mx-auto rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -512,7 +512,7 @@ export function AttendeeCheckinForm({
 
           {error && (
             <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-400/80 animate-fade-in">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 shrink-0" />
               <p className="text-sm font-light">{error}</p>
             </div>
           )}
@@ -556,7 +556,7 @@ export function AttendeeCheckinForm({
   if (step === "guest") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-10 animate-fade-in">
           {/* Selected attendee - Ultra minimal */}
           <div className="flex items-center justify-between group">
@@ -588,7 +588,7 @@ export function AttendeeCheckinForm({
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <button
-                  className="group relative aspect-square rounded-[32px] bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all overflow-hidden"
+                  className="group relative aspect-square rounded-[32px] bg-white/2 border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all overflow-hidden"
                   onClick={() => setBringingGuest(false)}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 group-hover:scale-110 transition-transform">
@@ -601,7 +601,7 @@ export function AttendeeCheckinForm({
                   </div>
                 </button>
                 <button
-                  className="group relative aspect-square rounded-[32px] bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all overflow-hidden"
+                  className="group relative aspect-square rounded-[32px] bg-white/2 border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all overflow-hidden"
                   onClick={() => setBringingGuest(true)}
                 >
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 group-hover:scale-110 transition-transform">
@@ -625,7 +625,7 @@ export function AttendeeCheckinForm({
                     placeholder="Guest Name"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
-                    className="w-full bg-transparent border-b border-white/10 rounded-none px-0 h-14 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                    className="w-full bg-transparent border-b border-white/10 rounded-none px-0 h-14 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                     autoFocus
                   />
                 </div>
@@ -635,7 +635,7 @@ export function AttendeeCheckinForm({
                     placeholder="Guest Email (Optional)"
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full bg-transparent border-b border-white/10 rounded-none px-0 h-14 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                    className="w-full bg-transparent border-b border-white/10 rounded-none px-0 h-14 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                   />
                 </div>
               </div>
@@ -676,7 +676,7 @@ export function AttendeeCheckinForm({
   if (step === "success") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-10">
           <div className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center animate-bounce-subtle">
@@ -693,7 +693,7 @@ export function AttendeeCheckinForm({
           </div>
 
           {/* Intake Invitation */}
-          <div className="glass rounded-3xl p-6 bg-white/[0.02] border border-white/10 space-y-4">
+          <div className="glass rounded-3xl p-6 bg-white/2 border border-white/10 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-white/60" />
@@ -747,11 +747,11 @@ export function AttendeeCheckinForm({
   if (step === "consent") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8">
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By selecting "continue" you agree that your responses may be used to:
+              By selecting &quot;continue&quot; you agree that your responses may be used to:
             </p>
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs text-gray-400">
               <li>Facilitate networking at this event</li>
@@ -767,7 +767,7 @@ export function AttendeeCheckinForm({
             <button
               type="button"
               onClick={() => setConsentChecked(!consentChecked)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
                 consentChecked
                   ? "bg-white border-white text-black"
                   : "bg-transparent border-white/30 text-transparent hover:border-white/50"
@@ -796,7 +796,7 @@ export function AttendeeCheckinForm({
                 setConsentChecked(false);
                 setError("");
               }}
-              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
@@ -825,7 +825,7 @@ export function AttendeeCheckinForm({
   if (step === "intake-profile") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
@@ -852,7 +852,7 @@ export function AttendeeCheckinForm({
               <select
                 value={roleCategory}
                 onChange={(e) => setRoleCategory(e.target.value as AttendeeRoleCategory)}
-                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
               >
                 {ROLE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value} className="bg-black">
@@ -870,7 +870,7 @@ export function AttendeeCheckinForm({
                 <select
                   value={founderStage}
                   onChange={(e) => setFounderStage(e.target.value as FounderStage)}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                 >
                   <option value="" className="bg-black">Select stage</option>
                   {FOUNDER_STAGE_OPTIONS.map((option) => (
@@ -893,7 +893,7 @@ export function AttendeeCheckinForm({
                   value={yearsExperience}
                   onChange={(e) => setYearsExperience(e.target.value)}
                   placeholder="e.g. 5"
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
             )}
@@ -906,7 +906,7 @@ export function AttendeeCheckinForm({
                 <select
                   value={degreeType}
                   onChange={(e) => setDegreeType(e.target.value as DegreeType)}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                 >
                   <option value="" className="bg-black">Select degree</option>
                   {DEGREE_OPTIONS.map((option) => (
@@ -927,7 +927,7 @@ export function AttendeeCheckinForm({
                 value={linkedin}
                 onChange={(e) => setLinkedin(e.target.value)}
                 placeholder="https://linkedin.com/in/..."
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
               />
             </div>
 
@@ -940,7 +940,7 @@ export function AttendeeCheckinForm({
                 value={github}
                 onChange={(e) => setGithub(e.target.value)}
                 placeholder="https://github.com/username"
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
               />
             </div>
 
@@ -953,7 +953,7 @@ export function AttendeeCheckinForm({
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 placeholder="https://yourname.com"
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
               />
             </div>
 
@@ -966,7 +966,7 @@ export function AttendeeCheckinForm({
                 onChange={(e) => setIntent(e.target.value)}
                 placeholder="Short answer"
                 rows={2}
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light resize-none"
               />
             </div>
 
@@ -984,7 +984,7 @@ export function AttendeeCheckinForm({
                     setFollowupConsent(value === "yes");
                   }
                 }}
-                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
               >
                 <option value="" className="bg-black">Select</option>
                 <option value="yes" className="bg-black">I want to be contacted after the event</option>
@@ -999,7 +999,7 @@ export function AttendeeCheckinForm({
               <select
                 value={cursorExperience}
                 onChange={(e) => setCursorExperience(e.target.value as CursorExperience)}
-                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
               >
                 {CURSOR_EXPERIENCE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value} className="bg-black">
@@ -1043,7 +1043,7 @@ export function AttendeeCheckinForm({
 
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-medium text-gray-700 uppercase tracking-[0.4em]">
@@ -1079,10 +1079,10 @@ export function AttendeeCheckinForm({
                       : toggleOffer(option.value as IntakeOfferTag)
                   }
                   disabled={intakeLoading}
-                  className={`p-4 rounded-2xl border text-[10px] font-medium uppercase tracking-[0.1em] text-center transition-all duration-300 flex items-center justify-center leading-relaxed ${
+                  className={`p-4 rounded-2xl border text-[10px] font-medium uppercase tracking-widest text-center transition-all duration-300 flex items-center justify-center leading-relaxed ${
                     isSelected
                       ? "border-white/20 bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-[1.02]"
-                      : "border-white/[0.03] bg-white/[0.01] text-gray-600 hover:border-white/10 hover:text-gray-400"
+                      : "border-white/3 bg-white/1 text-gray-600 hover:border-white/10 hover:text-gray-400"
                   }`}
                 >
                   {option.label}
@@ -1104,7 +1104,7 @@ export function AttendeeCheckinForm({
                 }
                 rows={2}
                 disabled={intakeLoading}
-                className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
+                className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
               />
             </div>
           )}
@@ -1120,7 +1120,7 @@ export function AttendeeCheckinForm({
               <button
                 onClick={() => setStep("intake-goals")}
                 disabled={intakeLoading}
-                className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+                className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </button>
@@ -1129,7 +1129,7 @@ export function AttendeeCheckinForm({
               <button
                 onClick={() => setStep("intake-profile")}
                 disabled={intakeLoading}
-                className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+                className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </button>
@@ -1157,7 +1157,7 @@ export function AttendeeCheckinForm({
   if (step === "complete") {
     return (
       <div className="glass rounded-[40px] p-10 border-white/20 shadow-2xl relative animate-fade-in">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
         <div className="space-y-10">
           <div className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -1165,7 +1165,7 @@ export function AttendeeCheckinForm({
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl font-light text-white tracking-tight">
-                You're All Set!
+                You&apos;re All Set!
               </h2>
               <p className="text-gray-500 text-sm font-light max-w-xs mx-auto">
                 Enjoy the event, {foundAttendee?.name?.split(" ")[0]}!
@@ -1175,7 +1175,7 @@ export function AttendeeCheckinForm({
 
           {/* Seat Assignment Notice - only shown when seating is enabled */}
           {seatingEnabled && (
-            <div className="glass rounded-3xl p-6 bg-white/[0.02] border-white/5 space-y-4">
+            <div className="glass rounded-3xl p-6 bg-white/2 border-white/5 space-y-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <Phone className="w-6 h-6 text-white/60" />

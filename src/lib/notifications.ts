@@ -18,6 +18,15 @@ const PREF_EMAIL: Record<NotificationType, string> = {
   announcement:         "announcements_email",
 };
 
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+
+  return new Resend(apiKey);
+}
+
 /**
  * Fan out an in-app (and optionally email) notification to all registered
  * attendees of an event, respecting their individual preferences.
@@ -93,9 +102,9 @@ export async function fanOutNotification(
 
     // 5. Send emails via Resend
     if (toEmail.length > 0 && process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = getResendClient();
       const base = process.env.NEXT_PUBLIC_BASE_URL || "";
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         toEmail.map(({ email }) =>
           resend.emails.send({
             from: "Cursor Pop-Up Portal <noreply@updates.cursor.com>",
@@ -115,6 +124,19 @@ export async function fanOutNotification(
           })
         )
       );
+
+      results.forEach((result, index) => {
+        const recipient = toEmail[index]?.email;
+
+        if (result.status === "rejected") {
+          console.error(`[fanOutNotification] Failed to send email to ${recipient}:`, result.reason);
+          return;
+        }
+
+        if (result.value.error) {
+          console.error(`[fanOutNotification] Failed to send email to ${recipient}:`, result.value.error);
+        }
+      });
     }
   } catch (err) {
     // Non-fatal — don't break the primary action if notifications fail

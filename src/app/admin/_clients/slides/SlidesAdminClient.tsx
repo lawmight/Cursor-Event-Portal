@@ -37,7 +37,7 @@ export function SlidesAdminClient({
     if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
       // Use jsdelivr CDN which is more reliable
       // For pdfjs-dist 5.x, use .mjs extension
-      const version = pdfjsLib.version || "5.4.530";
+      const version = pdfjsLib.version || "5.5.207";
       // Try the .mjs version first (for v5+), fallback to .js if needed
       pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
     }
@@ -376,7 +376,7 @@ export function SlidesAdminClient({
         {/* Info */}
         <div className="glass rounded-[32px] p-6 bg-blue-500/10 border border-blue-500/20">
           <p className="text-sm text-blue-400">
-            Upload <span className="text-blue-300 font-medium">PDF files</span> or individual images (PNG, JPG). Each PDF page becomes a slide. <span className="text-blue-300">For PowerPoint: Save As → PDF</span>. Slides display to attendees when marked "Live" (eye icon).
+            Upload <span className="text-blue-300 font-medium">PDF files</span> or individual images (PNG, JPG). Each PDF page becomes a slide. <span className="text-blue-300">For PowerPoint: Save As → PDF</span>. Slides display to attendees when marked &quot;Live&quot; (eye icon).
           </p>
         </div>
 
@@ -399,7 +399,7 @@ export function SlidesAdminClient({
             {slides.map((slide, index) => (
               <div
                 key={slide.id}
-                className="glass rounded-[32px] p-6 border-white/[0.03] hover:bg-white/[0.01] transition-all relative group"
+                className="glass rounded-[32px] p-6 border-white/3 hover:bg-white/1 transition-all relative group"
               >
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-white/5 mb-4">
                   <Image
@@ -439,7 +439,7 @@ export function SlidesAdminClient({
                         "w-8 h-8 rounded-lg border transition-all flex items-center justify-center",
                         slide.is_live
                           ? "bg-green-500/20 border-green-500/30 text-green-400"
-                          : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                          : "bg-white/2 border-white/5 text-gray-600 hover:text-white hover:border-white/20"
                       )}
                       title={slide.is_live ? "Hide from attendees" : "Show to attendees"}
                     >
@@ -452,7 +452,7 @@ export function SlidesAdminClient({
                     <button
                       onClick={() => moveSlide(index, "up")}
                       disabled={index === 0 || isPending}
-                      className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center disabled:opacity-30"
+                      className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center disabled:opacity-30"
                       title="Move up"
                     >
                       ↑
@@ -460,7 +460,7 @@ export function SlidesAdminClient({
                     <button
                       onClick={() => moveSlide(index, "down")}
                       disabled={index === slides.length - 1 || isPending}
-                      className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center disabled:opacity-30"
+                      className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center disabled:opacity-30"
                       title="Move down"
                     >
                       ↓
@@ -468,14 +468,14 @@ export function SlidesAdminClient({
                     <button
                       onClick={() => setEditingSlide(slide)}
                       disabled={isPending}
-                      className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all flex items-center justify-center"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(slide.id)}
                       disabled={isPending}
-                      className="w-8 h-8 rounded-lg bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg bg-white/2 border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -487,7 +487,7 @@ export function SlidesAdminClient({
         )}
       </main>
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Slides</p>
@@ -500,7 +500,7 @@ export function SlidesAdminClient({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => !uploading && setShowUploadModal(false)}
         >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
           <div
             className="relative w-full max-w-md glass rounded-[40px] p-10 space-y-8"
             onClick={(e) => e.stopPropagation()}
@@ -587,7 +587,7 @@ export function SlidesAdminClient({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => setEditingSlide(null)}
         >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
           <div
             className="relative w-full max-w-md glass rounded-[40px] p-10 space-y-8"
             onClick={(e) => e.stopPropagation()}
@@ -619,7 +619,7 @@ export function SlidesAdminClient({
                   type="text"
                   name="title"
                   defaultValue={editingSlide.title || ""}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
                   placeholder="e.g., Welcome Slide"
                 />
               </div>

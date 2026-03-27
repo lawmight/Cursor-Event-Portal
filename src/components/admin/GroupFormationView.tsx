@@ -244,9 +244,9 @@ export function GroupFormation({
       {/* Stats Header */}
         {showStats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="glass rounded-[32px] p-8 border-white/3 group hover:bg-white/1 transition-colors flex items-center">
             <div className="flex items-center gap-6 w-full">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden shrink-0">
                 <Image
                   src="/attendees-2.png"
                   alt="Intake Responses"
@@ -262,9 +262,9 @@ export function GroupFormation({
             </div>
           </div>
 
-          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="glass rounded-[32px] p-8 border-white/3 group hover:bg-white/1 transition-colors flex items-center">
             <div className="flex items-center gap-6 w-full">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden shrink-0">
                 <Image
                   src="/proposals.png"
                   alt="Proposals"
@@ -280,9 +280,9 @@ export function GroupFormation({
             </div>
           </div>
 
-          <div className="glass rounded-[32px] p-8 border-white/[0.03] group hover:bg-white/[0.01] transition-colors flex items-center">
+          <div className="glass rounded-[32px] p-8 border-white/3 group hover:bg-white/1 transition-colors flex items-center">
             <div className="flex items-center gap-6 w-full">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden flex-shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden shrink-0">
                 <Image
                   src="/group-synthesis.png"
                   alt="Synthesize"
@@ -298,12 +298,12 @@ export function GroupFormation({
                   className={`w-full py-4 px-6 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-3 overflow-hidden ${
                     generating || intakes.length < 2
                       ? "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
-                      : "bg-white/[0.03] text-white/90 border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.08] hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
+                      : "bg-white/3 text-white/90 border border-white/8 hover:border-white/20 hover:bg-white/8 hover:text-white hover:scale-[1.02] shadow-xl active:scale-[0.98]"
                   }`}
                 >
                   {generating ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin flex-shrink-0" />
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin shrink-0" />
                       <span className="animate-pulse truncate">{progressMessage ? "Generating..." : "Processing..."}</span>
                     </>
                   ) : (
@@ -341,7 +341,7 @@ export function GroupFormation({
       {warningMessage && (
         <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-6 rounded-[24px] text-sm tracking-tight">
           <div className="flex items-start gap-3">
-            <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -379,7 +379,7 @@ export function GroupFormation({
                   relative px-6 py-4 rounded-t-[24px] text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-500 group
                   ${isActive 
                     ? "bg-[#0A0A0A] text-white border-t border-l border-r border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] z-20" 
-                    : "bg-white/[0.02] text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
+                    : "bg-white/2 text-gray-500 hover:bg-white/5 hover:text-gray-300 border-t border-l border-r border-transparent z-10 hover:z-15 hover:-translate-y-1"}
                 `}
               >
                 <div className="flex items-center gap-3">
@@ -396,7 +396,7 @@ export function GroupFormation({
                 {isActive && (
                   <>
                     <div className="absolute -bottom-[2px] left-0 right-0 h-[4px] bg-[#0A0A0A] z-30" />
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
                   </>
                 )}
               </button>
@@ -414,13 +414,13 @@ export function GroupFormation({
                 placeholder="Search Identity..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/[0.03] border border-white/[0.05] rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-white/20 focus:bg-white/[0.05] transition-all w-48 focus:w-64"
+                className="bg-white/3 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 focus:bg-white/5 transition-all w-48 focus:w-64"
               />
             </div>
           </div>
         </div>
 
-        <div className="glass rounded-[40px] rounded-tl-none p-10 border-white/[0.03] relative z-0 bg-[#0A0A0A]/40 backdrop-blur-xl">
+        <div className="glass rounded-[40px] rounded-tl-none p-10 border-white/3 relative z-0 bg-[#0A0A0A]/40 backdrop-blur-xl">
           {/* Subtabs */}
           {(() => {
             const currentTab = TABS.find(t => t.id === activeTab);
@@ -441,7 +441,7 @@ export function GroupFormation({
                         px-4 py-1.5 rounded-full text-[9px] uppercase tracking-[0.15em] font-bold transition-all
                         ${isSubActive
                           ? "bg-white/10 text-white border border-white/20"
-                          : "bg-white/[0.02] text-gray-500 border border-white/[0.05] hover:bg-white/[0.05] hover:text-gray-300"}
+                          : "bg-white/2 text-gray-500 border border-white/5 hover:bg-white/5 hover:text-gray-300"}
                       `}
                     >
                       {subtab.label}
@@ -464,19 +464,19 @@ export function GroupFormation({
                   : TABS.find(t => t.id === activeTab)?.label} Matrix
               </h3>
             </div>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
           
           {filteredIntakes.length === 0 ? (
             <div className="space-y-4 py-20">
-              <div className="w-16 h-16 rounded-3xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 rounded-3xl bg-white/2 border border-white/5 flex items-center justify-center mx-auto mb-6">
                 <Search className="w-6 h-6 text-gray-700" />
               </div>
               <p className="text-gray-600 text-center text-sm uppercase tracking-[0.2em] font-medium">
                 No matching transmissions found
               </p>
               <p className="text-gray-700 text-center text-xs tracking-tight leading-relaxed max-w-md mx-auto">
-                Try adjusting your filters or search query to find the attendees you're looking for.
+                Try adjusting your filters or search query to find the attendees you&apos;re looking for.
               </p>
               {activeTab !== "all" && (
                 <div className="flex justify-center pt-4">
@@ -492,11 +492,11 @@ export function GroupFormation({
           ) : (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {filteredIntakes.map((intake) => (
-                <div key={intake.id} className="p-8 rounded-[32px] bg-white/[0.01] border border-white/[0.02] hover:bg-white/[0.02] hover:border-white/[0.05] transition-all group flex flex-col justify-between min-h-[180px]">
+                <div key={intake.id} className="p-8 rounded-[32px] bg-white/1 border border-white/2 hover:bg-white/2 hover:border-white/5 transition-all group flex flex-col justify-between min-h-[180px]">
                   <div>
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent border border-white/5 flex items-center justify-center text-lg font-light text-white/40 group-hover:text-white/90 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-linear-to-br from-white/10 to-transparent border border-white/5 flex items-center justify-center text-lg font-light text-white/40 group-hover:text-white/90 transition-colors">
                           {intake.user?.name.charAt(0)}
                         </div>
                         <div>
@@ -518,12 +518,12 @@ export function GroupFormation({
                     
                     <div className="flex flex-wrap gap-2">
                       {intake.goals.map((goal) => (
-                        <span key={goal} className="px-3 py-1 rounded-lg bg-white/[0.02] border border-white/[0.03] text-[9px] uppercase tracking-[0.1em] text-gray-500 font-medium group-hover:border-white/10 transition-colors">
+                        <span key={goal} className="px-3 py-1 rounded-lg bg-white/2 border border-white/3 text-[9px] uppercase tracking-widest text-gray-500 font-medium group-hover:border-white/10 transition-colors">
                           {GOAL_LABELS[goal] || goal}
                         </span>
                       ))}
                       {intake.offers.map((offer) => (
-                        <span key={offer} className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[9px] uppercase tracking-[0.1em] text-blue-400 font-bold group-hover:bg-blue-500 group-hover:text-white transition-all">
+                        <span key={offer} className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[9px] uppercase tracking-widest text-blue-400 font-bold group-hover:bg-blue-500 group-hover:text-white transition-all">
                           {OFFER_LABELS[offer] || offer}
                         </span>
                       ))}
@@ -531,17 +531,21 @@ export function GroupFormation({
                   </div>
 
                   {(intake.goals_other || intake.offers_other) && (
-                    <div className="mt-6 pt-6 border-t border-white/[0.02] flex flex-col gap-2">
+                    <div className="mt-6 pt-6 border-t border-white/2 flex flex-col gap-2">
                       {intake.goals_other && (
                         <div className="flex items-start gap-2">
                           <span className="text-[8px] uppercase tracking-widest text-gray-600 mt-1">Goal:</span>
-                          <span className="text-xs text-gray-400 italic">"{intake.goals_other}"</span>
+                          <span className="text-xs text-gray-400 italic">
+                            &quot;{intake.goals_other}&quot;
+                          </span>
                         </div>
                       )}
                       {intake.offers_other && (
                         <div className="flex items-start gap-2">
                           <span className="text-[8px] uppercase tracking-widest text-gray-600 mt-1">Offer:</span>
-                          <span className="text-xs text-gray-400 italic">"{intake.offers_other}"</span>
+                          <span className="text-xs text-gray-400 italic">
+                            &quot;{intake.offers_other}&quot;
+                          </span>
                         </div>
                       )}
                     </div>
@@ -559,7 +563,7 @@ export function GroupFormation({
         <div className="space-y-8">
           <div className="flex items-center gap-4">
             <h2 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Proposed Formations</h2>
-            <div className="h-[1px] flex-1 bg-white/[0.03]" />
+            <div className="h-px flex-1 bg-white/3" />
           </div>
           <div className="space-y-6">
             {groups.map((group) => (
@@ -621,7 +625,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
   };
 
   return (
-    <div className="glass rounded-[48px] p-10 border-white/[0.03] hover:bg-white/[0.01] transition-all group">
+    <div className="glass rounded-[48px] p-10 border-white/3 hover:bg-white/1 transition-all group">
       <div className="flex items-start justify-between mb-10">
         <div className="space-y-3 flex-1">
           <div className="flex items-center gap-4 flex-wrap">
@@ -641,7 +645,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
                     setEditingTableNumber(false);
                   }
                 }}
-                className="w-20 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-light focus:outline-none focus:border-white/40"
+                className="w-20 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white text-lg font-light focus:outline-hidden focus:border-white/40"
                 autoFocus
               />
             ) : (
@@ -677,7 +681,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
         {group.members?.map((member) => (
             <div
               key={member.id}
-              className="flex flex-col gap-2 p-6 bg-white/[0.01] border border-white/[0.03] rounded-[32px] hover:bg-white/[0.03] transition-all relative group/member"
+              className="flex flex-col gap-2 p-6 bg-white/1 border border-white/3 rounded-[32px] hover:bg-white/3 transition-all relative group/member"
             >
               {/* Remove member button */}
               {removingMemberId === member.user_id ? (
@@ -687,13 +691,13 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
                       onMemberRemove(group.id, member.user_id);
                       setRemovingMemberId(null);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-[0.1em] hover:bg-red-500/30 transition-all"
+                    className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-[9px] font-bold uppercase tracking-widest hover:bg-red-500/30 transition-all"
                   >
                     Confirm
                   </button>
                   <button
                     onClick={() => setRemovingMemberId(null)}
-                    className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-500 text-[9px] font-bold uppercase tracking-[0.1em] hover:text-white transition-all"
+                    className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-500 text-[9px] font-bold uppercase tracking-widest hover:text-white transition-all"
                   >
                     No
                   </button>
@@ -701,7 +705,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
               ) : (
                 <button
                   onClick={() => setRemovingMemberId(member.user_id)}
-                  className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/[0.02] border border-white/[0.05] text-gray-700 hover:text-red-500 hover:border-red-500/30 transition-all flex items-center justify-center opacity-0 group-hover/member:opacity-100"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/2 border border-white/5 text-gray-700 hover:text-red-500 hover:border-red-500/30 transition-all flex items-center justify-center opacity-0 group-hover/member:opacity-100"
                   title="Remove from group"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -715,7 +719,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
                   </div>
                 )}
               </div>
-              <span className="text-[10px] uppercase tracking-[0.1em] text-gray-800 font-medium">{member.match_reason}</span>
+              <span className="text-[10px] uppercase tracking-widest text-gray-800 font-medium">{member.match_reason}</span>
             </div>
         ))}
       </div>
@@ -726,7 +730,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
           <>
             <button
               onClick={() => onStatusChange(group.id, "approved")}
-              className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-glow"
             >
               Approve Formation
             </button>
@@ -780,7 +784,7 @@ function GroupCard({ group, eventSlug, adminCode, onStatusChange, onMemberRemove
                 {group.status === "modified" && (
                   <button
                     onClick={() => onStatusChange(group.id, "approved")}
-                    className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    className="px-8 py-3 bg-white text-black rounded-full font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-glow"
                   >
                     Approve Changes
                   </button>

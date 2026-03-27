@@ -2,7 +2,15 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+function redirectWithCookies(response: NextResponse, url: URL) {
+  const redirectResponse = NextResponse.redirect(url);
+  for (const cookie of response.cookies.getAll()) {
+    redirectResponse.cookies.set(cookie);
+  }
+  return redirectResponse;
+}
+
+export async function proxy(request: NextRequest) {
   // Update Supabase auth session
   const response = await updateSession(request);
 
@@ -13,24 +21,31 @@ export async function middleware(request: NextRequest) {
     if (!sessionCookie) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
-      return NextResponse.redirect(url);
+      return redirectWithCookies(response, url);
     }
   }
 
   // Admin routes protection (except login page)
   if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url || !key || process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+      return response;
+    }
+
     // Create Supabase client to check auth
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      url,
+      key,
       {
         cookies: {
           getAll() {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-            cookiesToSet.forEach(({ name, value }) => {
-              response.cookies.set(name, value);
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
             });
           },
         },
@@ -42,7 +57,7 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
-      return NextResponse.redirect(url);
+      return redirectWithCookies(response, url);
     }
   }
 

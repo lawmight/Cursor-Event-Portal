@@ -55,7 +55,7 @@ export function SeatLockoutControl({ event, eventSlug, adminCode }: SeatLockoutC
           <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center transition-all ${
             isActive 
               ? "bg-red-500/20 border-red-500/30" 
-              : "bg-white/10 border-white/[0.05]"
+              : "bg-white/10 border-white/5"
           }`}>
             {isActive ? (
               <Lock className="w-6 h-6 text-red-400" />
@@ -88,14 +88,14 @@ export function SeatLockoutControl({ event, eventSlug, adminCode }: SeatLockoutC
 
       {isActive && (
         <div className="mt-6 flex items-start gap-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20">
-          <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-sm text-red-300 font-medium">
               Lockout is currently active
             </p>
             <p className="text-xs text-red-400/80">
               All attendees in approved groups are seeing their table assignment and cannot access their dashboard. 
-              Click "Deactivate" when the networking session begins to restore dashboard access.
+              Click &quot;Deactivate&quot; when the networking session begins to restore dashboard access.
             </p>
           </div>
         </div>
