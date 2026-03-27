@@ -220,42 +220,42 @@ export const headerPhotos: HeaderPhoto[] = [
 
 export const events: CursorEvent[] = [
   {
-    id: 'calgary-apr-2026',
-    title: 'Cursor Meetup Calgary April',
+    id: 'shanghai-apr-2026',
+    title: 'Cursor Shanghai April Meetup',
     date: '2026-04-29',
     displayDate: 'April 29, 2026',
-    location: 'Calgary, Canada',
-    lumaUrl: 'https://lu.ma/onlcm9o9',
+    location: 'Shanghai, China',
+    lumaUrl: 'https://lu.ma/cursor-china',
     status: 'upcoming',
   },
   {
-    id: 'calgary-hackathon-mar-2026',
-    title: 'Cursor Hackathon UCalgary',
+    id: 'shanghai-hackathon-mar-2026',
+    title: 'Cursor Shanghai Hackathon',
     date: '2026-03-14',
     displayDate: 'March 14–15, 2026',
     attendees: 72,
-    location: 'Calgary, Canada',
+    location: 'Shanghai, China',
     thumbnail: '${hero['venue-wide']}',
     galleryImages: ['${hero['winners-1st']}', '${pastOnly['winners-3rd']}'],
     status: 'past',
   },
   {
-    id: 'calgary-coworking-mar-2026',
-    title: 'Cursor Coworking Calgary',
+    id: 'shanghai-coworking-mar-2026',
+    title: 'Cursor Shanghai Coworking',
     date: '2026-03-11',
     displayDate: 'March 11, 2026',
-    location: 'Calgary, Canada',
+    location: 'Shanghai, China',
     thumbnail: '${hero['coworking-venue']}',
     galleryImages: ['${pastOnly['coworking-whiteboard']}', '${pastOnly['coworking-group']}'],
     status: 'past',
   },
   {
-    id: 'calgary-feb-2026',
-    title: 'Cursor Calgary Meetup',
-    date: '2026-02-25',
-    displayDate: 'February 25, 2026',
+    id: 'shanghai-march-2026',
+    title: 'Cursor Shanghai Meetup',
+    date: '2026-03-25',
+    displayDate: 'March 25, 2026',
     attendees: 40,
-    location: 'Calgary, Canada',
+    location: 'Shanghai, China',
     thumbnail: '${pastOnly['feb-meetup-group']}',
     galleryImages: ['${hero['feb-vr']}', '${pastOnly['feb-meetup-coding']}'],
     status: 'past',
@@ -293,11 +293,17 @@ export const worldEventPhotos: WorldEventPhoto[] = [
   const popupPath = path.join(ROOT, 'src', 'components', 'landing', 'EventPortalPopup.tsx');
   let popup = fs.readFileSync(popupPath, 'utf8');
   const popupSrc = w1?.publicPath ?? hero['venue-wide'];
+  // Keep compatibility with older popup sources while retargeting to the latest assigned hero image.
   popup = popup.replace(
     /src="\/cursor-calgary\.avif"/,
     `src="${popupSrc}"`
   );
-  popup = popup.replace(/alt="Cursor Calgary"/, 'alt="Cursor community"');
+  popup = popup.replace(
+    /src="\/cursor_china_photo\/cursor-SHANGHAI-CHINA\.png"/,
+    `src="${popupSrc}"`
+  );
+  popup = popup.replace(/alt="Cursor Calgary"/, 'alt="Cursor Shanghai"');
+  popup = popup.replace(/alt="Cursor Shanghai"/, 'alt="Cursor Shanghai"');
   fs.writeFileSync(popupPath, popup, 'utf8');
 
   console.log('Wrote header-photos.ts, events.ts, world-events.ts, EventPortalPopup.tsx');

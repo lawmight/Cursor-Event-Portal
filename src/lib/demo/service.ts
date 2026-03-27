@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { siteConfig } from "@/content/site.config";
 import type { DemoSignupSettings, DemoSlot, Event } from "@/types";
 
 export interface DemoSlotWithCounts extends DemoSlot {
@@ -43,7 +44,7 @@ function toUtcIso(localDateTime: string, timezone: string): string {
 }
 
 function getEventLocalDate(event: Event): { year: string; month: string; day: string } {
-  const timezone = event.timezone || "America/Edmonton";
+  const timezone = event.timezone || siteConfig.defaultTimezone;
   const base = event.start_time ? new Date(event.start_time) : new Date();
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
@@ -59,7 +60,7 @@ function getEventLocalDate(event: Event): { year: string; month: string; day: st
 }
 
 function buildDefaultWindow(event: Event): { opensAt: string; closesAt: string } {
-  const timezone = event.timezone || "America/Edmonton";
+  const timezone = event.timezone || siteConfig.defaultTimezone;
   const { year, month, day } = getEventLocalDate(event);
   const opensAt = toUtcIso(`${year}-${month}-${day}T18:30`, timezone);
   const closesAt = toUtcIso(`${year}-${month}-${day}T20:00`, timezone);
@@ -148,7 +149,7 @@ function parseUtc(iso: string): Date {
 
 export function getDemoAvailability(
   settings: DemoSignupSettings,
-  eventTimezone: string = "America/Edmonton"
+  eventTimezone: string = siteConfig.defaultTimezone
 ): DemoAvailability {
   if (!settings.is_enabled) {
     return {

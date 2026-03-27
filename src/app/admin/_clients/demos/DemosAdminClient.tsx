@@ -7,10 +7,11 @@ import { formatTime } from "@/lib/utils";
 import { updateDemoSignupSettings } from "@/lib/actions/demo";
 import type { Event, DemoSignupSettings } from "@/types";
 import type { DemoSlotWithCounts } from "@/lib/demo/service";
+import { siteConfig } from "@/content/site.config";
 
 function utcToLocalDateTime(utcValue: string, timezone: string): string {
   const date = new Date(utcValue);
-  const formatter = new Intl.DateTimeFormat("en-CA", {
+  const formatter = new Intl.DateTimeFormat("zh-CN", {
     timeZone: timezone,
     year: "numeric",
     month: "2-digit",
@@ -37,7 +38,7 @@ export function DemosAdminClient({ event, adminCode, settings, slots, embedded }
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const timezone = event.timezone || "America/Edmonton";
+  const timezone = event.timezone || siteConfig.defaultTimezone;
   const [isEnabled, setIsEnabled] = useState(settings.is_enabled);
   const [speakerName, setSpeakerName] = useState(settings.speaker_name || "");
   const [opensAtLocal, setOpensAtLocal] = useState(utcToLocalDateTime(settings.opens_at, timezone));

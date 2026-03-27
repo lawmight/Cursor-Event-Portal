@@ -13,7 +13,7 @@ import {
 } from "@/lib/actions/export";
 import { ImportRegistrationsClient } from "@/components/admin/ImportRegistrationsClient";
 
-const DOWNLOAD_PASSWORD = "CursorCalgary2026";
+const DOWNLOAD_PASSWORD = "EVENT_PORTAL_EXPORT_2026";
 
 interface DataManagementClientProps {
   event: Event;

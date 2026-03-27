@@ -10,14 +10,26 @@ const nextConfig = {
   async redirects() {
     return [
       // Old attendee URL redirects
-      { source: "/calgary-jan-2026", destination: "/calgary-feb-2026", permanent: true },
-      { source: "/calgary-jan-2026/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
-      { source: "/calgary-jan-26", destination: "/calgary-feb-2026", permanent: true },
-      { source: "/calgary-jan-26/:path*", destination: "/calgary-feb-2026/:path*", permanent: true },
-      // Old admin URL format /admin/:slug/:code/:path+ → /admin/:code/:path+ (only for calgary-* slugs to avoid redirect loop)
+      { source: "/calgary-jan-2026", destination: "/shanghai-feb-2026", permanent: true },
+      { source: "/calgary-jan-2026/:path*", destination: "/shanghai-feb-2026/:path*", permanent: true },
+      { source: "/calgary-jan-26", destination: "/shanghai-feb-2026", permanent: true },
+      { source: "/calgary-jan-26/:path*", destination: "/shanghai-feb-2026/:path*", permanent: true },
+      { source: "/calgary-feb-2026", destination: "/shanghai-feb-2026", permanent: true },
+      { source: "/calgary-feb-2026/:path*", destination: "/shanghai-feb-2026/:path*", permanent: true },
+      { source: "/calgary-march-2026", destination: "/shanghai-march-2026", permanent: true },
+      { source: "/calgary-march-2026/:path*", destination: "/shanghai-march-2026/:path*", permanent: true },
+      { source: "/calgary-apr-2026", destination: "/shanghai-apr-2026", permanent: true },
+      { source: "/calgary-apr-2026/:path*", destination: "/shanghai-apr-2026/:path*", permanent: true },
+      { source: "/calgary-coworking-mar-2026", destination: "/shanghai-coworking-mar-2026", permanent: true },
+      { source: "/calgary-coworking-mar-2026/:path*", destination: "/shanghai-coworking-mar-2026/:path*", permanent: true },
+      { source: "/calgary-hackathon-mar-2026", destination: "/shanghai-hackathon-mar-2026", permanent: true },
+      { source: "/calgary-hackathon-mar-2026/:path*", destination: "/shanghai-hackathon-mar-2026/:path*", permanent: true },
+      // Old admin URL format /admin/:slug/:code/:path+ → /admin/:code/:path+ (split to avoid Next route capture-group restrictions)
       { source: "/admin/:slug(calgary-[^/]+)/:code/:path+", destination: "/admin/:code/:path+", permanent: true },
+      { source: "/admin/:slug(shanghai-[^/]+)/:code/:path+", destination: "/admin/:code/:path+", permanent: true },
       // Old admin URL format /admin/:slug/:code → /admin/:code (exact, no trailing path)
       { source: "/admin/:slug(calgary-[^/]+)/:code", destination: "/admin/:code", permanent: true },
+      { source: "/admin/:slug(shanghai-[^/]+)/:code", destination: "/admin/:code", permanent: true },
       // Short admin sub-page redirects → /admin/feb2026/:page
       { source: "/admin/agenda", destination: "/admin/feb2026/agenda", permanent: false },
       { source: "/admin/analytics", destination: "/admin/feb2026/analytics", permanent: false },

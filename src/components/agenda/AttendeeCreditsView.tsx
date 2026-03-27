@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
+import { isEasterEggEventSlug } from "@/content/site.config";
 import { Copy, Check, ExternalLink, Lock, ChevronDown, ChevronUp } from "lucide-react";
 import { markCreditRedeemed } from "@/lib/actions/cursor-credits";
 import type { CursorCredit } from "@/types";
@@ -11,7 +12,6 @@ import { cn } from "@/lib/utils";
 const QRCodeSVG = dynamic(() => import("qrcode.react").then((m) => m.QRCodeSVG), { ssr: false });
 
 const REDEMPTION_URL = (code: string) => `https://cursor.com/referral?code=${code}`;
-const EASTER_EVENT_SLUG = "calgary-march-2026";
 const TOTAL_EGGS = 3;
 
 function isEasterCredit(credit: CursorCredit) {
@@ -355,7 +355,7 @@ export function AttendeeCreditsView({ credits, userId, eventSlug, eventId }: Att
   const easterCredits = credits.filter(isEasterCredit);
   const sponsorCredits = credits.filter((c) => !isEasterCredit(c));
   const sponsorCredit = sponsorCredits[0] ?? null;
-  const isEasterEvent = eventSlug === EASTER_EVENT_SLUG;
+  const isEasterEvent = isEasterEggEventSlug(eventSlug);
 
   return (
     <div className="space-y-6">

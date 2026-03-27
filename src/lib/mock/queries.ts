@@ -287,17 +287,32 @@ export async function getActivePollsWithVotes(eventId: string, userId?: string):
 
 // ─── Analytics queries ────────────────────────────────────────────────────────
 
-export async function getSeriesAttendanceData(seriesId: string): Promise<SeriesAttendanceDataPoint[]> {
-  return [{ name: "Jan 2026", start_time: "2026-01-21T18:00:00-07:00", registered: 65, checked_in: 58 }, { name: "Feb 2026", start_time: "2026-02-18T18:00:00-07:00", registered: 80, checked_in: 74 }];
+export async function getSeriesAttendanceData(
+  seriesId: string
+): Promise<SeriesAttendanceDataPoint[]> {
+  return [
+    {
+      name: "March 2026",
+      start_time: "2026-03-25T18:00:00+08:00",
+      registered: 65,
+      checked_in: 58,
+    },
+    {
+      name: "April 2026",
+      start_time: "2026-04-29T18:00:00+08:00",
+      registered: 80,
+      checked_in: 74,
+    },
+  ];
 }
 
 export async function getCheckInCurve(eventId: string): Promise<CheckInDataPoint[]> {
   return [
-    { time: "2026-02-18T18:00:00-07:00", count: 12, cumulative: 12 },
-    { time: "2026-02-18T18:15:00-07:00", count: 18, cumulative: 30 },
-    { time: "2026-02-18T18:30:00-07:00", count: 22, cumulative: 52 },
-    { time: "2026-02-18T18:45:00-07:00", count: 14, cumulative: 66 },
-    { time: "2026-02-18T19:00:00-07:00", count: 8, cumulative: 74 },
+    { time: "2026-03-25T18:00:00+08:00", count: 12, cumulative: 12 },
+    { time: "2026-03-25T18:15:00+08:00", count: 18, cumulative: 30 },
+    { time: "2026-03-25T18:30:00+08:00", count: 22, cumulative: 52 },
+    { time: "2026-03-25T18:45:00+08:00", count: 14, cumulative: 66 },
+    { time: "2026-03-25T19:00:00+08:00", count: 8, cumulative: 74 },
   ];
 }
 

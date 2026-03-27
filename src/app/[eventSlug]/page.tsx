@@ -4,6 +4,7 @@ import { getEventBySlug, getEventStats } from "@/lib/supabase/queries";
 import { getSession } from "@/lib/actions/registration";
 import { AttendeeCheckinForm } from "@/components/forms/AttendeeCheckinForm";
 import { formatDate, formatTime } from "@/lib/utils";
+import { siteConfig } from "@/content/site.config";
 
 interface EventPageProps {
   params: Promise<{ eventSlug: string }>;
@@ -49,8 +50,8 @@ export default async function EventPage({ params }: EventPageProps) {
         <div className="text-center space-y-6 floating">
           <div className="relative w-full max-w-[280px] mx-auto mb-6">
             <Image
-              src="/cursor-calgary.avif"
-              alt="Cursor Calgary"
+              src={siteConfig.brandImagePath}
+              alt="Cursor Shanghai"
               width={280}
               height={140}
               className="w-full h-auto rounded-2xl shadow-[0_0_60px_rgba(255,255,255,0.1)]"
@@ -62,7 +63,7 @@ export default async function EventPage({ params }: EventPageProps) {
             <div className="flex flex-col items-center gap-1 text-gray-400 text-sm font-light tracking-wide">
               {event.start_time && (
                 <p className="text-white/70">
-                  {formatDate(event.start_time, event.timezone || "America/Edmonton")} · {formatTime(event.start_time, event.timezone || "America/Edmonton")}
+                  {formatDate(event.start_time, event.timezone || siteConfig.defaultTimezone)} · {formatTime(event.start_time, event.timezone || siteConfig.defaultTimezone)}
                 </p>
               )}
               {event.venue && (

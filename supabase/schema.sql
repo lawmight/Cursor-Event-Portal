@@ -340,14 +340,14 @@ CREATE POLICY "Slides can be deleted by service role" ON slides FOR DELETE USING
 -- Insert sample event
 INSERT INTO events (slug, code, name, venue, address, capacity, start_time, end_time, status)
 VALUES (
-  'calgary-jan-2026',
-  '530',
-  'Calgary Cursor Meetup - January 2026',
+  'shanghai-march-2026',
+  'SHA2026',
+  'Cursor Shanghai Meetup - March 2026',
   'TBD',
-  'Calgary, AB',
+  'Address TBA (Shanghai, China)',
   65,
-  '2026-01-29 00:30:00+00',
-  '2026-01-29 03:30:00+00',
+  '2026-03-25 10:00:00+00',
+  '2026-03-25 13:00:00+00',
   'published'
 ) ON CONFLICT (slug) DO NOTHING;
 

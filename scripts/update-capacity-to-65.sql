@@ -1,4 +1,4 @@
--- Update the capacity for the Calgary event to 65
-UPDATE events 
-SET capacity = 65 
-WHERE slug = 'calgary-jan-2026';
+-- Legacy helper: update January 2026 event capacity to 65
+UPDATE events
+SET capacity = 65
+WHERE slug = 'shanghai-jan-2026';

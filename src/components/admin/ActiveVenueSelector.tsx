@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { setActiveEventSlug } from "@/lib/actions/settings";
+import { siteConfig } from "@/content/site.config";
 import { MapPin } from "lucide-react";
 
 type EventOption = {
@@ -54,8 +55,8 @@ export function ActiveVenueSelector({ events, activeSlug }: ActiveVenueSelectorP
             >
               <span className="block font-semibold">
                 {ev.start_time
-                  ? new Date(ev.start_time).toLocaleDateString("en-CA", {
-                      timeZone: "America/Edmonton",
+                  ? new Date(ev.start_time).toLocaleDateString("zh-CN", {
+                      timeZone: siteConfig.defaultTimezone,
                       month: "long",
                       day: "numeric",
                       year: "numeric",

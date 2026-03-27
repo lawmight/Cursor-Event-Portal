@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { communityDisplayName } from "@/content/site.config";
 
 interface AdminHeaderProps {
   adminCode?: string;
@@ -19,7 +20,7 @@ interface AdminHeaderProps {
 export function AdminHeader({
   adminCode,
   eventSlug,
-  title = "Calgary Cursor Meetup",
+  title = communityDisplayName(),
   subtitle,
   rightElement,
   showBackArrow = true,

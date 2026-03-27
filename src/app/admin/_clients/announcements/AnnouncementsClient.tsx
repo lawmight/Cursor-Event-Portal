@@ -6,6 +6,7 @@ import { ArrowLeft, Megaphone, Trash2, Send, CalendarClock, X, Clock } from "luc
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { formatTime as formatTimeWithTZ, cn } from "@/lib/utils";
+import { siteConfig } from "@/content/site.config";
 import {
   getScheduledItems,
   createScheduledAnnouncement,
@@ -115,7 +116,7 @@ export function AnnouncementsClient({
   };
 
   const formatTime = (date: string) =>
-    formatTimeWithTZ(date, event.timezone || "America/Edmonton");
+    formatTimeWithTZ(date, event.timezone || siteConfig.defaultTimezone);
 
   const content = (
     <main className={cn("max-w-2xl mx-auto px-6 py-12 space-y-12 animate-fade-in", isEmbedded && "py-0")}>

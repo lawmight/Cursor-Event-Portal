@@ -1,5 +1,6 @@
 "use server";
 
+import { siteConfig } from "@/content/site.config";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -480,8 +481,8 @@ export async function saveRegistrationList(
     source: r.source,
   }));
 
-  const label = new Date().toLocaleString("en-CA", {
-    timeZone: "America/Edmonton",
+  const label = new Date().toLocaleString("zh-CN", {
+    timeZone: siteConfig.defaultTimezone,
     dateStyle: "medium",
     timeStyle: "short",
   });

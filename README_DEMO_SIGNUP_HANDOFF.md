@@ -46,7 +46,7 @@ If your deployment uses migration tooling, run the normal migration pipeline for
 
 ## 2) Verify Event Timezone
 
-In `events.timezone`, ensure the event is set correctly (for Calgary usually `America/Edmonton`).
+In `events.timezone`, ensure the event is set correctly (for the Shanghai deployment use `Asia/Shanghai`).
 
 Reason: open/close logic depends on event timezone when creating/interpreting `18:30` and `20:00`.
 

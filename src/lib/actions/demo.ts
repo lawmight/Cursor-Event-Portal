@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 import { getEventBySlug } from "@/lib/supabase/queries";
+import { siteConfig } from "@/content/site.config";
 import {
   getOrCreateDemoSettings,
   getDemoAvailability,
@@ -91,7 +92,7 @@ export async function updateDemoSignupSettings(
     return { error: auth.error };
   }
 
-  const timezone = data.timezone || "America/Edmonton";
+  const timezone = data.timezone || siteConfig.defaultTimezone;
   let opensAt: string;
   let closesAt: string;
   try {
@@ -162,7 +163,10 @@ export async function bookDemoSlot(eventSlug: string, slotId: string) {
   const settings = await getOrCreateDemoSettings(event);
   await syncDemoSlotsForWindow(event.id, settings.opens_at, settings.closes_at);
 
-  const availability = getDemoAvailability(settings, event.timezone || "America/Edmonton");
+  const availability = getDemoAvailability(
+    settings,
+    event.timezone || siteConfig.defaultTimezone
+  );
   if (!availability.is_open) {
     return { error: availability.message };
   }

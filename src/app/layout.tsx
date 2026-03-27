@@ -1,16 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "react-hot-toast";
 import { ChunkLoadErrorHandler } from "@/components/ChunkLoadErrorHandler";
+import {
+  communityDescription,
+  communityDisplayName,
+  communityFullTitle,
+  siteConfig,
+} from "@/content/site.config";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cursor Calgary — Community Meetups",
-  description: "Calgary's Cursor community. Join us for hands-on AI-powered development meetups, workshops, and demos.",
+  metadataBase: new URL(siteConfig.siteUrl),
+  title: communityFullTitle(),
+  description: communityDescription(),
   openGraph: {
-    title: "Cursor Calgary",
-    description: "Calgary's Cursor community. Join us for hands-on AI-powered development meetups.",
-    url: "https://cursorcalgary.com",
-    siteName: "Cursor Calgary",
+    title: communityFullTitle(),
+    description: communityDescription(),
+    url: siteConfig.siteUrl,
+    siteName: communityDisplayName(),
     type: "website",
   },
 };

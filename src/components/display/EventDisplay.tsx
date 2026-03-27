@@ -484,7 +484,7 @@ export function EventDisplay({
       </div>
 
       <footer className="mt-20 py-10 border-t border-white/20 flex justify-between items-center z-10">
-        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up Calgary / MMXXVI</p>
+        <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up Shanghai / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Event Portal</p>
           <span className="text-[10px] font-medium text-white/70 px-5 py-2 bg-white/10 rounded-full border border-white/20">luma.com/cursor</span>

@@ -1,8 +1,8 @@
 /**
- * Script to add agenda items for Calgary Cursor Meetup - January 2026
- * 
- * Event: 5:30pm start, 8:30pm finish MST on Jan 28, 2026
- * 
+ * Script to add agenda items for the original January 2026 meetup.
+ *
+ * Event: 5:30pm start, 8:30pm finish local time on Jan 28, 2026.
+ *
  * Run this script to populate the agenda items for the event.
  * Make sure to set the EVENT_ID environment variable or update it in the script.
  */
@@ -19,19 +19,10 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-const EVENT_SLUG = "calgary-jan-2026";
+const EVENT_SLUG = "shanghai-jan-2026";
 const EVENT_DATE = "2026-01-28";
 
-// All times in UTC (MST is UTC-7)
-// Event: 5:30pm start, 8:30pm finish MST on Jan 28, 2026
-// 5:30pm MST = 12:30am UTC on Jan 29
-// 6:00pm MST = 1:00am UTC on Jan 29
-// 6:10pm MST = 1:10am UTC on Jan 29
-// 6:30pm MST = 1:30am UTC on Jan 29
-// 7:30pm MST = 2:30am UTC on Jan 29
-// 7:45pm MST = 2:45am UTC on Jan 29
-// 8:00pm MST = 3:00am UTC on Jan 29
-// 8:30pm MST = 3:30am UTC on Jan 29
+// All times are stored in UTC.
 
 const agendaItems = [
   {

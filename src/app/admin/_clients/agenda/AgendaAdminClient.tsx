@@ -4,19 +4,20 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { createAgendaItem, updateAgendaItem, deleteAgendaItem } from "@/lib/actions/agenda";
+import { siteConfig } from "@/content/site.config";
 import type { Event, AgendaItem } from "@/types";
 import { Plus, Trash2, Edit2, Clock, MapPin, User, Check } from "lucide-react";
 import { formatTime } from "@/lib/utils";
 
-// Convert UTC ISO string to datetime-local format in MST
-function utcToMstLocal(utcString: string): string {
+// Convert UTC ISO string into a datetime-local input value for the event timezone.
+function utcToLocalDatetime(utcString: string, timezone: string): string {
   const date = new Date(utcString);
-  const mstDate = new Date(date.toLocaleString("en-US", { timeZone: "America/Edmonton" }));
-  const year = mstDate.getFullYear();
-  const month = String(mstDate.getMonth() + 1).padStart(2, "0");
-  const day = String(mstDate.getDate()).padStart(2, "0");
-  const hours = String(mstDate.getHours()).padStart(2, "0");
-  const minutes = String(mstDate.getMinutes()).padStart(2, "0");
+  const localDate = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+  const year = localDate.getFullYear();
+  const month = String(localDate.getMonth() + 1).padStart(2, "0");
+  const day = String(localDate.getDate()).padStart(2, "0");
+  const hours = String(localDate.getHours()).padStart(2, "0");
+  const minutes = String(localDate.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
@@ -159,8 +160,8 @@ export function AgendaAdminClient({
                       {item.start_time && (
                         <div className="flex items-center gap-2 text-[10px] text-gray-600 uppercase tracking-[0.2em]">
                           <Clock className="w-3 h-3" />
-                          {formatTime(item.start_time, event.timezone || "America/Edmonton")}
-                          {item.end_time && ` – ${formatTime(item.end_time, event.timezone || "America/Edmonton")}`}
+                          {formatTime(item.start_time, event.timezone || siteConfig.defaultTimezone)}
+                          {item.end_time && ` – ${formatTime(item.end_time, event.timezone || siteConfig.defaultTimezone)}`}
                         </div>
                       )}
                     </div>
@@ -222,6 +223,7 @@ export function AgendaAdminClient({
         <CreateEditModal
           item={editingItem}
           eventId={event.id}
+          eventTimezone={event.timezone || siteConfig.defaultTimezone}
           onClose={() => {
             setShowCreateModal(false);
             setEditingItem(null);
@@ -238,6 +240,7 @@ export function AgendaAdminClient({
 interface CreateEditModalProps {
   item: AgendaItem | null;
   eventId: string;
+  eventTimezone: string;
   onClose: () => void;
   onCreate: (data: {
     title: string;
@@ -255,6 +258,7 @@ interface CreateEditModalProps {
 function CreateEditModal({
   item,
   eventId,
+  eventTimezone,
   onClose,
   onCreate,
   onUpdate,
@@ -265,10 +269,10 @@ function CreateEditModal({
   const [location, setLocation] = useState(item?.location || "");
   const [speaker, setSpeaker] = useState(item?.speaker || "");
   const [startTime, setStartTime] = useState(
-    item?.start_time ? utcToMstLocal(item.start_time) : ""
+    item?.start_time ? utcToLocalDatetime(item.start_time, eventTimezone) : ""
   );
   const [endTime, setEndTime] = useState(
-    item?.end_time ? utcToMstLocal(item.end_time) : ""
+    item?.end_time ? utcToLocalDatetime(item.end_time, eventTimezone) : ""
   );
   const [imageUrl, setImageUrl] = useState(item?.image_url || "");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -326,18 +330,17 @@ function CreateEditModal({
       return;
     }
 
-    // Convert MST local times to UTC for storage
+    // Convert event-local times to UTC for storage.
     let startTimeUtc: string | undefined;
     let endTimeUtc: string | undefined;
 
     if (startTime) {
-      // Parse datetime-local value as MST and convert to UTC
+      // Parse datetime-local value in the event timezone and convert to UTC.
       const [datePart, timePart] = startTime.split("T");
       const [year, month, day] = datePart.split("-").map(Number);
       const [hours, minutes] = timePart.split(":").map(Number);
-      // Create date assuming the input is in MST
       const localDate = new Date(year, month - 1, day, hours, minutes);
-      const offset = getTimezoneOffset("America/Edmonton", localDate);
+      const offset = getTimezoneOffset(eventTimezone, localDate);
       startTimeUtc = new Date(localDate.getTime() + offset).toISOString();
     }
 
@@ -346,7 +349,7 @@ function CreateEditModal({
       const [year, month, day] = datePart.split("-").map(Number);
       const [hours, minutes] = timePart.split(":").map(Number);
       const localDate = new Date(year, month - 1, day, hours, minutes);
-      const offset = getTimezoneOffset("America/Edmonton", localDate);
+      const offset = getTimezoneOffset(eventTimezone, localDate);
       endTimeUtc = new Date(localDate.getTime() + offset).toISOString();
     }
 

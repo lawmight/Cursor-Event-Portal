@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { communityDisplayName, siteConfig } from '@/content/site.config';
 
 interface EventPortalPopupProps {
   isOpen: boolean;
@@ -66,8 +67,8 @@ export default function EventPortalPopup({ isOpen, onClose, activeEventSlug }: E
             <div className="space-y-6">
               <div className="relative w-full max-w-[280px] mx-auto slow-spin">
                 <Image
-                  src="/cursor_china_photo/china-03.jpg"
-                  alt="Cursor community"
+                  src={siteConfig.brandImagePath}
+                  alt={communityDisplayName()}
                   width={280}
                   height={140}
                   className="w-full h-auto rounded-2xl shadow-[0_0_60px_rgba(255,255,255,0.1)]"
@@ -76,7 +77,7 @@ export default function EventPortalPopup({ isOpen, onClose, activeEventSlug }: E
 
               <div className="space-y-2">
                 <h2 className="text-3xl font-light text-white tracking-tight">
-                  Calgary Meetup
+                  {communityDisplayName()}
                 </h2>
                 <p className="text-gray-500 text-sm font-light tracking-widest uppercase opacity-50">
                   Community Builder Event

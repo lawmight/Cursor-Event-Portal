@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitSurveyConsent } from "@/lib/actions/consent";
+import { communityOrganizersName } from "@/content/site.config";
 
 interface SurveyConsentModalProps {
   eventId: string;
@@ -80,7 +81,7 @@ export function SurveyConsentModal({
           {/* Concise Consent Text */}
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              By sharing your goals, you agree that <strong className="text-white">Cursor Calgary community organizers</strong> may use your survey responses and feedback to:
+              By sharing your goals, you agree that <strong className="text-white">{communityOrganizersName()}</strong> may use your survey responses and feedback to:
             </p>
 
             <ul className="list-disc list-inside space-y-1.5 ml-2 text-xs">
@@ -113,7 +114,7 @@ export function SurveyConsentModal({
                 onClick={() => setConsented(!consented)}
                 className="flex-1 text-xs text-gray-300 leading-relaxed cursor-pointer"
               >
-                I consent to the collection and use of my feedback and data by Cursor Calgary community organizers to improve future events. I understand my data is not sold and not tied to my name publicly.
+                I consent to the collection and use of my feedback and data by {communityOrganizersName()} to improve future events. I understand my data is not sold and not tied to my name publicly.
               </label>
             </div>
 
