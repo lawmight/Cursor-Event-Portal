@@ -92,7 +92,7 @@ export function HelpRequestList({ initialRequests, eventId, userId }: HelpReques
 
   if (sorted.length === 0) {
     return (
-      <div className="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[40px] border-dashed opacity-40">
+      <div className="text-center py-24 bg-white/1 border border-white/5 rounded-[40px] border-dashed opacity-40">
         <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-medium">
           No help requests yet
         </p>

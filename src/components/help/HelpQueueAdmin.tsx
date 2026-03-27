@@ -125,7 +125,7 @@ export function HelpQueueAdmin({ initialRequests, eventId, eventSlug, adminCode 
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-      <div className="glass rounded-[40px] p-8 border border-white/[0.05]">
+      <div className="glass rounded-[40px] p-8 border border-white/5">
         <div className="flex flex-wrap gap-3">
           {tabs.map((tab) => (
             <button
@@ -135,7 +135,7 @@ export function HelpQueueAdmin({ initialRequests, eventId, eventSlug, adminCode 
                 "px-5 py-2 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold transition-all border",
                 activeTab === tab.key
                   ? "bg-white text-black border-white"
-                  : "bg-white/[0.02] text-gray-500 border-white/10 hover:text-white"
+                  : "bg-white/2 text-gray-500 border-white/10 hover:text-white"
               )}
             >
               {tab.label} ({tabCounts[tab.key]})
@@ -145,7 +145,7 @@ export function HelpQueueAdmin({ initialRequests, eventId, eventSlug, adminCode 
       </div>
 
       {activeList.length === 0 ? (
-        <div className="text-center py-24 bg-white/[0.01] border border-white/5 rounded-[40px] border-dashed opacity-40">
+        <div className="text-center py-24 bg-white/1 border border-white/5 rounded-[40px] border-dashed opacity-40">
           <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-medium">
             No requests in this queue
           </p>

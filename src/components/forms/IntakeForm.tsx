@@ -232,7 +232,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
       </div>
 
       {/* Consent explanation */}
-      <div className="glass rounded-2xl p-4 bg-white/[0.02] border-white/5 space-y-2">
+      <div className="glass rounded-2xl p-4 bg-white/2 border-white/5 space-y-2">
         <p className="text-[9px] uppercase tracking-[0.2em] text-gray-600 font-medium">
           ✓ Optional & Voluntary
         </p>
@@ -256,7 +256,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                 <select
                   value={roleCategory}
                   onChange={(e) => setRoleCategory(e.target.value as AttendeeRoleCategory)}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                 >
                   {ROLE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value} className="bg-black">
@@ -274,7 +274,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   <select
                     value={founderStage}
                     onChange={(e) => setFounderStage(e.target.value as FounderStage)}
-                    className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                    className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                   >
                     <option value="" className="bg-black">Select stage</option>
                     {FOUNDER_STAGE_OPTIONS.map((option) => (
@@ -297,7 +297,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                     value={yearsExperience}
                     onChange={(e) => setYearsExperience(e.target.value)}
                     placeholder="e.g. 5"
-                    className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                    className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                   />
                 </div>
               )}
@@ -310,7 +310,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   <select
                     value={degreeType}
                     onChange={(e) => setDegreeType(e.target.value as DegreeType)}
-                    className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                    className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                   >
                     <option value="" className="bg-black">Select degree</option>
                     {DEGREE_OPTIONS.map((option) => (
@@ -331,7 +331,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)}
                   placeholder="https://linkedin.com/in/..."
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
@@ -344,7 +344,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={github}
                   onChange={(e) => setGithub(e.target.value)}
                   placeholder="https://github.com/username"
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
@@ -357,7 +357,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://yourname.com"
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light"
                 />
               </div>
 
@@ -370,7 +370,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   onChange={(e) => setIntent(e.target.value)}
                   placeholder="Short answer"
                   rows={2}
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-3 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light resize-none"
                 />
               </div>
 
@@ -388,7 +388,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                       setFollowupConsent(value === "yes");
                     }
                   }}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                 >
                   <option value="" className="bg-black">Select</option>
                   <option value="yes" className="bg-black">I want to be contacted after the event</option>
@@ -403,7 +403,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                 <select
                   value={cursorExperience}
                   onChange={(e) => setCursorExperience(e.target.value as CursorExperience)}
-                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+                  className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
                 >
                   {CURSOR_EXPERIENCE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value} className="bg-black">
@@ -438,10 +438,10 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                         : toggleOffer(option.value as IntakeOfferTag)
                     }
                     disabled={loading}
-                    className={`p-5 rounded-3xl border text-[10px] font-medium uppercase tracking-[0.1em] text-center transition-all duration-500 flex items-center justify-center leading-relaxed ${
+                    className={`p-5 rounded-3xl border text-[10px] font-medium uppercase tracking-widest text-center transition-all duration-500 flex items-center justify-center leading-relaxed ${
                       isSelected
                         ? "border-white/20 bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-105"
-                        : "border-white/[0.03] bg-white/[0.01] text-gray-600 hover:border-white/10 hover:text-gray-400"
+                        : "border-white/3 bg-white/1 text-gray-600 hover:border-white/10 hover:text-gray-400"
                     }`}
                   >
                     {option.label}
@@ -463,7 +463,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
                   }
                   rows={2}
                   disabled={loading}
-                  className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
+                  className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-400 focus:outline-hidden focus:border-white/30 transition-all text-lg font-light resize-none leading-relaxed"
                 />
               </div>
             )}
@@ -481,7 +481,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
             <button
               onClick={() => setStep("goals")}
               disabled={loading}
-              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
@@ -490,7 +490,7 @@ export function IntakeForm({ eventId, eventSlug, hasConsented = false, userEmail
             <button
               onClick={() => setStep("profile")}
               disabled={loading}
-              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
+              className="aspect-square w-16 flex items-center justify-center rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white hover:border-white/20 transition-all"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>

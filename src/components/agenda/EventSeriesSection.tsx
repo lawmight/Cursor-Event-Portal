@@ -56,7 +56,7 @@ export function EventSeriesSection({ currentEventId, seriesEvents }: EventSeries
                 "min-w-[220px] rounded-2xl p-4 border transition-all",
                 isCurrent
                   ? "border-white/40 bg-white/10"
-                  : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                  : "border-white/10 bg-white/2 hover:bg-white/5"
               )}
             >
               <div className="flex items-center justify-between">

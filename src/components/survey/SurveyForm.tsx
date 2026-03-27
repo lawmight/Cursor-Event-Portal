@@ -50,7 +50,7 @@ export function SurveyForm({ survey, eventSlug }: SurveyFormProps) {
   if (submitted) {
     return (
       <div className="glass rounded-[40px] p-20 text-center space-y-6 animate-slide-up">
-        <div className="w-20 h-20 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
+        <div className="w-20 h-20 rounded-full bg-white/3 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.05)]">
           <CheckCircle className="w-10 h-10 text-white/40" />
         </div>
         <h2 className="text-3xl font-light text-white tracking-tight">
@@ -135,7 +135,7 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             placeholder="Input response"
-            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-2xl font-light"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-2xl font-light"
           />
         </div>
       );
@@ -152,7 +152,7 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
             disabled={disabled}
             rows={1}
             placeholder="Detailed thoughts"
-            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-none focus:border-white/30 transition-all text-xl font-light resize-none overflow-hidden min-h-[60px]"
+            className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white placeholder:text-gray-800 focus:outline-hidden focus:border-white/30 transition-all text-xl font-light resize-none overflow-hidden min-h-[60px]"
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
               target.style.height = 'auto';
@@ -178,8 +178,8 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
                 className={cn(
                   "h-14 rounded-2xl font-light transition-all border text-lg",
                   value === rating
-                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] scale-[1.02]"
-                    : "bg-white/[0.01] border-white/5 text-gray-700 hover:text-white hover:border-white/20"
+                    ? "bg-white border-white text-black shadow-glow scale-[1.02]"
+                    : "bg-white/1 border-white/5 text-gray-700 hover:text-white hover:border-white/20"
                 )}
               >
                 {rating}
@@ -209,8 +209,8 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
                 className={cn(
                   "h-10 rounded-xl text-[10px] font-medium transition-all border",
                   value === score
-                    ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                    : "bg-white/[0.01] border-white/5 text-gray-700 hover:text-white"
+                    ? "bg-white border-white text-black shadow-glow"
+                    : "bg-white/1 border-white/5 text-gray-700 hover:text-white"
                 )}
               >
                 {score}
@@ -235,7 +235,7 @@ function FieldRenderer({ field, value, onChange, disabled }: FieldRendererProps)
               value={(value as string) || ""}
               onChange={(e) => onChange(e.target.value)}
               disabled={disabled}
-              className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white appearance-none focus:outline-none focus:border-white/30 transition-all text-xl font-light"
+              className="w-full bg-transparent border-b border-white/10 rounded-none py-4 text-white appearance-none focus:outline-hidden focus:border-white/30 transition-all text-xl font-light"
             >
               <option value="" className="bg-black">Select an option</option>
               {field.options?.map((option) => (

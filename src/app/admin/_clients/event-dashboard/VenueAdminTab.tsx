@@ -139,7 +139,7 @@ export function VenueAdminTab({
                 className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 h-44 ${
                   isSelected
                     ? "ring-2 ring-white/60 shadow-[0_0_30px_rgba(255,255,255,0.08)]"
-                    : "ring-1 ring-white/[0.06] hover:ring-white/20"
+                    : "ring-1 ring-white/6 hover:ring-white/20"
                 }`}
                 onClick={() => handleVenueSelect(v)}
               >
@@ -150,11 +150,11 @@ export function VenueAdminTab({
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-br from-white/4 via-white/2 to-transparent" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-black/10" />
                 {isSelected && (
-                  <div className="absolute inset-0 bg-white/[0.04] pointer-events-none" />
+                  <div className="absolute inset-0 bg-white/4 pointer-events-none" />
                 )}
                 <div className="relative z-10 h-full flex flex-col justify-between p-4">
                   <div className="flex justify-end">
@@ -162,7 +162,7 @@ export function VenueAdminTab({
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shadow-lg ${
                         isSelected
                           ? "border-white bg-white"
-                          : "border-white/30 group-hover:border-white/60 bg-black/30 backdrop-blur-sm"
+                          : "border-white/30 group-hover:border-white/60 bg-black/30 backdrop-blur-xs"
                       }`}
                     >
                       {isSelected && <div className="w-2 h-2 rounded-full bg-black" />}
@@ -173,7 +173,7 @@ export function VenueAdminTab({
                       {v.name}
                     </p>
                     <div className="flex items-start gap-1.5 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                      <MapPin className="w-3 h-3 text-white/50 flex-shrink-0 mt-0.5" />
+                      <MapPin className="w-3 h-3 text-white/50 shrink-0 mt-0.5" />
                       <p className="text-[10px] text-white/55 leading-snug">{v.address}</p>
                     </div>
                     <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] group-hover:text-white/50 transition-colors">
@@ -196,7 +196,7 @@ export function VenueAdminTab({
               type="text"
               value={eventVenue}
               onChange={(e) => setEventVenue(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
               placeholder="e.g., House 831"
             />
           </div>
@@ -208,7 +208,7 @@ export function VenueAdminTab({
               type="text"
               value={eventAddress}
               onChange={(e) => setEventAddress(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-none focus:border-white/20 transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-700 focus:outline-hidden focus:border-white/20 transition-all"
               placeholder={siteConfig.venueAddressPlaceholder}
             />
           </div>

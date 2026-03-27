@@ -9,7 +9,7 @@ export default function MainLoading() {
       </div>
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="glass rounded-[24px] p-6 border-white/5 bg-white/[0.02] space-y-4">
+          <div key={i} className="glass rounded-[24px] p-6 border-white/5 bg-white/2 space-y-4">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-3 w-1/2 opacity-50" />

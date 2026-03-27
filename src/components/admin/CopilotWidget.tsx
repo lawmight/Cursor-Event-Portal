@@ -112,7 +112,7 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
       {open && (
         <div className="fixed bottom-20 left-4 z-50 w-[380px] max-h-[600px] flex flex-col rounded-[28px] bg-[#0a0a0a] border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)] overflow-hidden animate-slide-up">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white/60" />
@@ -142,7 +142,7 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
           </div>
 
           {/* Tab switcher */}
-          <div className="flex items-center gap-1 px-4 py-3 border-b border-white/[0.06]">
+          <div className="flex items-center gap-1 px-4 py-3 border-b border-white/6">
             {(["alerts", "chat"] as WidgetTab[]).map((tab) => (
               <button
                 key={tab}
@@ -178,10 +178,10 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
                     <div
                       key={rec.signalKey}
                       className={cn(
-                        "flex items-start gap-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]"
+                        "flex items-start gap-3 p-4 rounded-2xl border border-white/6 bg-white/2"
                       )}
                     >
-                      <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0", dot)} />
+                      <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", dot)} />
                       <div className="flex-1 min-w-0">
                         <span className={cn("text-[9px] uppercase tracking-[0.15em] font-medium px-2 py-0.5 rounded-full", badge)}>
                           {rec.severity}
@@ -191,7 +191,7 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
                       </div>
                       <button
                         onClick={() => setDismissed((prev) => new Set([...Array.from(prev), rec.signalKey]))}
-                        className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shrink-0 mt-0.5"
                       >
                         <X className="w-2.5 h-2.5 text-white/20" />
                       </button>
@@ -228,14 +228,14 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
                       "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed",
                       msg.role === "user"
                         ? "ml-auto bg-white text-black rounded-br-sm"
-                        : "bg-white/[0.06] text-white/80 rounded-bl-sm"
+                        : "bg-white/6 text-white/80 rounded-bl-sm"
                     )}
                   >
                     {msg.content}
                   </div>
                 ))}
                 {chatLoading && (
-                  <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.04] rounded-2xl rounded-bl-sm max-w-[60%]">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-white/4 rounded-2xl rounded-bl-sm max-w-[60%]">
                     <div className="flex gap-1">
                       {[0, 1, 2].map((i) => (
                         <div
@@ -251,7 +251,7 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
               </div>
 
               {/* Input */}
-              <div className="px-4 py-3 border-t border-white/[0.06] flex items-center gap-2">
+              <div className="px-4 py-3 border-t border-white/6 flex items-center gap-2">
                 <input
                   ref={inputRef}
                   type="text"
@@ -260,12 +260,12 @@ export function CopilotWidget({ eventId, adminCode }: CopilotWidgetProps) {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about your event..."
                   disabled={chatLoading}
-                  className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-white/20 transition-colors disabled:opacity-50"
+                  className="flex-1 bg-white/4 border border-white/8 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-hidden focus:border-white/20 transition-colors disabled:opacity-50"
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || chatLoading}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                 >
                   <Send className="w-3.5 h-3.5 text-black" />
                 </button>

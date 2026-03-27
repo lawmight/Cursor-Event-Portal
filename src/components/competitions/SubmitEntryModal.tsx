@@ -157,7 +157,7 @@ export function SubmitEntryModal({
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto min-h-screen">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 overflow-y-auto min-h-screen">
       <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
       <div className="glass rounded-[32px] border border-white/10 w-full max-w-2xl min-w-0 max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative z-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] my-8 mx-4 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-8 min-w-0 sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 pt-6 sm:pt-8 pb-4 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 -mt-6 sm:-mt-8 rounded-t-[32px] shrink-0">
@@ -181,7 +181,7 @@ export function SubmitEntryModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="My Awesome Project"
               disabled={loading}
-              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all box-border"
             />
           </div>
 
@@ -195,7 +195,7 @@ export function SubmitEntryModal({
               placeholder="Brief description of your project..."
               disabled={loading}
               rows={3}
-              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all resize-none box-border"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all resize-none box-border"
             />
           </div>
 
@@ -209,7 +209,7 @@ export function SubmitEntryModal({
               onChange={(e) => setRepoUrl(e.target.value)}
               placeholder="https://github.com/username/repo"
               disabled={loading}
-              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all box-border"
             />
           </div>
 
@@ -223,7 +223,7 @@ export function SubmitEntryModal({
               onChange={(e) => setProjectUrl(e.target.value)}
               placeholder="https://your-project-demo.com"
               disabled={loading}
-              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+              className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all box-border"
             />
           </div>
 
@@ -262,7 +262,7 @@ export function SubmitEntryModal({
                 onChange={(e) => setPreviewImageUrl(e.target.value)}
                 placeholder="https://imgur.com/... or direct image link"
                 disabled={loading}
-                className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+                className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all box-border"
               />
               {previewImageUrl && (
                 <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 aspect-video max-h-32 w-full">
@@ -314,7 +314,7 @@ export function SubmitEntryModal({
                 onChange={(e) => setVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/watch?v=... or Vimeo link"
                 disabled={loading || uploadingVideo}
-                className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/20 transition-all box-border"
+                className="w-full min-w-0 px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-hidden focus:border-white/20 transition-all box-border"
               />
               {videoUrl && !videoUrl.includes("youtube") && !videoUrl.includes("youtu.be") && !videoUrl.includes("vimeo") && (
                 <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5">

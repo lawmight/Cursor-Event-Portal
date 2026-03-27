@@ -54,7 +54,7 @@ export default async function SocialsExchangePage({ params, searchParams }: Soci
   const pair = round ? await getUserNetworkingPair(round.id, session.userId) : null;
 
   return (
-    <main className="max-w-[40rem] mx-auto w-full px-6 py-12 space-y-12">
+    <main className="max-w-160 mx-auto w-full px-6 py-12 space-y-12">
       <SocialsSubNav eventSlug={eventSlug} />
 
       {/* Inner sub-toggle */}

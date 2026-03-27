@@ -189,13 +189,13 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
         <div
           className={`relative overflow-hidden transition-all duration-1000 ${
             isQrFirstView
-              ? "bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 border-b border-white/10"
+              ? "bg-linear-to-r from-zinc-900 via-zinc-800 to-zinc-900 border-b border-white/10"
               : "bg-zinc-900 border-b border-white/10"
           }`}
         >
           {isQrFirstView && (
             <>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
             </>
           )}
 
@@ -203,7 +203,7 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center border-2 transition-all duration-500 ${
+                  className={`w-12 h-12 rounded-full backdrop-blur-xs flex items-center justify-center border-2 transition-all duration-500 ${
                     isQrFirstView
                       ? "bg-white/10 border-white/30 scale-105"
                       : "bg-white/10 border-white/20"
@@ -244,13 +244,13 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
         <div
           className={`relative overflow-hidden transition-all duration-1000 ${
             isSmartFirstView
-              ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500"
-              : "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600"
+              ? "bg-linear-to-r from-emerald-500 via-teal-500 to-emerald-500"
+              : "bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-600"
           }`}
         >
           {isSmartFirstView && (
             <>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
               <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(255,255,255,0.3)] animate-pulse" />
               <div className="absolute inset-0 bg-radial-glow opacity-50 animate-pulse" style={{ animationDuration: "2s" }} />
             </>
@@ -260,7 +260,7 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center border-2 transition-all duration-500 ${
+                  className={`w-12 h-12 rounded-full backdrop-blur-xs flex items-center justify-center border-2 transition-all duration-500 ${
                     isSmartFirstView
                       ? "bg-white/30 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.5)] scale-110"
                       : "bg-white/20 border-white/40"

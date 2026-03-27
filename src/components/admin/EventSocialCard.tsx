@@ -125,10 +125,10 @@ export function EventSocialCard({
       style={{ animationDelay: "700ms" }}
       onClick={() => router.push(`/admin/${adminCode}/social`)}
     >
-      <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group relative overflow-hidden shadow-sm">
+      <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group relative overflow-hidden shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow">
               <MessageCircle className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
             </div>
             <div className="space-y-1">

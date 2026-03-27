@@ -160,7 +160,7 @@ export function AdminQAClient({
       {/* Filters */}
       <div className="flex items-center gap-4">
         {/* Sort Toggle */}
-        <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-full p-1 backdrop-blur-sm">
+        <div className="relative flex items-center bg-white/3 border border-white/10 rounded-full p-1 backdrop-blur-xs">
           <button
             onClick={() => {
               const params = new URLSearchParams(window.location.search);
@@ -196,7 +196,7 @@ export function AdminQAClient({
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-full p-1 backdrop-blur-md">
+        <div className="flex items-center gap-2 bg-white/2 border border-white/5 rounded-full p-1 backdrop-blur-md">
           <Filter className="w-3 h-3 text-gray-600 ml-2" />
           {[
             { id: 'all', label: 'All' },
@@ -233,7 +233,7 @@ export function AdminQAClient({
         <button
           onClick={handleRefresh}
           disabled={isPending}
-          className="ml-auto px-4 py-2 rounded-full bg-white/[0.02] border border-white/5 text-gray-600 hover:text-white transition-all text-[9px] uppercase tracking-[0.2em] font-bold"
+          className="ml-auto px-4 py-2 rounded-full bg-white/2 border border-white/5 text-gray-600 hover:text-white transition-all text-[9px] uppercase tracking-[0.2em] font-bold"
         >
           {isPending ? "..." : "Refresh"}
         </button>
@@ -280,7 +280,7 @@ export function AdminQAClient({
 
       {content}
 
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <div className="flex items-center gap-6">
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Q&A</p>

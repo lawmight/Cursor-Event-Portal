@@ -26,14 +26,14 @@ export function AttendancePatternChart({ data }: AttendancePatternChartProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="glass rounded-[40px] p-10 border-white/[0.03]">
+      <div className="glass rounded-[40px] p-10 border-white/3">
         <div className="text-center text-gray-600">No series attendance data available</div>
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-[40px] p-10 border-white/[0.03] space-y-8">
+    <div className="glass rounded-[40px] p-10 border-white/3 space-y-8">
       <div>
         <h2 className="text-2xl font-light tracking-tight text-white/90">Attendance Over Time</h2>
         <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium">

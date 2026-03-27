@@ -303,7 +303,7 @@ export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }
               onChange={(e) => { setNewCityName(e.target.value); setCityError(null); }}
               onKeyDown={(e) => { if (e.key === "Enter") handleAddCity(); if (e.key === "Escape") { setAddingCity(false); setNewCityName(""); setCityError(null); } }}
               placeholder="City name"
-              className="bg-white/5 border border-white/20 rounded-full px-4 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/40 w-36 transition-colors"
+              className="bg-white/5 border border-white/20 rounded-full px-4 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/40 w-36 transition-colors"
             />
             <button
               onClick={handleAddCity}
@@ -335,7 +335,7 @@ export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }
 
       {/* ── Filter + Add event ───────────────────────────────────────────────── */}
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <div className="flex items-center gap-1 p-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+        <div className="flex items-center gap-1 p-0.5 rounded-full bg-white/4 border border-white/8">
           <button
             onClick={() => { setShowPast(false); setCreating(false); }}
             className={cn(
@@ -377,7 +377,7 @@ export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }
                   onChange={(e) => { setLumaUrl(e.target.value); setLumaError(null); }}
                   onKeyDown={(e) => e.key === "Enter" && handleLumaImport()}
                   placeholder="lu.ma/event-link"
-                  className="bg-white/5 border border-white/10 rounded-full pl-8 pr-4 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors w-44"
+                  className="bg-white/5 border border-white/10 rounded-full pl-8 pr-4 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30 transition-colors w-44"
                 />
               </div>
               <button
@@ -668,7 +668,7 @@ function EventForm({
         placeholder="Event title *"
         value={state.title ?? ""}
         onChange={(e) => onChange("title", e.target.value)}
-        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30 transition-colors"
       />
 
       <div>
@@ -677,7 +677,7 @@ function EventForm({
           type="date"
           value={state.event_date ?? ""}
           onChange={(e) => onChange("event_date", e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors"
         />
       </div>
 
@@ -688,7 +688,7 @@ function EventForm({
           value={state.end_date ?? ""}
           min={state.event_date ?? undefined}
           onChange={(e) => onChange("end_date", e.target.value || null)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors"
         />
       </div>
 
@@ -697,7 +697,7 @@ function EventForm({
         <select
           value={state.city ?? ""}
           onChange={(e) => onChange("city", e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors appearance-none"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors appearance-none"
         >
           {cities.map((c) => (
             <option key={c} value={c} className="bg-black">{c}</option>
@@ -716,7 +716,7 @@ function EventForm({
                 value={newVenueName}
                 onChange={(e) => { setNewVenueName(e.target.value); setVenueError(null); }}
                 onKeyDown={(e) => e.key === "Escape" && setAddingVenue(false)}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30"
               />
               <button
                 type="button"
@@ -731,7 +731,7 @@ function EventForm({
               value={newVenueAddress}
               onChange={(e) => setNewVenueAddress(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddVenue()}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30"
             />
             {/* Venue image upload */}
             <div className="space-y-1.5">
@@ -780,7 +780,7 @@ function EventForm({
           <select
             value={selectedVenue?.id ?? ""}
             onChange={(e) => handleVenueSelect(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors appearance-none"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors appearance-none"
           >
             <option value="" className="bg-black text-gray-500">— select venue —</option>
             {venues.map((v) => (
@@ -800,7 +800,7 @@ function EventForm({
           type="time"
           value={state.start_time ?? ""}
           onChange={(e) => onChange("start_time", e.target.value || null)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors"
         />
       </div>
 
@@ -810,7 +810,7 @@ function EventForm({
           type="time"
           value={state.end_time ?? ""}
           onChange={(e) => onChange("end_time", e.target.value || null)}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-hidden focus:border-white/30 transition-colors"
         />
       </div>
 
@@ -819,7 +819,7 @@ function EventForm({
         placeholder="Address (optional)"
         value={state.address ?? ""}
         onChange={(e) => onChange("address", e.target.value || null)}
-        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30 transition-colors"
       />
 
       <input
@@ -827,7 +827,7 @@ function EventForm({
         placeholder="Notes (optional)"
         value={state.notes ?? ""}
         onChange={(e) => onChange("notes", e.target.value || null)}
-        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+        className="col-span-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/30 transition-colors"
       />
 
       <label className="flex items-center gap-3 cursor-pointer col-span-full">

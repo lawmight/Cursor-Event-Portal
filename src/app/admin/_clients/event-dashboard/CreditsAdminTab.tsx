@@ -189,7 +189,7 @@ export function CreditsAdminTab({
       </div>
 
       {/* Cursor Egg Hunt */}
-      <div className="glass rounded-3xl p-6 border border-white/[0.06] space-y-5">
+      <div className="glass rounded-3xl p-6 border border-white/6 space-y-5">
         <div className="flex items-center gap-2">
           <span className="text-base">🥚</span>
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">
@@ -209,7 +209,7 @@ export function CreditsAdminTab({
                 const isSaving = eggSaving === egg.egg_id;
                 const msg = eggSaveMsg[egg.egg_id];
                 return (
-                  <div key={egg.egg_id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3 space-y-2">
+                  <div key={egg.egg_id} className="rounded-xl bg-white/3 border border-white/6 px-4 py-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-medium w-10">
@@ -237,7 +237,7 @@ export function CreditsAdminTab({
                             value={eggInputs[egg.egg_id] || ""}
                             onChange={(e) => setEggInputs((prev) => ({ ...prev, [egg.egg_id]: e.target.value }))}
                             placeholder="Paste referral code or URL…"
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 font-mono"
+                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-hidden focus:border-white/30 font-mono"
                           />
                           <button
                             onClick={() => handleSaveEggCode(egg.egg_id)}
@@ -287,7 +287,7 @@ export function CreditsAdminTab({
         )}
 
         {/* Reset */}
-        <div className="pt-2 border-t border-white/[0.04] space-y-2">
+        <div className="pt-2 border-t border-white/4 space-y-2">
           <p className="text-xs text-gray-600">
             Reset unclaims all eggs and removes $50 credits. Pre-loaded codes are preserved.
           </p>
@@ -353,7 +353,7 @@ export function CreditsAdminTab({
               onChange={(e) => setRawInput(e.target.value)}
               rows={6}
               placeholder={"ABC123\nDEF456\nhttps://cursor.com/referral?code=GHI789"}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none font-mono"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-hidden focus:border-white/30 resize-none font-mono"
             />
             {importMsg && (
               <p className="text-sm text-gray-400">{importMsg}</p>
@@ -377,16 +377,16 @@ export function CreditsAdminTab({
         </div>
       ) : (
         <div className="glass rounded-3xl border border-white/10 overflow-hidden">
-          <div className="divide-y divide-white/[0.05]">
+          <div className="divide-y divide-white/5">
             {credits.map((credit) => {
               const isLoading = rowLoading === credit.id;
               return (
                 <div
                   key={credit.id}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-white/2 transition-colors"
                 >
                   {/* Code */}
-                  <code className="font-mono text-sm text-white/70 flex-shrink-0 w-36 truncate">
+                  <code className="font-mono text-sm text-white/70 shrink-0 w-36 truncate">
                     {credit.credit_code}
                   </code>
 
@@ -407,7 +407,7 @@ export function CreditsAdminTab({
                   {/* Status */}
                   <span
                     className={cn(
-                      "text-[10px] uppercase tracking-widest font-medium px-2.5 py-1 rounded-full flex-shrink-0",
+                      "text-[10px] uppercase tracking-widest font-medium px-2.5 py-1 rounded-full shrink-0",
                       statusColor(credit)
                     )}
                   >
@@ -415,7 +415,7 @@ export function CreditsAdminTab({
                   </span>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     {credit.assigned_to && !credit.redeemed_at && (
                       <button
                         onClick={() => handleUnassign(credit.id)}

@@ -197,7 +197,7 @@ export function EventSocial({
   const Icon = activeTabData.icon;
 
   return (
-    <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group relative overflow-hidden shadow-sm animate-slide-up" style={{ animationDelay: "800ms" }}>
+    <div className="glass rounded-[40px] p-8 border-white/20 hover:bg-white/10 hover:shadow-glow transition-all group relative overflow-hidden shadow-xs animate-slide-up" style={{ animationDelay: "800ms" }}>
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/10">
         {TABS.map((tab) => {
@@ -231,7 +231,7 @@ export function EventSocial({
       <Link href={activeTabData.href(eventSlug, adminCode)} className="block">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow relative">
+            <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all shadow-inner-glow relative">
               <Icon className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
             </div>
             <div className="space-y-1">

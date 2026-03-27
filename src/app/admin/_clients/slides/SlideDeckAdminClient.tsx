@@ -277,7 +277,7 @@ export function SlideDeckAdminClient({
             </p>
           </div>
         ) : (
-          <div className="glass rounded-[32px] p-6 border-white/[0.03] hover:bg-white/[0.01] transition-all relative group">
+          <div className="glass rounded-[32px] p-6 border-white/3 hover:bg-white/1 transition-all relative group">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -318,7 +318,7 @@ export function SlideDeckAdminClient({
                     "w-10 h-10 rounded-lg border transition-all flex items-center justify-center",
                     deck.is_live
                       ? "bg-green-500/20 border-green-500/30 text-green-400"
-                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20",
+                      : "bg-white/2 border-white/5 text-gray-600 hover:text-white hover:border-white/20",
                     !deck.is_live && deck.popup_visible && "opacity-50 cursor-not-allowed"
                   )}
                   title={
@@ -342,7 +342,7 @@ export function SlideDeckAdminClient({
                     "w-10 h-10 rounded-lg border transition-all flex items-center justify-center",
                     deck.popup_visible
                       ? "bg-blue-500/20 border-blue-500/30 text-blue-400"
-                      : "bg-white/[0.02] border-white/5 text-gray-600 hover:text-white hover:border-white/20"
+                      : "bg-white/2 border-white/5 text-gray-600 hover:text-white hover:border-white/20"
                   )}
                   title={deck.popup_visible ? "Hide right-center popup" : "Show right-center popup"}
                 >
@@ -351,7 +351,7 @@ export function SlideDeckAdminClient({
                 <button
                   onClick={handleDelete}
                   disabled={isPending}
-                  className="w-10 h-10 rounded-lg bg-white/[0.02] border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center disabled:opacity-30"
+                  className="w-10 h-10 rounded-lg bg-white/2 border border-white/5 text-gray-800 hover:text-red-500 hover:border-red-500/20 transition-all flex items-center justify-center disabled:opacity-30"
                   title="Delete slide deck"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -391,7 +391,7 @@ export function SlideDeckAdminClient({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={() => !uploading && setShowUploadModal(false)}
     >
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
       <div
         className="relative w-full max-w-md glass rounded-[40px] p-10 space-y-8"
         onClick={(e) => e.stopPropagation()}
@@ -497,7 +497,7 @@ export function SlideDeckAdminClient({
       <main className="max-w-4xl mx-auto px-6 py-12">
         {mainContent}
       </main>
-      <footer className="py-12 px-6 border-t border-white/[0.03] flex justify-between items-center z-10">
+      <footer className="py-12 px-6 border-t border-white/3 flex justify-between items-center z-10">
         <p className="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-medium">Pop-Up System / MMXXVI</p>
         <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-medium">Slide Deck</p>
       </footer>

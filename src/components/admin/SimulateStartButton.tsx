@@ -45,7 +45,7 @@ export function SimulateStartButton({ event, eventSlug, adminCode }: SimulateSta
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/[0.05] flex items-center justify-center group-hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+          <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)]">
             <Play className="w-8 h-8 text-gray-400 group-hover:text-white transition-colors fill-current opacity-50 group-hover:opacity-100" />
           </div>
           <div className="text-left space-y-1">

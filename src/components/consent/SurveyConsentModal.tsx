@@ -56,7 +56,7 @@ export function SurveyConsentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div className="relative w-full max-w-md glass rounded-[32px] p-8 border border-white/10 shadow-2xl">
         {onClose && (
           <button
@@ -102,7 +102,7 @@ export function SurveyConsentModal({
                 type="button"
                 onClick={() => setConsented(!consented)}
                 className={cn(
-                  "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+                  "w-5 h-5 rounded-sm border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
                   consented
                     ? "bg-white border-white text-black"
                     : "bg-transparent border-white/30 text-transparent hover:border-white/50"
@@ -130,7 +130,7 @@ export function SurveyConsentModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 h-11 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all text-xs font-medium uppercase tracking-[0.1em]"
+                  className="flex-1 h-11 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all text-xs font-medium uppercase tracking-widest"
                 >
                   Cancel
                 </button>
@@ -139,7 +139,7 @@ export function SurveyConsentModal({
                 type="submit"
                 disabled={!consented || submitting}
                 className={cn(
-                  "flex-1 h-11 rounded-full font-bold uppercase tracking-[0.1em] text-xs transition-all",
+                  "flex-1 h-11 rounded-full font-bold uppercase tracking-widest text-xs transition-all",
                   consented && !submitting
                     ? "bg-white text-black hover:scale-[1.02] shadow-lg"
                     : "bg-white/10 text-white/30 cursor-not-allowed"

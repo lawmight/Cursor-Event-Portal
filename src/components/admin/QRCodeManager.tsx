@@ -122,10 +122,10 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
 
   return (
     <div className="space-y-8">
-      <div className="glass rounded-[40px] p-10 border-white/[0.06]">
+      <div className="glass rounded-[40px] p-10 border-white/6">
         <div className="flex items-center gap-4 mb-6">
           <h3 className="text-[11px] uppercase tracking-[0.5em] text-gray-500 font-medium">Table QR Codes</h3>
-          <div className="h-[1px] flex-1 bg-white/[0.03]" />
+          <div className="h-px flex-1 bg-white/3" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -136,7 +136,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
               min="1"
               value={tableNumber}
               onChange={(e) => setTableNumber(e.target.value)}
-              className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30"
+              className="w-full bg-transparent border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30"
               placeholder="e.g. 12"
             />
           </div>
@@ -171,7 +171,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
             {baseUrl && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] uppercase tracking-[0.2em] text-gray-600">URL to encode in QR:</span>
-                <code className="text-[11px] text-white/90 bg-white/5 px-2 py-1 rounded truncate max-w-[280px]" title={tableNumber ? tableUrl(Number(tableNumber)) : `${baseUrl}/${eventSlug}?table=NUMBER`}>
+                <code className="text-[11px] text-white/90 bg-white/5 px-2 py-1 rounded-sm truncate max-w-[280px]" title={tableNumber ? tableUrl(Number(tableNumber)) : `${baseUrl}/${eventSlug}?table=NUMBER`}>
                   {tableNumber ? tableUrl(Number(tableNumber)) : `${baseUrl}/${eventSlug}?table=NUMBER`}
                 </code>
                 {tableNumber && (
@@ -213,10 +213,10 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
           <button
             type="button"
             onClick={() => setQrDrawerOpen(!qrDrawerOpen)}
-            className="w-full glass rounded-[32px] p-6 border-white/[0.06] hover:bg-white/[0.03] transition-all flex items-center justify-between group"
+            className="w-full glass rounded-[32px] p-6 border-white/6 hover:bg-white/3 transition-all flex items-center justify-between group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-white/4 border border-white/8 flex items-center justify-center">
                 <ScanQrCode 
                   strokeWidth={1.5}
                   className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" 
@@ -236,17 +236,17 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
 
           {/* Expanded folder grid */}
           {qrDrawerOpen && (
-            <div className="glass rounded-[32px] p-8 border-white/[0.06] animate-fade-in">
+            <div className="glass rounded-[32px] p-8 border-white/6 animate-fade-in">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {qrCodes.map((qr) => (
                   <div key={qr.id} className="group/card relative">
                     <button
                       type="button"
                       onClick={() => qr.qr_image_url ? setLightboxQr(qr) : undefined}
-                      className="w-full flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all cursor-pointer"
+                      className="w-full flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/2 border border-white/5 hover:bg-white/6 hover:border-white/12 transition-all cursor-pointer"
                     >
                       {qr.qr_image_url ? (
-                        <div className="w-full aspect-square bg-white/[0.02] rounded-xl p-2 flex items-center justify-center">
+                        <div className="w-full aspect-square bg-white/2 rounded-xl p-2 flex items-center justify-center">
                           <img
                             src={qr.qr_image_url}
                             alt={`Table ${qr.table_number} QR`}
@@ -254,7 +254,7 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
                           />
                         </div>
                       ) : (
-                        <div className="w-full aspect-square bg-white/[0.02] rounded-xl flex items-center justify-center">
+                        <div className="w-full aspect-square bg-white/2 rounded-xl flex items-center justify-center">
                           <ScanQrCode strokeWidth={1.5} className="w-8 h-8 text-gray-700" />
                         </div>
                       )}
@@ -279,11 +279,11 @@ export function QRCodeManager({ eventId, eventSlug, adminCode, qrCodes }: QRCode
           {/* Full-size lightbox */}
           {lightboxQr && (
             <div
-              className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-8"
+              className="fixed inset-0 z-100 bg-black/90 backdrop-blur-xs flex items-center justify-center p-8"
               onClick={() => setLightboxQr(null)}
             >
               <div
-                className="relative max-w-md w-full bg-white/[0.05] border border-white/[0.1] rounded-[32px] p-8 flex flex-col items-center gap-6"
+                className="relative max-w-md w-full bg-white/5 border border-white/10 rounded-[32px] p-8 flex flex-col items-center gap-6"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button

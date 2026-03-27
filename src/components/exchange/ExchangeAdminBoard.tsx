@@ -164,7 +164,7 @@ export function ExchangeAdminBoard({ eventId, adminCode, initialPosts }: Exchang
                       </span>
                     )}
                     {post.status === "matched" && (
-                      <span className="flex items-center gap-1 text-[8px] font-bold text-green-400 uppercase tracking-[0.1em]">
+                      <span className="flex items-center gap-1 text-[8px] font-bold text-green-400 uppercase tracking-widest">
                         <Zap className="w-2.5 h-2.5" /> Matched
                       </span>
                     )}

@@ -31,7 +31,7 @@ const statusStyles: Record<HelpRequest["status"], string> = {
 
 export function HelpRequestCard({ request, actions }: HelpRequestCardProps) {
   return (
-    <div className="glass rounded-[32px] p-8 space-y-6 border border-white/[0.05]">
+    <div className="glass rounded-[32px] p-8 space-y-6 border border-white/5">
       <div className="flex items-center justify-between">
         <span className="text-[9px] uppercase tracking-[0.3em] text-gray-500 font-medium">
           {request.category}

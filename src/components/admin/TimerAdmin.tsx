@@ -103,7 +103,7 @@ export function TimerAdmin({ event, adminCode }: TimerAdminProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 space-y-10">
-      <div className="glass rounded-[40px] p-10 border border-white/[0.05] space-y-8">
+      <div className="glass rounded-[40px] p-10 border border-white/5 space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 font-medium">Shared Countdown</p>
@@ -124,7 +124,7 @@ export function TimerAdmin({ event, adminCode }: TimerAdminProps) {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g. Break ends in"
-              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 transition-all"
+              className="w-full bg-white/3 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30 transition-all"
             />
           </div>
           <div className="space-y-3">
@@ -134,7 +134,7 @@ export function TimerAdmin({ event, adminCode }: TimerAdminProps) {
               min={1}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/30 transition-all"
+              className="w-full bg-white/3 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm focus:outline-hidden focus:border-white/30 transition-all"
             />
           </div>
         </div>
@@ -166,7 +166,7 @@ export function TimerAdmin({ event, adminCode }: TimerAdminProps) {
         )}
       </div>
 
-      <div className="glass rounded-[36px] p-8 border border-white/[0.05]">
+      <div className="glass rounded-[36px] p-8 border border-white/5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600 font-medium">Current State</p>

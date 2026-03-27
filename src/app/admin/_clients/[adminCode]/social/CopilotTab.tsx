@@ -30,7 +30,7 @@ const POLL_INTERVAL_MS = 30_000;
 const SEVERITY = {
   info: {
     badge: "bg-white/10 text-white/50",
-    border: "border-white/[0.06]",
+    border: "border-white/6",
     Icon: Info,
   },
   warn: {
@@ -153,7 +153,7 @@ export function CopilotTab({ event, adminCode }: CopilotTabProps) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="glass rounded-[28px] px-7 py-5 border-white/[0.03] flex items-center justify-between">
+      <div className="glass rounded-[28px] px-7 py-5 border-white/3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
             <Bot className="w-4 h-4 text-white/60" />
@@ -224,7 +224,7 @@ export function CopilotTab({ event, adminCode }: CopilotTabProps) {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="glass rounded-[20px] px-4 py-4 border-white/[0.03] text-center"
+              className="glass rounded-[20px] px-4 py-4 border-white/3 text-center"
             >
               <p className="text-xl font-light text-white/90">{stat.value}</p>
               <p className="text-[9px] uppercase tracking-[0.2em] text-gray-600 font-medium mt-1">
@@ -243,7 +243,7 @@ export function CopilotTab({ event, adminCode }: CopilotTabProps) {
           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-700">Scanning event...</p>
         </div>
       ) : visible.length === 0 ? (
-        <div className="glass rounded-[40px] p-12 text-center border-white/[0.03]">
+        <div className="glass rounded-[40px] p-12 text-center border-white/3">
           <CheckCircle className="w-8 h-8 text-white/10 mx-auto mb-4" />
           <p className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray-700 mb-2">
             All Clear
@@ -271,7 +271,7 @@ export function CopilotTab({ event, adminCode }: CopilotTabProps) {
                 <div className="flex items-start gap-5">
                   <div
                     className={cn(
-                      "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5",
+                      "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
                       badge
                     )}
                   >
@@ -298,7 +298,7 @@ export function CopilotTab({ event, adminCode }: CopilotTabProps) {
                       </div>
                       <button
                         onClick={() => dismiss(rec.signalKey)}
-                        className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0 mt-0.5"
+                        className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors shrink-0 mt-0.5"
                       >
                         <X className="w-3 h-3 text-white/30" />
                       </button>

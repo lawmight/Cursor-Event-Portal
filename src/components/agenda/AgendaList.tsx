@@ -150,10 +150,10 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
           return (
             <div
               key={item.id}
-              className={`w-full text-left glass rounded-[40px] p-10 md:p-12 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-sm ${
+              className={`w-full text-left glass rounded-[40px] p-10 md:p-12 transition-all duration-300 animate-slide-up relative overflow-hidden group shadow-xs ${
                 isCurrentlyNow
-                  ? "border-white/20 bg-white/[0.06] shadow-glow"
-                  : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:shadow-glow-lg hover:border-white/10"
+                  ? "border-white/20 bg-white/6 shadow-glow"
+                  : "border-white/5 bg-white/2 hover:bg-white/4 hover:shadow-glow-lg hover:border-white/10"
               }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
@@ -205,7 +205,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
                   {item.speaker && (
                     <div className="flex items-center gap-2.5">
                       <User className="w-5 h-5 text-gray-600" />
-                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-[0.1em]">
+                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-widest">
                         {item.speaker}
                       </span>
                     </div>
@@ -213,7 +213,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
                   {item.location && (
                     <div className="flex items-center gap-2.5">
                       <MapPin className="w-5 h-5 text-gray-600" />
-                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-[0.1em]">
+                      <span className="text-[12px] md:text-[13px] font-medium text-gray-400 uppercase tracking-widest">
                         {item.location}
                       </span>
                     </div>
@@ -256,7 +256,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
                         loading="eager"
                       />
                       {/* Gradient to blend with card content */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent z-0" />
+                      <div className="absolute inset-0 bg-linear-to-r from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent z-0" />
                     </div>
                   </div>
                 );
@@ -272,7 +272,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
           onClick={() => setSelectedItem(null)}
         >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xs" />
 
           <div
             className="relative w-full sm:max-w-md mx-auto bg-[#0a0a0a] border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-8 animate-slide-up max-h-[85vh] overflow-y-auto"
@@ -344,7 +344,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
               {/* Location */}
               {selectedItem.location && (
                 <div className="flex items-center gap-3 pt-2">
-                  <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-white/3 border border-white/10 flex items-center justify-center">
                     <MapPin className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export function AgendaList({ items: initialItems, eventId, eventTimezone = siteC
               {/* Speaker */}
               {selectedItem.speaker && (
                 <div className="flex items-center gap-3 pt-2">
-                  <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-white/3 border border-white/10 flex items-center justify-center">
                     <User className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>

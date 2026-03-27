@@ -158,7 +158,7 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
                 "w-full relative rounded-2xl p-4 text-left transition-all duration-300 overflow-hidden group",
                 isSelected
                   ? "bg-white/10 border-2 border-white/30"
-                  : "bg-white/[0.02] border border-white/5 hover:border-white/15 hover:bg-white/[0.04]",
+                  : "bg-white/2 border border-white/5 hover:border-white/15 hover:bg-white/4",
                 (loading || isEnded) && "cursor-not-allowed opacity-70"
               )}
             >
@@ -167,7 +167,7 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
                 <div
                   className={cn(
                     "absolute inset-0 transition-all duration-500 ease-out",
-                    isWinning ? "bg-white/10" : "bg-white/[0.03]"
+                    isWinning ? "bg-white/10" : "bg-white/3"
                   )}
                   style={{ width: `${percentage}%` }}
                 />
@@ -176,7 +176,7 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {isSelected && (
-                    <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-black" />
                     </div>
                   )}
@@ -191,7 +191,7 @@ export function PollCard({ poll, eventSlug }: PollCardProps) {
                 </div>
 
                 {showResults && (
-                  <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-gray-500 tabular-nums">
                       {voteCounts[index]}
                     </span>

@@ -235,7 +235,7 @@ export function AttendeeDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -362,7 +362,7 @@ export function AttendeeDetailModal({
                           value={editGoalsOther}
                           onChange={(e) => setEditGoalsOther(e.target.value)}
                           placeholder="Specify other goal..."
-                          className="mt-3 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/20"
+                          className="mt-3 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/20"
                         />
                       )}
                     </div>
@@ -399,7 +399,7 @@ export function AttendeeDetailModal({
                           value={editOffersOther}
                           onChange={(e) => setEditOffersOther(e.target.value)}
                           placeholder="Specify other offer..."
-                          className="mt-3 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/20"
+                          className="mt-3 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-hidden focus:border-white/20"
                         />
                       )}
                     </div>
