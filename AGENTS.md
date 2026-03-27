@@ -13,3 +13,25 @@
 - The `en-CA` locale is used across 8+ admin/action files as a date-formatting trick for ISO-style YYYY-MM-DD output; changing locale affects date-parsing logic in those files.
 - `buildHomeJsonLd()` in `LandingPage.tsx` constructs JSON-LD structured data from `siteConfig` and `events.ts`; any site branding change should be verified there.
 - A Shanghai rebrand plan in `.cursor/plans/shanghai_china_rebrand_b5a49747.plan.md` tracks a 50+-file migration from Calgary/Canada to Shanghai/China across 16 sections with 15 todos.
+
+## Cursor Cloud specific instructions
+
+### Service overview
+Single Next.js 16 (App Router) web service — no separate backend, workers, or databases to run locally. Supabase is an external hosted service; there is no local DB to start.
+
+### Running in mock mode (no Supabase credentials)
+Set `NEXT_PUBLIC_USE_MOCK_DATA=true` in `.env.local` to swap the real Supabase query layer for an in-memory mock (`src/lib/mock/queries.ts` via webpack alias in `next.config.mjs`). This returns sample data for all pages without any external service. The mock event slug is `shanghai-march-2026`.
+
+### Dev commands (see `package.json`)
+- `npm run dev` — starts the Next.js dev server on port 3000.
+- `npm run lint` — runs ESLint via flat config (`eslint.config.mjs`). The codebase has some pre-existing lint warnings.
+- `npm run build` — production build.
+
+### Native dependencies
+The `sharp` npm package may require system libraries on some platforms. `canvas` was removed during the Next 16 upgrade.
+
+### ESLint config
+The repo uses ESLint 9 flat config (`eslint.config.mjs`) extending `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`. Do **not** add a legacy `.eslintrc.json` — the flat config is authoritative.
+
+### Admin pages
+Admin routes are at `/admin/<adminCode>/<section>`. The mock admin code is `MOCK-ADMIN` (see `src/lib/mock/data.ts`).
