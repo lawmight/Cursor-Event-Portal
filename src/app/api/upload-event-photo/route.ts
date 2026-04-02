@@ -2,22 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 
-const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = new Set([
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "video/x-msvideo",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/gif",
 ]);
 
-function isAllowedVideo(file: File) {
+function isAllowedImage(file: File) {
   if (ALLOWED_TYPES.has(file.type)) return true;
   const name = file.name.toLowerCase();
   return (
-    name.endsWith(".mp4") ||
-    name.endsWith(".webm") ||
-    name.endsWith(".mov") ||
-    name.endsWith(".avi")
+    name.endsWith(".png") ||
+    name.endsWith(".jpg") ||
+    name.endsWith(".jpeg") ||
+    name.endsWith(".webp") ||
+    name.endsWith(".gif")
   );
 }
 
@@ -31,52 +33,51 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const eventId = formData.get("eventId") as string | null;
-    const competitionId = formData.get("competitionId") as string | null;
+    const caption = formData.get("caption") as string | null;
 
-    if (!file || !eventId || !competitionId) {
+    if (!file || !eventId) {
       return NextResponse.json(
-        { error: "Missing file, eventId, or competitionId" },
+        { error: "Missing file or eventId" },
         { status: 400 }
       );
     }
 
-    if (!isAllowedVideo(file)) {
+    if (!isAllowedImage(file)) {
       return NextResponse.json(
-        { error: "Only video files are supported (MP4, WebM, MOV)" },
+        { error: "Only image files are supported (PNG, JPEG, WebP, GIF)" },
         { status: 400 }
       );
     }
 
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "File size exceeds 50MB limit" },
+        { error: "File size exceeds 10MB limit" },
         { status: 400 }
       );
     }
 
     const supabase = await createServiceClient();
 
-    const { data: competition, error: compError } = await supabase
-      .from("competitions")
-      .select("id, status, event_id")
-      .eq("id", competitionId)
-      .eq("event_id", eventId)
+    const { data: event } = await supabase
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
       .single();
 
-    if (compError || !competition || !["active", "voting"].includes(competition.status)) {
+    if (!event) {
       return NextResponse.json(
-        { error: "Competition not found or not accepting uploads" },
-        { status: 400 }
+        { error: "Event not found" },
+        { status: 404 }
       );
     }
 
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const filePath = `${eventId}/${competitionId}/${session.userId}/${Date.now()}-${safeName}`;
+    const filePath = `${eventId}/${session.userId}/${Date.now()}-${safeName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("competition-videos")
+      .from("event-photos")
       .upload(filePath, file, {
-        contentType: file.type || "video/mp4",
+        contentType: file.type || "image/png",
         upsert: false,
       });
 
@@ -88,16 +89,36 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: urlData } = supabase.storage
-      .from("competition-videos")
+      .from("event-photos")
       .getPublicUrl(filePath);
+
+    const { data: photo, error: insertError } = await supabase
+      .from("event_photos")
+      .insert({
+        event_id: eventId,
+        uploaded_by: session.userId,
+        file_url: urlData.publicUrl,
+        storage_path: filePath,
+        caption: caption?.trim() || null,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      await supabase.storage.from("event-photos").remove([filePath]);
+      return NextResponse.json(
+        { error: `Failed to save photo record: ${insertError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      url: urlData.publicUrl,
-      path: filePath,
+      photo,
     });
   } catch (err) {
-    console.error("[competition-upload-video] Error:", err);
+    console.error("[upload-event-photo] Error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Upload failed" },
       { status: 500 }
