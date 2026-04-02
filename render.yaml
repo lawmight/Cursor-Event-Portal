@@ -12,7 +12,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
-        value: 20
+        value: "20.18.1"
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_SUPABASE_URL

@@ -32,6 +32,7 @@ import type {
   SpeedNetworkingSession,
   SpeedNetworkingRound,
   SpeedNetworkingPair,
+  EventPhoto,
 } from "@/types";
 
 import {
@@ -57,6 +58,8 @@ import {
   MOCK_TABLE_REGISTRATIONS,
   MOCK_NETWORKING_SESSION,
   MOCK_CURSOR_CREDITS,
+  MOCK_EVENT_PHOTOS,
+  MOCK_HERO_FEATURED_PHOTO_IDS,
 } from "./data";
 
 // ─── Re-exported types (matches real queries.ts public surface) ────────────────
@@ -108,6 +111,16 @@ export interface SeriesAttendanceDataPoint {
   start_time: string | null;
   registered: number;
   checked_in: number;
+}
+
+export interface EventWithPhotos {
+  id: string;
+  slug: string;
+  name: string;
+  start_time: string | null;
+  status: string;
+  venue: string | null;
+  photos: EventPhoto[];
 }
 
 // ─── Event queries ────────────────────────────────────────────────────────────
@@ -408,4 +421,44 @@ export async function getExchangePosts(eventId: string): Promise<ExchangePost[]>
 
 export async function getOpenExchangePosts(eventId: string): Promise<ExchangePost[]> {
   return MOCK_EXCHANGE_POSTS.filter(p => p.status === "open");
+}
+
+// ─── Event photo queries ───────────────────────────────────────────────────────
+
+export async function getEventPhotosForAdmin(eventId: string, status?: EventPhoto["status"]): Promise<EventPhoto[]> {
+  const filtered = MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId);
+  return status ? filtered.filter((photo) => photo.status === status) : filtered;
+}
+
+export async function getApprovedEventPhotos(eventId: string): Promise<EventPhoto[]> {
+  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.status === "approved");
+}
+
+export async function getPendingPhotoCount(eventId: string): Promise<number> {
+  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.status === "pending").length;
+}
+
+export async function getUserEventPhotos(eventId: string, userId: string): Promise<EventPhoto[]> {
+  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.uploaded_by === userId);
+}
+
+export async function getEventsWithApprovedPhotos(): Promise<EventWithPhotos[]> {
+  const approvedPhotos = MOCK_EVENT_PHOTOS.filter((photo) => photo.status === "approved");
+  if (approvedPhotos.length === 0 || MOCK_EVENT.status === "archived") {
+    return [];
+  }
+
+  return [{
+    id: MOCK_EVENT.id,
+    slug: MOCK_EVENT.slug,
+    name: MOCK_EVENT.name,
+    start_time: MOCK_EVENT.start_time,
+    status: MOCK_EVENT.status,
+    venue: MOCK_EVENT.venue,
+    photos: approvedPhotos,
+  }];
+}
+
+export async function getHeroFeaturedPhotoIds(): Promise<string[]> {
+  return MOCK_HERO_FEATURED_PHOTO_IDS;
 }

@@ -1,7 +1,7 @@
 // Database types for Cursor Popup Portal
 
 export type UserRole = "attendee" | "facilitator" | "staff" | "admin";
-export type EventStatus = "draft" | "published" | "active" | "completed";
+export type EventStatus = "draft" | "published" | "active" | "completed" | "archived";
 export type QuestionStatus = "open" | "answered" | "pinned" | "hidden";
 export type RegistrationSource = "qr" | "link" | "walk-in";
 export type AttendeeRoleCategory = "founder" | "professional" | "student" | "other";
@@ -718,4 +718,22 @@ export interface CursorCredit {
   redeemed_at: string | null;
   created_at: string;
   user?: { name: string; email: string | null };
+}
+
+// ─── Event Photos ─────────────────────────────────────────────────────────────
+
+export type PhotoStatus = "pending" | "approved" | "rejected";
+
+export interface EventPhoto {
+  id: string;
+  event_id: string;
+  uploaded_by: string | null;
+  file_url: string;
+  storage_path: string;
+  caption: string | null;
+  status: PhotoStatus;
+  reviewed_by: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  uploader?: Pick<User, "id" | "name" | "email">;
 }
