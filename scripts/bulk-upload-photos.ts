@@ -83,7 +83,7 @@ async function main() {
   console.log(`Found ${files.length} images in ${absFolder}\n`);
 
   let uploaded = 0;
-  let skipped = 0;
+  const skipped = 0;
   let failed = 0;
 
   for (let i = 0; i < files.length; i++) {
