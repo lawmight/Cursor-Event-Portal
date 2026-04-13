@@ -1,8 +1,11 @@
 "use server";
 
+import { MOCK_COMPETITIONS, MOCK_USERS } from "@/lib/mock/data";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 function getAdminCompetitionsPath(eventSlug: string, adminCode?: string) {
   return adminCode
@@ -440,6 +443,16 @@ export async function updateEntry(
   const session = await getSession();
   if (!session) return { error: "Not authenticated" };
 
+  if (USE_MOCK_DATA) {
+    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
+      (item) => item.id === entryId
+    );
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
+
   const supabase = await createServiceClient();
 
   const { data: entry } = await supabase
@@ -717,6 +730,16 @@ export async function removeEntryMedia(
   const session = await getSession();
   if (!session) return { error: "Not authenticated" };
 
+  if (USE_MOCK_DATA) {
+    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
+      (item) => item.id === entryId
+    );
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
+
   const supabase = await createServiceClient();
 
   const { data: entry } = await supabase
@@ -765,6 +788,16 @@ export async function deleteEntry(
 ) {
   const session = await getSession();
   if (!session) return { error: "Not authenticated" };
+
+  if (USE_MOCK_DATA) {
+    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
+      (item) => item.id === entryId
+    );
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
 
   const supabase = await createServiceClient();
 

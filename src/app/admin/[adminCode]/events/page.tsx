@@ -2,7 +2,7 @@ import { getAllEvents, getActiveEventSlug } from "@/lib/supabase/queries";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { ActiveVenueSelector } from "@/components/admin/ActiveVenueSelector";
 import { getEventForAdmin } from "@/lib/utils/admin";
-import { CalendarDays, CheckCircle2, Clock, Circle } from "lucide-react";
+import { CalendarDays, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { siteConfig } from "@/content/site.config";
 

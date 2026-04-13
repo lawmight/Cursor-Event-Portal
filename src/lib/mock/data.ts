@@ -49,7 +49,7 @@ export const MOCK_EVENT: Event = {
   seating_enabled: true,
   survey_popup_visible: false,
   timezone: "Asia/Shanghai",
-  admin_code: "sh2026",
+  admin_code: "MOCK-ADMIN",
   data_retention_days: 90,
   venue_image_url: null,
   timer_label: "Hacking ends in",

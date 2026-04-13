@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { MessageCircle, ClipboardCheck, Vote, Megaphone, Bot, Zap, Users2, Send, Camera } from "lucide-react";
+import { MessageCircle, Vote, Megaphone, Bot, Zap, Send, Camera } from "lucide-react";
 import { AdminQAClient } from "../../qa/AdminQAClient";
 import { PollsAdminClient } from "../../polls/PollsAdminClient";
 import { AnnouncementsClient } from "../../announcements/AnnouncementsClient";

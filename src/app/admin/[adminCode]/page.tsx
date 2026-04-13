@@ -1,5 +1,5 @@
 import { getEventStats, getQuestions, getSurveyResponses, getPublishedSurvey, getAllEvents, getPendingPhotoCount } from "@/lib/supabase/queries";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
@@ -29,8 +29,6 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
   const { adminCode } = await params;
   const event = await getEventForAdmin(adminCode);
   const eventSlug = event.slug;
-
-  const supabase = await createClient();
 
   const [stats, questions, allEvents, activeSlug, pendingPhotos] = await Promise.all([
     getEventStats(event.id),
@@ -169,10 +167,8 @@ export default async function AdminDashboard({ params }: AdminDashboardProps) {
           {/* Engagement */}
           <EventSocialCard
             event={event}
-            eventSlug={eventSlug}
             adminCode={adminCode}
             initialOpenQuestions={openQuestions}
-            initialQuestions={questions}
             pendingPhotos={pendingPhotos}
           />
 

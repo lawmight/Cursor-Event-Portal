@@ -1,9 +1,12 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { MOCK_INTAKES } from "@/lib/mock/data";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 import type { IntakeFormData } from "@/types";
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export async function submitIntake(
   eventId: string,
@@ -361,6 +364,16 @@ export async function updateUserProfile(
 }
 
 export async function getIntakeStatus(eventId: string, userId: string) {
+  if (USE_MOCK_DATA) {
+    const intake = MOCK_INTAKES.find(
+      (item) => item.event_id === eventId && item.user_id === userId
+    );
+    return {
+      completed: !!intake,
+      skipped: intake?.skipped || false,
+    };
+  }
+
   try {
     const supabase = await createServiceClient();
 
