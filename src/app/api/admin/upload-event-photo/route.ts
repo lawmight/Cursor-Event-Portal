@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_EVENT } from "@/lib/mock/data";
+import { addMockEventPhoto } from "@/lib/mock/state";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -62,20 +63,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid admin code" }, { status: 403 });
       }
 
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const photo = addMockEventPhoto({
+        event_id: headerEventId,
+        uploaded_by: null,
+        file_url: "/cursor_china_photo/china-06.png",
+        storage_path: `mock/${MOCK_EVENT.slug}/admin/${safeName}`,
+        caption: caption?.trim() || null,
+        status: autoApprove ? "approved" : "pending",
+        reviewed_by: autoApprove ? "mock-admin" : null,
+        reviewed_at: autoApprove ? new Date().toISOString() : null,
+      });
+
       return NextResponse.json({
         success: true,
-        photo: {
-          id: `mock-admin-upload-${Date.now()}`,
-          event_id: headerEventId,
-          uploaded_by: null,
-          file_url: "/cursor_china_photo/china-06.png",
-          storage_path: `mock/${MOCK_EVENT.slug}/admin/${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
-          caption: caption?.trim() || null,
-          status: autoApprove ? "approved" : "pending",
-          reviewed_by: autoApprove ? "mock-admin" : null,
-          created_at: new Date().toISOString(),
-          reviewed_at: autoApprove ? new Date().toISOString() : null,
-        },
+        photo,
       });
     }
 

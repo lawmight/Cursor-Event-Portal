@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MOCK_EVENT } from "@/lib/mock/data";
+import { addMockEventPhoto } from "@/lib/mock/state";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 
@@ -60,20 +61,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (USE_MOCK_DATA) {
+      const photo = {
+        id: `mock-upload-${Date.now()}`,
+        event_id: eventId,
+        uploaded_by: session.userId,
+        file_url: "/cursor_china_photo/china-05.png",
+        storage_path: `mock/${MOCK_EVENT.slug}/${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
+        caption: caption?.trim() || null,
+        status: "pending" as const,
+        reviewed_by: null,
+        created_at: new Date().toISOString(),
+        reviewed_at: null,
+      };
+      addMockEventPhoto(photo);
       return NextResponse.json({
         success: true,
-        photo: {
-          id: `mock-upload-${Date.now()}`,
-          event_id: eventId,
-          uploaded_by: session.userId,
-          file_url: "/cursor_china_photo/china-05.png",
-          storage_path: `mock/${MOCK_EVENT.slug}/${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
-          caption: caption?.trim() || null,
-          status: "pending",
-          reviewed_by: null,
-          created_at: new Date().toISOString(),
-          reviewed_at: null,
-        },
+        photo,
       });
     }
 

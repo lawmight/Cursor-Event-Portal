@@ -1,6 +1,12 @@
 "use server";
 
-import { MOCK_COMPETITIONS, MOCK_USERS } from "@/lib/mock/data";
+import { MOCK_USERS } from "@/lib/mock/data";
+import {
+  findMockCompetitionEntry,
+  updateMockCompetitionEntry,
+  removeMockCompetitionEntryMedia,
+  deleteMockCompetitionEntry,
+} from "@/lib/mock/state";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
@@ -444,11 +450,10 @@ export async function updateEntry(
   if (!session) return { error: "Not authenticated" };
 
   if (USE_MOCK_DATA) {
-    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
-      (item) => item.id === entryId
-    );
+    const entry = findMockCompetitionEntry(entryId);
     if (!entry) return { error: "Entry not found" };
     if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    updateMockCompetitionEntry(entryId, data);
     revalidatePath(`/${eventSlug}/competitions`);
     return { success: true };
   }
@@ -731,11 +736,10 @@ export async function removeEntryMedia(
   if (!session) return { error: "Not authenticated" };
 
   if (USE_MOCK_DATA) {
-    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
-      (item) => item.id === entryId
-    );
+    const entry = findMockCompetitionEntry(entryId);
     if (!entry) return { error: "Entry not found" };
     if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    removeMockCompetitionEntryMedia(entryId, mediaType);
     revalidatePath(`/${eventSlug}/competitions`);
     return { success: true };
   }
@@ -790,11 +794,10 @@ export async function deleteEntry(
   if (!session) return { error: "Not authenticated" };
 
   if (USE_MOCK_DATA) {
-    const entry = MOCK_COMPETITIONS.flatMap((competition) => competition.entries ?? []).find(
-      (item) => item.id === entryId
-    );
+    const entry = findMockCompetitionEntry(entryId);
     if (!entry) return { error: "Entry not found" };
     if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    deleteMockCompetitionEntry(entryId);
     revalidatePath(`/${eventSlug}/competitions`);
     return { success: true };
   }

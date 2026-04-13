@@ -1,7 +1,15 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/server";
-import { MOCK_EVENT, MOCK_EVENT_PHOTOS, MOCK_HERO_FEATURED_PHOTO_IDS } from "@/lib/mock/data";
+import { MOCK_EVENT } from "@/lib/mock/data";
+import {
+  bulkApproveMockEventPhotos,
+  getMockEventPhotosState,
+  getMockHeroFeaturedPhotoIdsState,
+  removeMockEventPhoto,
+  setMockHeroFeaturedPhotoIds,
+  updateMockEventPhotoStatus,
+} from "@/lib/mock/state";
 import { revalidatePath } from "next/cache";
 import type { PhotoStatus } from "@/types";
 
@@ -26,7 +34,7 @@ async function validateAdminAccess(
 
 export async function getEventPhotos(eventId: string, status?: PhotoStatus) {
   if (USE_MOCK_DATA) {
-    const filtered = MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId);
+    const filtered = getMockEventPhotosState().filter((photo) => photo.event_id === eventId);
     return status ? filtered.filter((photo) => photo.status === status) : filtered;
   }
 
@@ -54,7 +62,7 @@ export async function getEventPhotos(eventId: string, status?: PhotoStatus) {
 
 export async function getPendingPhotoCount(eventId: string) {
   if (USE_MOCK_DATA) {
-    return MOCK_EVENT_PHOTOS.filter(
+    return getMockEventPhotosState().filter(
       (photo) => photo.event_id === eventId && photo.status === "pending"
     ).length;
   }
@@ -84,6 +92,7 @@ export async function approvePhoto(
     if (eventId !== MOCK_EVENT.id || adminCode !== MOCK_EVENT.admin_code) {
       return { error: "Not authorized. Admin access required." };
     }
+    updateMockEventPhotoStatus(photoId, "approved");
     revalidatePath(`/admin/${adminCode}/social`);
     return { success: true };
   }
@@ -119,6 +128,7 @@ export async function rejectPhoto(
     if (eventId !== MOCK_EVENT.id || adminCode !== MOCK_EVENT.admin_code) {
       return { error: "Not authorized. Admin access required." };
     }
+    updateMockEventPhotoStatus(photoId, "rejected");
     revalidatePath(`/admin/${adminCode}/social`);
     return { success: true };
   }
@@ -154,6 +164,7 @@ export async function deletePhoto(
     if (eventId !== MOCK_EVENT.id || adminCode !== MOCK_EVENT.admin_code) {
       return { error: "Not authorized. Admin access required." };
     }
+    removeMockEventPhoto(photoId);
     revalidatePath(`/admin/${adminCode}/social`);
     return { success: true };
   }
@@ -199,6 +210,7 @@ export async function bulkApprovePhotos(
     if (eventId !== MOCK_EVENT.id || adminCode !== MOCK_EVENT.admin_code) {
       return { error: "Not authorized. Admin access required." };
     }
+    bulkApproveMockEventPhotos(photoIds);
     revalidatePath(`/admin/${adminCode}/social`);
     return { success: true };
   }
@@ -231,7 +243,7 @@ const HERO_FEATURED_KEY = "hero_featured_photo_ids";
 
 export async function getHeroFeaturedIds(): Promise<string[]> {
   if (USE_MOCK_DATA) {
-    return [...MOCK_HERO_FEATURED_PHOTO_IDS];
+    return [...getMockHeroFeaturedPhotoIdsState()];
   }
 
   const supabase = await createServiceClient();
@@ -263,6 +275,7 @@ export async function toggleHeroFeatured(
     const updated = isCurrentlyFeatured
       ? current.filter((id) => id !== photoId)
       : [...current, photoId];
+    setMockHeroFeaturedPhotoIds(updated);
     revalidatePath("/");
     return { success: true, featured: !isCurrentlyFeatured, featuredIds: updated };
   }

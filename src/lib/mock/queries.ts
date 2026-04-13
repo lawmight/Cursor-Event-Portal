@@ -58,9 +58,12 @@ import {
   MOCK_TABLE_REGISTRATIONS,
   MOCK_NETWORKING_SESSION,
   MOCK_CURSOR_CREDITS,
-  MOCK_EVENT_PHOTOS,
-  MOCK_HERO_FEATURED_PHOTO_IDS,
 } from "./data";
+import {
+  getMockCompetitionsState,
+  getMockEventPhotosState,
+  getMockHeroFeaturedPhotoIdsState,
+} from "./state";
 
 // ─── Re-exported types (matches real queries.ts public surface) ────────────────
 
@@ -346,15 +349,15 @@ export async function getIntakeAnalytics(eventId: string): Promise<IntakeAnalyti
 // ─── Competition queries ──────────────────────────────────────────────────────
 
 export async function getActiveCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
-  return MOCK_COMPETITIONS.filter(c => ["active", "voting", "ended"].includes(c.status));
+  return getMockCompetitionsState().filter((c) => ["active", "voting", "ended"].includes(c.status));
 }
 
 export async function getAllCompetitions(eventId: string): Promise<CompetitionWithEntries[]> {
-  return MOCK_COMPETITIONS;
+  return getMockCompetitionsState();
 }
 
 export async function getCompetitionWithEntries(competitionId: string, userId?: string): Promise<CompetitionWithEntries | null> {
-  return MOCK_COMPETITIONS.find(c => c.id === competitionId) ?? null;
+  return getMockCompetitionsState().find((c) => c.id === competitionId) ?? null;
 }
 
 // ─── Conversation theme queries ───────────────────────────────────────────────
@@ -426,24 +429,32 @@ export async function getOpenExchangePosts(eventId: string): Promise<ExchangePos
 // ─── Event photo queries ───────────────────────────────────────────────────────
 
 export async function getEventPhotosForAdmin(eventId: string, status?: EventPhoto["status"]): Promise<EventPhoto[]> {
-  const filtered = MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId);
+  const filtered = getMockEventPhotosState().filter((photo) => photo.event_id === eventId);
   return status ? filtered.filter((photo) => photo.status === status) : filtered;
 }
 
 export async function getApprovedEventPhotos(eventId: string): Promise<EventPhoto[]> {
-  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.status === "approved");
+  return getMockEventPhotosState().filter(
+    (photo) => photo.event_id === eventId && photo.status === "approved"
+  );
 }
 
 export async function getPendingPhotoCount(eventId: string): Promise<number> {
-  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.status === "pending").length;
+  return getMockEventPhotosState().filter(
+    (photo) => photo.event_id === eventId && photo.status === "pending"
+  ).length;
 }
 
 export async function getUserEventPhotos(eventId: string, userId: string): Promise<EventPhoto[]> {
-  return MOCK_EVENT_PHOTOS.filter((photo) => photo.event_id === eventId && photo.uploaded_by === userId);
+  return getMockEventPhotosState().filter(
+    (photo) => photo.event_id === eventId && photo.uploaded_by === userId
+  );
 }
 
 export async function getEventsWithApprovedPhotos(): Promise<EventWithPhotos[]> {
-  const approvedPhotos = MOCK_EVENT_PHOTOS.filter((photo) => photo.status === "approved");
+  const approvedPhotos = getMockEventPhotosState().filter(
+    (photo) => photo.status === "approved"
+  );
   if (approvedPhotos.length === 0) {
     return [];
   }
@@ -460,5 +471,5 @@ export async function getEventsWithApprovedPhotos(): Promise<EventWithPhotos[]> 
 }
 
 export async function getHeroFeaturedPhotoIds(): Promise<string[]> {
-  return MOCK_HERO_FEATURED_PHOTO_IDS;
+  return getMockHeroFeaturedPhotoIdsState();
 }
