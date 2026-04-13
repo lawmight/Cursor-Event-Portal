@@ -13,8 +13,8 @@ import {
 } from "@/lib/actions/survey";
 import {
   getPostEventEmailStats, sendPostEventEmails,
-  type PostEventEmailMode,
 } from "@/lib/actions/post-event-emails";
+import type { PostEventEmailMode } from "@/lib/email/post-event";
 import type { Event, Survey, SurveyField } from "@/types";
 
 interface FollowUpAdminClientProps {

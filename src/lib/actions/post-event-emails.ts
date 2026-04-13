@@ -9,8 +9,6 @@ import {
   type PostEventEmailMode,
 } from "@/lib/email/post-event";
 
-export type { PostEventEmailMode };
-
 function getResend() {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY is not set");

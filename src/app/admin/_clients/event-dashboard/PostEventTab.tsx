@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import {
   getPostEventEmailStats,
   sendPostEventEmails,
-  type PostEventEmailMode,
 } from "@/lib/actions/post-event-emails";
+import type { PostEventEmailMode } from "@/lib/email/post-event";
 
 interface PostEventTabProps {
   eventId: string;
