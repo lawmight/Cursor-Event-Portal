@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MOCK_EVENT } from "@/lib/mock/data";
+import { addMockEventPhoto } from "@/lib/mock/state";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/actions/registration";
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = new Set([
   "image/png",
   "image/jpeg",
@@ -10,6 +12,8 @@ const ALLOWED_TYPES = new Set([
   "image/webp",
   "image/gif",
 ]);
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 function isAllowedImage(file: File) {
   if (ALLOWED_TYPES.has(file.type)) return true;
@@ -33,11 +37,11 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const eventId = formData.get("eventId") as string | null;
-    const competitionId = formData.get("competitionId") as string | null;
+    const caption = formData.get("caption") as string | null;
 
-    if (!file || !eventId || !competitionId) {
+    if (!file || !eventId) {
       return NextResponse.json(
-        { error: "Missing file, eventId, or competitionId" },
+        { error: "Missing file or eventId" },
         { status: 400 }
       );
     }
@@ -51,33 +55,51 @@ export async function POST(request: NextRequest) {
 
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "File size exceeds 5MB limit" },
+        { error: "File size exceeds 10MB limit" },
         { status: 400 }
       );
+    }
+
+    if (USE_MOCK_DATA) {
+      const photo = {
+        id: `mock-upload-${Date.now()}`,
+        event_id: eventId,
+        uploaded_by: session.userId,
+        file_url: "/cursor_china_photo/china-05.png",
+        storage_path: `mock/${MOCK_EVENT.slug}/${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
+        caption: caption?.trim() || null,
+        status: "pending" as const,
+        reviewed_by: null,
+        created_at: new Date().toISOString(),
+        reviewed_at: null,
+      };
+      addMockEventPhoto(photo);
+      return NextResponse.json({
+        success: true,
+        photo,
+      });
     }
 
     const supabase = await createServiceClient();
 
-    // Competition must exist and be active for submissions
-    const { data: competition, error: compError } = await supabase
-      .from("competitions")
-      .select("id, status, event_id")
-      .eq("id", competitionId)
-      .eq("event_id", eventId)
+    const { data: event } = await supabase
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
       .single();
 
-    if (compError || !competition || !["active", "voting"].includes(competition.status)) {
+    if (!event) {
       return NextResponse.json(
-        { error: "Competition not found or not accepting uploads" },
-        { status: 400 }
+        { error: "Event not found" },
+        { status: 404 }
       );
     }
 
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const filePath = `${eventId}/${competitionId}/${session.userId}/${Date.now()}-${safeName}`;
+    const filePath = `${eventId}/${session.userId}/${Date.now()}-${safeName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("competition-previews")
+      .from("event-photos")
       .upload(filePath, file, {
         contentType: file.type || "image/png",
         upsert: false,
@@ -91,16 +113,36 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: urlData } = supabase.storage
-      .from("competition-previews")
+      .from("event-photos")
       .getPublicUrl(filePath);
+
+    const { data: photo, error: insertError } = await supabase
+      .from("event_photos")
+      .insert({
+        event_id: eventId,
+        uploaded_by: session.userId,
+        file_url: urlData.publicUrl,
+        storage_path: filePath,
+        caption: caption?.trim() || null,
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      await supabase.storage.from("event-photos").remove([filePath]);
+      return NextResponse.json(
+        { error: `Failed to save photo record: ${insertError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      url: urlData.publicUrl,
-      path: filePath,
+      photo,
     });
   } catch (err) {
-    console.error("[competition-upload-preview] Error:", err);
+    console.error("[upload-event-photo] Error:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Upload failed" },
       { status: 500 }

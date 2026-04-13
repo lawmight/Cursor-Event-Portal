@@ -1,8 +1,17 @@
 "use server";
 
+import { MOCK_USERS } from "@/lib/mock/data";
+import {
+  findMockCompetitionEntry,
+  updateMockCompetitionEntry,
+  removeMockCompetitionEntryMedia,
+  deleteMockCompetitionEntry,
+} from "@/lib/mock/state";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 function getAdminCompetitionsPath(eventSlug: string, adminCode?: string) {
   return adminCode
@@ -219,12 +228,11 @@ export async function updateCompetitionStatus(
   const auth = await validateAdminAccess(supabase, competition.event_id, adminCode);
   if (!auth.valid) return { error: auth.error ?? "Not authorized" };
 
-  // Validate transitions: draft -> active -> voting -> ended
   const validTransitions: Record<string, string[]> = {
     draft: ["active"],
-    active: ["voting"],
-    voting: ["ended"],
-    ended: [],
+    active: ["voting", "draft"],
+    voting: ["ended", "active"],
+    ended: ["voting"],
   };
 
   if (!validTransitions[competition.status]?.includes(status)) {
@@ -233,10 +241,44 @@ export async function updateCompetitionStatus(
     return { error: errMsg };
   }
 
+  const isRevert = (
+    (competition.status === "voting" && status === "active") ||
+    (competition.status === "ended" && status === "voting") ||
+    (competition.status === "active" && status === "draft")
+  );
+
+  const updatePayload: Record<string, unknown> = { status };
+
+  if (isRevert) {
+    if (competition.status === "ended" && status === "voting") {
+      updatePayload.winner_entry_id = null;
+      updatePayload.winner_method = null;
+      updatePayload.group_winner_entry_id = null;
+      updatePayload.admin_winner_entry_id = null;
+    }
+    if (competition.status === "voting" && status === "active") {
+      updatePayload.winner_entry_id = null;
+      updatePayload.winner_method = null;
+      updatePayload.group_winner_entry_id = null;
+      updatePayload.admin_winner_entry_id = null;
+      updatePayload.top3_entry_ids = null;
+    }
+  }
+
   const { error } = await supabase
     .from("competitions")
-    .update({ status })
+    .update(updatePayload)
     .eq("id", competitionId);
+
+  if (isRevert && !error) {
+    if (competition.status === "voting" && status === "active") {
+      await supabase
+        .from("competition_votes")
+        .delete()
+        .eq("competition_id", competitionId);
+      console.log("[updateCompetitionStatus] Cleared votes on revert to active");
+    }
+  }
 
   if (error) {
     console.error("[updateCompetitionStatus] Update error:", error);
@@ -407,6 +449,15 @@ export async function updateEntry(
   const session = await getSession();
   if (!session) return { error: "Not authenticated" };
 
+  if (USE_MOCK_DATA) {
+    const entry = findMockCompetitionEntry(entryId);
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    updateMockCompetitionEntry(entryId, data);
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
+
   const supabase = await createServiceClient();
 
   const { data: entry } = await supabase
@@ -418,14 +469,13 @@ export async function updateEntry(
   if (!entry) return { error: "Entry not found" };
   if (entry.user_id !== session.userId) return { error: "Not your entry" };
 
-  // Check competition is still active
   const { data: competition } = await supabase
     .from("competitions")
     .select("status")
     .eq("id", entry.competition_id)
     .single();
 
-  if (!competition || competition.status !== "active") {
+  if (!competition || !["active", "voting"].includes(competition.status)) {
     return { error: "Competition is not accepting modifications" };
   }
 
@@ -675,6 +725,121 @@ export async function finalizeGroupWinner(
   revalidatePath(getAdminCompetitionsPath(eventSlug, adminCode));
   revalidatePath(`/${eventSlug}/competitions`);
   return { success: true, winnerEntryId };
+}
+
+export async function removeEntryMedia(
+  entryId: string,
+  eventSlug: string,
+  mediaType: "preview_image" | "video"
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  if (USE_MOCK_DATA) {
+    const entry = findMockCompetitionEntry(entryId);
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    removeMockCompetitionEntryMedia(entryId, mediaType);
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: entry } = await supabase
+    .from("competition_entries")
+    .select("user_id, competition_id, preview_image_url, video_url")
+    .eq("id", entryId)
+    .single();
+
+  if (!entry) return { error: "Entry not found" };
+  if (entry.user_id !== session.userId) return { error: "Not your entry" };
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("status")
+    .eq("id", entry.competition_id)
+    .single();
+
+  if (!competition || !["active", "voting"].includes(competition.status)) {
+    return { error: "Competition is not accepting modifications" };
+  }
+
+  const updateData: Record<string, null> = {};
+  if (mediaType === "preview_image") {
+    updateData.preview_image_url = null;
+  } else {
+    updateData.video_url = null;
+  }
+
+  const { error } = await supabase
+    .from("competition_entries")
+    .update(updateData)
+    .eq("id", entryId);
+
+  if (error) {
+    console.error("[removeEntryMedia] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
+}
+
+export async function deleteEntry(
+  entryId: string,
+  eventSlug: string
+) {
+  const session = await getSession();
+  if (!session) return { error: "Not authenticated" };
+
+  if (USE_MOCK_DATA) {
+    const entry = findMockCompetitionEntry(entryId);
+    if (!entry) return { error: "Entry not found" };
+    if (entry.user_id !== session.userId) return { error: "Not your entry" };
+    deleteMockCompetitionEntry(entryId);
+    revalidatePath(`/${eventSlug}/competitions`);
+    return { success: true };
+  }
+
+  const supabase = await createServiceClient();
+
+  const { data: entry } = await supabase
+    .from("competition_entries")
+    .select("user_id, competition_id")
+    .eq("id", entryId)
+    .single();
+
+  if (!entry) return { error: "Entry not found" };
+  if (entry.user_id !== session.userId) return { error: "Not your entry" };
+
+  const { data: competition } = await supabase
+    .from("competitions")
+    .select("status")
+    .eq("id", entry.competition_id)
+    .single();
+
+  if (!competition || !["active", "voting"].includes(competition.status)) {
+    return { error: "Competition is not accepting modifications" };
+  }
+
+  await supabase
+    .from("competition_votes")
+    .delete()
+    .eq("entry_id", entryId);
+
+  const { error } = await supabase
+    .from("competition_entries")
+    .delete()
+    .eq("id", entryId);
+
+  if (error) {
+    console.error("[deleteEntry] Error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/${eventSlug}/competitions`);
+  return { success: true };
 }
 
 export async function removeVote(

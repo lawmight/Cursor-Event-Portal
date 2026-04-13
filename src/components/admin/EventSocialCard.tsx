@@ -6,28 +6,24 @@ import { useRouter } from "next/navigation";
 import { MessageCircle, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getSeenItemIds } from "@/lib/supabase/seenItems";
-import type { Event, Question } from "@/types";
+import type { Event } from "@/types";
 
 interface EventSocialCardProps {
   event: Event;
-  eventSlug: string;
   adminCode: string;
   initialOpenQuestions: number;
-  initialQuestions: Question[];
-  userId?: string; // Optional: if provided, uses Supabase for seen tracking
+  pendingPhotos?: number;
+  userId?: string;
 }
 
 export function EventSocialCard({
   event,
-  eventSlug,
   adminCode,
   initialOpenQuestions,
-  initialQuestions,
+  pendingPhotos = 0,
   userId,
 }: EventSocialCardProps) {
   const router = useRouter();
-  const [openQuestions, setOpenQuestions] = useState(initialOpenQuestions);
-  const [questions, setQuestions] = useState(initialQuestions);
   const [newQuestionAlert, setNewQuestionAlert] = useState(false);
   const [seenQuestionIds, setSeenQuestionIds] = useState<Set<string>>(new Set());
 
@@ -62,21 +58,13 @@ export function EventSocialCard({
         .order("created_at", { ascending: false });
 
       if (!data) {
-        setOpenQuestions(0);
         setNewQuestionAlert(false);
         return;
       }
 
-      const openQ = data.length;
-      setOpenQuestions(openQ);
-
       // Only show alert if there are open questions that haven't been seen
       const unseenQuestions = data.filter((q) => !seenQuestionIds.has(q.id));
       setNewQuestionAlert(unseenQuestions.length > 0);
-
-      // Update questions state - filter to open questions only
-      const openQData = data.filter((q) => q.status === "open");
-      setQuestions(openQData as Question[]);
     };
 
     checkNewQuestions().catch(err => console.error("Error checking questions:", err));
@@ -117,6 +105,7 @@ export function EventSocialCard({
     { id: "polls", label: "Polls" },
     { id: "announcements", label: "Broadcast" },
     { id: "follow-up", label: "Follow-Up" },
+    { id: "photos", label: "Photos" },
   ];
 
   return (
@@ -149,6 +138,11 @@ export function EventSocialCard({
                 {newQuestionAlert && (
                   <span className="text-[10px] uppercase tracking-[0.2em] text-green-400 font-bold flex items-center ml-1">
                     <span className="mr-1">•</span> New
+                  </span>
+                )}
+                {pendingPhotos > 0 && (
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-amber-400 font-bold flex items-center ml-1">
+                    <span className="mr-1">•</span> {pendingPhotos} Photo{pendingPhotos !== 1 ? "s" : ""}
                   </span>
                 )}
               </div>

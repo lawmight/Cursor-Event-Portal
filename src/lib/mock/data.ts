@@ -28,6 +28,7 @@ import type {
   SpeedNetworkingSession,
   TableQRCode,
   TableRegistration,
+  EventPhoto,
 } from "@/types";
 
 // ─── Event ────────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ export const MOCK_EVENT: Event = {
   seating_enabled: true,
   survey_popup_visible: false,
   timezone: "Asia/Shanghai",
-  admin_code: "sh2026",
+  admin_code: "MOCK-ADMIN",
   data_retention_days: 90,
   venue_image_url: null,
   timer_label: "Hacking ends in",
@@ -577,6 +578,104 @@ export const MOCK_COMPETITIONS: CompetitionWithEntries[] = [
     admin_winner_entry: null,
   },
 ];
+
+// ─── Event Photos ──────────────────────────────────────────────────────────────
+
+export const MOCK_EVENT_PHOTOS: EventPhoto[] = [
+  {
+    id: "pho-001",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-001",
+    file_url: "/cursor_china_photo/china-07.png",
+    storage_path: "mock/shanghai-march-2026/china-07.png",
+    caption: "Builders sharing demos in Shanghai",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+    reviewed_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+    uploader: MOCK_USERS[0],
+  },
+  {
+    id: "pho-002",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-002",
+    file_url: "/cursor_china_photo/china-09.png",
+    storage_path: "mock/shanghai-march-2026/china-09.png",
+    caption: "Teams working through the hacking session",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 5 * 86400000 + 600000).toISOString(),
+    reviewed_at: new Date(Date.now() - 5 * 86400000 + 900000).toISOString(),
+    uploader: MOCK_USERS[1],
+  },
+  {
+    id: "pho-003",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-003",
+    file_url: "/cursor_china_photo/china-01.jpg",
+    storage_path: "mock/shanghai-march-2026/china-01.jpg",
+    caption: "Crowd shot from the March meetup",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 5 * 86400000 + 1200000).toISOString(),
+    reviewed_at: new Date(Date.now() - 5 * 86400000 + 1800000).toISOString(),
+    uploader: MOCK_USERS[2],
+  },
+  {
+    id: "pho-004",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-004",
+    file_url: "/cursor_china_photo/china-10.png",
+    storage_path: "mock/shanghai-weekend/china-10.png",
+    caption: "Weekend builders showcase",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 20 * 86400000).toISOString(),
+    reviewed_at: new Date(Date.now() - 20 * 86400000 + 600000).toISOString(),
+    uploader: MOCK_USERS[3],
+  },
+  {
+    id: "pho-005",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-005",
+    file_url: "/cursor_china_photo/china-13.png",
+    storage_path: "mock/shanghai-weekend/china-13.png",
+    caption: "Design reviews in progress",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 20 * 86400000 + 1200000).toISOString(),
+    reviewed_at: new Date(Date.now() - 20 * 86400000 + 1800000).toISOString(),
+    uploader: MOCK_USERS[4],
+  },
+  {
+    id: "pho-006",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-006",
+    file_url: "/cursor_china_photo/china-08.png",
+    storage_path: "mock/shanghai-weekend/china-08.png",
+    caption: "Packed room for the final demos",
+    status: "approved",
+    reviewed_by: "usr-008",
+    created_at: new Date(Date.now() - 20 * 86400000 + 2400000).toISOString(),
+    reviewed_at: new Date(Date.now() - 20 * 86400000 + 3000000).toISOString(),
+    uploader: MOCK_USERS[5],
+  },
+  {
+    id: "pho-007",
+    event_id: MOCK_EVENT.id,
+    uploaded_by: "usr-001",
+    file_url: "/cursor_china_photo/china-04.jpg",
+    storage_path: "mock/shanghai-coworking/china-04.jpg",
+    caption: "Coworking table setup",
+    status: "pending",
+    reviewed_by: null,
+    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+    reviewed_at: null,
+    uploader: MOCK_USERS[0],
+  },
+];
+
+export const MOCK_HERO_FEATURED_PHOTO_IDS = ["pho-001", "pho-004"];
 
 // ─── Conversation Themes ──────────────────────────────────────────────────────
 

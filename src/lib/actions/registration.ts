@@ -1,11 +1,14 @@
 "use server";
 
 import { siteConfig } from "@/content/site.config";
+import { MOCK_EVENT, MOCK_USERS } from "@/lib/mock/data";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { RegistrationFormData } from "@/types";
 import { revalidatePath } from "next/cache";
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export async function registerForEvent(
   eventId: string,
@@ -139,7 +142,14 @@ export async function getSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("portal_session");
 
-  if (!session) return null;
+  if (!session) {
+    if (!USE_MOCK_DATA) return null;
+    return {
+      userId: MOCK_USERS[0].id,
+      eventId: MOCK_EVENT.id,
+      exp: Date.now() + 24 * 60 * 60 * 1000,
+    };
+  }
 
   try {
     const data = JSON.parse(session.value);
