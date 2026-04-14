@@ -147,6 +147,7 @@ export async function getActiveEventSlug(): Promise<string> {
     const { data } = await supabase
       .from("events")
       .select("slug")
+      .neq("status", "archived")
       .order("start_time", { ascending: false })
       .limit(1)
       .single();
@@ -175,6 +176,7 @@ export async function getAllEvents(): Promise<EventSummary[]> {
   const { data, error } = await supabase
     .from("events")
     .select("id, slug, name, venue, start_time, status, admin_code")
+    .neq("status", "archived")
     .order("start_time", { ascending: false });
   if (error) return [];
 
@@ -1747,6 +1749,7 @@ export async function getEventsWithApprovedPhotos(): Promise<EventWithPhotos[]> 
     .from("events")
     .select("id, slug, name, start_time, status, venue")
     .in("id", eventIds)
+    .neq("status", "archived")
     .order("start_time", { ascending: false });
 
   if (eventsError || !events) {
