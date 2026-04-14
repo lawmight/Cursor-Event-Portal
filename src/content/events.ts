@@ -7,7 +7,7 @@ export const events: CursorEvent[] = [
     date: "2026-04-29",
     displayDate: "April 29, 2026",
     location: "Shanghai, China",
-    lumaUrl: "https://lu.ma/cursor-china",
+    lumaUrl: "https://lu.ma/cursor",
     status: "upcoming",
   },
   {

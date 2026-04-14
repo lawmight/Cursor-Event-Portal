@@ -4,7 +4,7 @@ export const siteConfig = {
   city: "Shanghai",
   country: "China",
   brandImagePath: "/cursor_china_photo/cursor-SHANGHAI-CHINA.png",
-  lumaUrl: "https://lu.ma/cursor-china",
+  lumaUrl: "https://lu.ma/cursor",
   cursorCommunityUrl: "https://cursor.com/community",
   defaultLocale: "en",
   locales: ["en"],
