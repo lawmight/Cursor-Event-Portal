@@ -248,15 +248,15 @@ After each step: `npm run lint && npm run build`. After the full slice: test upl
 Most of this slice is **duplicate-of-fork** or **Calgary-specific**. Prefer cherry-picks with careful manual resolution over plain merge:
 
 - [ ] `5dda804` — take the **code** changes (archived status in `queries.ts`, `types/index.ts`, `events/page.tsx`) but **drop upstream's `supabase/migrations/add_archived_event_status.sql`** (`git rm` it in the resolution commit — your `20260415_add_archived_event_status.sql` already covers the constraint change; upstream's extra `UPDATE` step is Calgary-specific).
-- [ ] `7d5ba5f` — GA4 is already on fork; reconcile only if upstream adds env-var defaults or SDK tweaks you don't have.
-- [ ] `58f9d31` — compare with your `UpcomingEvents.tsx`; keep whichever is more polished, then hand-merge missing props.
-- [ ] `c45ae74` — **Calgary SAIT hackathon**. Decision point: skip, or adapt to a Shanghai equivalent if one exists. For now, recommend **skip**.
-- [ ] `1a94a95` — already semantically done; skip.
+- [ ] `7d5ba5f` — **Skip entirely** (B8). GA4 functionally identical on both sides; on any conflict take fork's `layout.tsx` + `GoogleAnalytics.tsx` verbatim.
+- [ ] `58f9d31` — compare with fork's `UpcomingEvents.tsx`; keep whichever is more polished, hand-merge missing props. Do not reintroduce "Calgary" in titles.
+- [ ] `c45ae74` — **Skip** (B4). Do not port the Calgary SAIT hackathon entry.
+- [ ] `1a94a95` — **Skip** (B7). Already semantically done.
 
 ### Phase 7 — Polish (upstream slice F: `d0aed3e`, `28636f8`)
 
-- [ ] `d0aed3e` — ambassador styling. Apply CSS-only bits; keep Tom Coustols as the ambassador.
-- [ ] `28636f8` — Node pin. Compare against fork's `package.json.engines`, `.nvmrc`, `.node-version`. If upstream's are stricter, adopt them; otherwise skip.
+- [ ] `d0aed3e` — **Adopt** upstream's full-color + hover-glow CSS on `AmbassadorSection.tsx` (B6). Keep fork's Tom Coustols photo + identity data.
+- [ ] `28636f8` — Node pin. Lock to exact `20.18.1` in `.nvmrc`, `.node-version`, and `package.json.engines` per D15. Overrides the current `>=20.0.0 <21.0.0` range.
 
 ### Phase 8 — Dependencies & build sanity
 
@@ -265,20 +265,23 @@ Most of this slice is **duplicate-of-fork** or **Calgary-specific**. Prefer cher
 - [ ] `npm run build` — must succeed.
 - [ ] In mock mode: `NEXT_PUBLIC_USE_MOCK_DATA=true npm run dev`, walk through landing / `/shanghai-march-2026/` / `/admin/MOCK-ADMIN/`.
 
-### Phase 9 — Staging
+### Phase 9 — Pre-prod validation (no separate staging Supabase)
 
-- [ ] Push `integration/upstream-2026-04-sync` and open a PR against `main` — **draft**, because staging validation comes first.
-- [ ] Point a Render preview / staging service (or a separate Supabase project) at the branch.
-- [ ] Apply the new migrations: `enable_rls_all_missing_tables.sql`, `20260419_enable_rls_remaining_tables.sql`. Validate RLS by trying an anonymous read and a logged-in admin read on every affected table.
-- [ ] Walk through: photo upload + approval; hero curation; recap pagination; competition edit; Luma import; event status toggle on Venue tab.
-- [ ] Capture logs for any 500 / type / RLS-denied errors and triage before promoting.
+Locked decision C11: there is no staging Supabase project. Validation runs in two layers instead.
+
+- [ ] Push `integration/upstream-2026-04-sync` and open a **draft** PR against `main`.
+- [ ] **Mock-mode validation** (covers UI + server-action wiring): `NEXT_PUBLIC_USE_MOCK_DATA=true npm run dev`, walk through photo upload, approval, hero curation, recap pagination, competition edit, Luma import, event status toggle on Venue tab. Produce the video walkthrough here (F20).
+- [ ] **Dry-run migrations against prod Supabase** using a read-only/psql session: run each new migration's SQL inside a `BEGIN; ... ROLLBACK;` block against prod to confirm it parses and resolves against the live schema without committing. Capture output in the PR body.
+- [ ] Pre-flight the RLS migrations specifically by listing existing policies on affected tables (`SELECT * FROM pg_policies WHERE tablename IN (...)`) and confirming the idempotent `DROP POLICY IF EXISTS` pattern from G22 handles them.
+- [ ] If the dry-run surfaces an unexpected policy / column collision, **stop** and surface the diff in the PR — do not attempt to autopatch.
 
 ### Phase 10 — Production
 
-- [ ] Mark the PR ready; squash-or-merge per your fork's convention (recommend **merge commit**, not squash, because the integration branch already has meaningful sub-commits).
-- [ ] Apply migrations to production Supabase in the same order as staging.
-- [ ] Trigger a Render deploy from `main`. Confirm it picks up the pinned Node version.
-- [ ] Post-deploy smoke: landing page, one event page, `/admin/<real-code>/events`, `/admin/<real-code>/social`.
+- [ ] Confirm Phase 0's `pg_dump` backup exists and is accessible before any prod write.
+- [ ] Mark the PR ready; use a **merge commit** (not squash) so the per-phase commits on the integration branch are preserved for bisect.
+- [ ] Apply migrations to prod Supabase in the order they sit in `supabase/migrations/` (lexicographic). Run them during a low-traffic window.
+- [ ] Trigger a Render deploy from `main`. Use the Render MCP/plugin to confirm the deploying service matches the ID captured in Phase 0 (D13) and that it picks up Node `20.18.1`.
+- [ ] Post-deploy smoke: landing page, one event page, `/admin/<real-code>/events`, `/admin/<real-code>/social`, one photo upload end-to-end.
 
 ### Phase 11 — Rollback
 
@@ -288,14 +291,67 @@ Most of this slice is **duplicate-of-fork** or **Calgary-specific**. Prefer cher
   - Keep the rollback SQL prepared in advance (generate it from the upstream migration SQL by inverting each statement).
 - [ ] For photo-pipeline rollbacks, the schema migrations are additive (columns + buckets) so they don't need to be dropped — the revert just stops using them.
 
-## 8. Decisions I need from you (open questions)
+## 8. Locked decisions (answered by maintainer 2026-04-22)
 
-1. **SAIT Hackathon (upstream `c45ae74`)** — skip entirely, or list as a Calgary-region event on the Shanghai portal, or replace with a Shanghai equivalent?
-2. **Luma URL strategy** — keep fork's single `lu.ma/cursor` handle in the footer and upcoming cards, or take upstream's per-event Luma URLs?
-3. **Ambassador styling (`d0aed3e`)** — adopt upstream's full-color + hover-glow, or keep the fork's current treatment on the Tom Coustols photo?
-4. **Migration for archived status** — I recommend dropping upstream's `add_archived_event_status.sql` during merge (duplicate of your `20260415_...`). OK to `git rm` it in the resolution commit?
-5. **Long-lived integration branch** — OK with `integration/upstream-2026-04-sync` living for several passes, or do you want each phase as its own separate PR?
-6. **React 19 / Next 16 compatibility of upstream code** — do you want me to actually attempt the merge now (starting Phase 2), or hold for these answers?
+These are **final** — the execution agent must follow them without re-asking.
+
+### Scope & branch model
+
+- **A1. Execution split** — Analysis + locked plan stay on this PR (`cursor/upstream-sync-analysis-8820`, PR #9). A **fresh agent** picks up the integration work in a new session with this file as its primary input. This agent does **not** start the merge.
+- **A2. Branch model** — One long-lived integration branch `integration/upstream-2026-04-sync` → one final PR into `main`. Each phase lands as its own commit (or small commit series) on that branch so bisect stays useful.
+- **A3. Dry-run** — Skip. Go straight to phased execution; deal with trouble as it arises. "Ship it" policy.
+
+### Content
+
+- **B4. SAIT Hackathon (`c45ae74`)** — **Skip entirely.** Do not port the Calgary SAIT entry to `src/content/events.ts`.
+- **B5. Luma URLs** — **Keep fork's single `lu.ma/cursor` handle** in the footer and upcoming cards (fork's `bea6f7e`). Shanghai-specific Luma URLs don't exist yet. On any conflict touching Luma URLs, **fork wins**.
+- **B6. Ambassador styling (`d0aed3e`)** — **Adopt upstream's full-color + hover-glow styling**, but keep Tom Coustols as the ambassador (fork's `ddcf2e7` photo + identity). Merge `AmbassadorSection.tsx` by taking upstream's CSS and fork's data.
+- **B7. "Drop redundant Calgary from titles" (`1a94a95`)** — **Skip.** Semantically already done.
+- **B8. GA4 (`7d5ba5f`)** — **Skip the upstream commit entirely.** Analysis shows the fork's `GoogleAnalytics.tsx`, `.env.local.example`, and `layout.tsx` wiring are functionally identical to upstream's (same env var `NEXT_PUBLIC_GA_MEASUREMENT_ID`, same gtag bootstrap; only trivial difference is script `id="ga4-init"` on fork vs `id="google-analytics"` on upstream — fork's naming is fine). On the conflict: **take fork's `layout.tsx` and `GoogleAnalytics.tsx` verbatim, drop upstream's**.
+
+### Migrations & Supabase
+
+- **C9. Duplicate archived-status migration** — `git rm` upstream's `supabase/migrations/add_archived_event_status.sql` during resolution. Your `20260415_add_archived_event_status.sql` already covers the constraint. Upstream's Calgary-specific `UPDATE events WHERE start_time::date IN ('2026-03-11','2026-03-14')` is dropped entirely (those dates are Calgary's, not yours).
+- **C10. Photos migrations on both sides** — If fork's existing `create_event_photos.sql` and `add_hero_featured_to_event_photos.sql` are byte-identical to upstream's (verify with `diff`), drop upstream's copy. If they differ, **never edit the historical fork files** — add a new corrective migration only if Supabase shows an actual schema gap; otherwise leave alone.
+- **C11. Supabase project** — A single **production** Supabase project is available (URL held in the user's Render dashboard secrets; execution agent reads it from `NEXT_PUBLIC_SUPABASE_URL`). There is **no separate staging Supabase**. Phase 9 ("Staging") is adapted: run the new RLS migrations against prod during a quiet window, guarded by a fresh `pg_dump` backup from Phase 0. No parallel staging DB is spun up.
+- **C12. Prod backup gate** — User has pre-authorized. The execution agent may proceed to Phase 10 after confirming Phase 0's backup was captured; no human-loop confirmation required at the gate. Still: abort immediately if the Phase 0 backup step failed or was skipped.
+
+### Render & deployment
+
+- **D13. Render service identity** — Use the Render MCP/plugin to resolve the actual service name serving `cursor-event-portal.onrender.com`. Record the service ID in the PR body before deploying.
+- **D14. Render cron** — Keep the cron jobs **commented out** in `render.yaml`, per fork's `eae591e`. Upstream's security hardening of the cron endpoints still lands (in case cron is enabled later), but the `render.yaml` cron blocks stay off.
+- **D15. Node version** — Lock to **exact `20.18.1`** in `.nvmrc`, `.node-version`, and `package.json.engines` (`"node": "20.18.1"`). Matches upstream's Render pin.
+
+### Dependencies & build
+
+- **E16. `jszip`** — Add at `^3.10.1` (upstream's value).
+- **E17. Lockfile** — Delete `package-lock.json` and regenerate via `npm install` after all code conflicts are resolved. Do not three-way-merge the lockfile.
+- **E18. React 19 / Next 16 breaks** — **Fix forward in the same commit that introduces the break.** Branch must stay green. If a fix requires a material public-API change (e.g., a route contract), stop and leave a `TODO(sync):` comment + open question in the PR body rather than hiding it.
+- **E19. Lint config** — **Fork's flat config (`eslint.config.mjs`) and `"lint": "eslint ."` script win, unconditionally.** Rationale (documented for the execution agent):
+  - Fork runs **ESLint 9** (flat config required). Upstream runs ESLint 8 with `next lint`.
+  - `next lint` is **deprecated and removed in Next 16**; upstream's script would fail on the fork.
+  - AGENTS.md explicitly says: flat config is authoritative; do not add `.eslintrc.json`.
+  - No upstream commit adds inline lint rule overrides worth salvaging.
+  - On any `package.json` conflict: keep `"lint": "eslint ."` and the ESLint 9 + `eslint-config-next@^16` deps. Drop any `.eslintrc*` that sneaks in.
+
+### Testing
+
+- **F20. Walkthrough** — Produce a **video walkthrough in mock mode** (`NEXT_PUBLIC_USE_MOCK_DATA=true`) for the new photo pipeline and competition edit flows. Screenshots are fine for content pages. Attach in the execution PR body.
+- **F21. Admin flows** — Test against `/admin/MOCK-ADMIN/...` via the mock layer only. Real admin auth on prod Supabase is the maintainer's responsibility during rollout.
+
+### Edge cases (answered "defaults")
+
+- **G22. RLS migration collision with out-of-band policies** — Make every `CREATE POLICY` idempotent via `DROP POLICY IF EXISTS ... ; CREATE POLICY ...`. Matches upstream's `4f25a48` self-bootstrapping intent.
+- **G23. `setEventStatus` auth fix conflict** — Keep fork's admin-code/guard semantics; port only upstream's `setEventStatus` logic.
+- **G24. `mock/data.ts` reconciliation** — Keep a single `src/lib/mock/data.ts` with Shanghai seed data + upstream's new Luma/photo fields layered in. Only split into an overlay if the diff is genuinely unreconcilable, and document why in the commit message.
+- **G25. Next 16 incompatibility in upstream code** — Rewrite inline to Next 16 equivalents in the same merge commit.
+- **G26. Prod schema drift** — Assume prod = fork's `main` migrations applied in order. No pre-flight schema diff; if a migration fails on apply, stop and ask.
+- **G27. Missing env vars** — Add to `.env.local.example` with empty defaults; enumerate any Render dashboard secrets that need to be set in the execution PR body. Do **not** commit real secret values.
+- **G28. Partial failure** — Ship partial is explicitly allowed. If the photos pipeline gets too tangled, land security + admin + competitions + content, defer photos to a follow-up PR.
+
+## 9. Open questions left for the execution agent
+
+None blocking. The execution agent may surface new questions if prod DB state doesn't match fork migrations (G26 edge case). All decisions above are binding.
 
 ## 9. What I did *not* do
 
