@@ -5,6 +5,8 @@ import { getIntakeStatus } from "@/lib/actions/intake";
 import { createServiceClient } from "@/lib/supabase/server";
 import { CompetitionsList } from "@/components/competitions/CompetitionsList";
 
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
 interface CompetitionsPageProps {
   params: Promise<{ eventSlug: string }>;
 }
@@ -25,13 +27,16 @@ export default async function CompetitionsPage({ params }: CompetitionsPageProps
     redirect(`/${eventSlug}/intake`);
   }
 
-  const supabase = await createServiceClient();
-  const { data: userRecord } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", session.userId)
-    .single();
-  const isAdmin = !!userRecord && ["staff", "admin"].includes(userRecord.role);
+  let isAdmin = false;
+  if (!USE_MOCK_DATA) {
+    const supabase = await createServiceClient();
+    const { data: userRecord } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", session.userId)
+      .single();
+    isAdmin = !!userRecord && ["staff", "admin"].includes(userRecord.role);
+  }
 
   const competitions = await getActiveCompetitions(event.id);
 

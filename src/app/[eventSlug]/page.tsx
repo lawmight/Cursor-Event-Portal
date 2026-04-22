@@ -21,7 +21,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
   // Check if already registered and checked in
   const session = await getSession();
-  if (session && session.eventId === event.id) {
+  if (session && session.eventId === event.id && process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true") {
     // Check if checked in - if yes, go to agenda
     const { createServiceClient } = await import("@/lib/supabase/server");
     const supabase = await createServiceClient();
