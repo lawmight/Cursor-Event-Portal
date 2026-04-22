@@ -44,6 +44,11 @@ export function SeatAssignmentBanner({ event, userId }: SeatAssignmentBannerProp
   }, [loading, qrAssignment?.id, smartAssignment?.groupId]);
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+      setLoading(false);
+      return;
+    }
+
     async function fetchAssignment() {
       try {
         const response = await fetch(`/api/table-assignment?eventId=${event.id}`);
@@ -303,6 +308,9 @@ export function useSeatLockout(event: Event) {
   const [isLockoutActive, setIsLockoutActive] = useState(event.seat_lockout_active);
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+      return;
+    }
     const supabase = createClient();
     const channel = supabase
       .channel(`event-lockout-check-${event.id}`)
