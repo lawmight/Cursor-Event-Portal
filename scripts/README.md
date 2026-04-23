@@ -1,5 +1,24 @@
 # Scripts
 
+## Startup / Update
+
+`scripts/startup.sh` is a minimal bootstrap for local development and fresh clones. It:
+
+1. Verifies Node.js is in the `>=20.0.0 <21.0.0` range required by `package.json` `engines`, and auto-switches to the pinned `.nvmrc` version (`20.18.1`) if `nvm` is available.
+2. Runs `npm install`.
+3. Seeds `.env.local` from `.env.local.example` if missing (set `NEXT_PUBLIC_USE_MOCK_DATA=true` there for mock mode).
+
+### Usage
+
+```bash
+./scripts/startup.sh           # install + env bootstrap
+./scripts/startup.sh --build   # also run `npm run build`
+```
+
+### Recommended runtime
+
+Node 20 (pinned: `20.18.1` in `.nvmrc` / `.node-version`, matching `render.yaml` `NODE_VERSION`). Higher majors violate `engines.node` and may break native deps like `sharp`.
+
 ## Clear Slides
 
 This script clears all slides from the database.
