@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getSession } from "./registration";
 import { revalidatePath } from "next/cache";
 
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
 function getAdminPath(eventSlug: string, adminCode?: string) {
   return adminCode ? `/admin/${eventSlug}/${adminCode}` : `/admin/${eventSlug}`;
 }
@@ -161,6 +163,8 @@ export async function simulateEventStart(eventId: string, eventSlug: string, adm
 
 // Auto-unlock at event start time (called on page load)
 export async function checkAndUnlockAtStartTime(eventId: string, eventSlug: string) {
+  if (USE_MOCK_DATA) return;
+
   const supabase = await createServiceClient();
 
   // Get event with start time

@@ -7,7 +7,8 @@ import { ActiveVenueSelector } from "@/components/admin/ActiveVenueSelector";
 import { updateEventDetails } from "@/lib/actions/agenda";
 import { updateVenue } from "@/lib/actions/event-dashboard";
 import { siteConfig } from "@/content/site.config";
-import type { Event, Venue } from "@/types";
+import { setEventStatus } from "@/lib/actions/settings";
+import type { Event, EventStatus, Venue } from "@/types";
 
 type EventOption = {
   id: string;
@@ -22,6 +23,7 @@ type EventOption = {
 interface VenueAdminTabProps {
   event: Event;
   eventSlug: string;
+  adminCode: string;
   venues: Venue[];
   allEvents: EventOption[];
   activeSlug: string;
@@ -30,6 +32,7 @@ interface VenueAdminTabProps {
 export function VenueAdminTab({
   event,
   eventSlug,
+  adminCode,
   venues,
   allEvents,
   activeSlug,
@@ -39,6 +42,8 @@ export function VenueAdminTab({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<EventStatus>(event.status as EventStatus);
+  const [statusPending, setStatusPending] = useState(false);
 
   // Pre-select the venue that matches the current event
   const matchingVenue = venues.find((v) => v.name === event.venue);
@@ -107,10 +112,55 @@ export function VenueAdminTab({
     });
   };
 
+  const STATUS_OPTIONS: { value: EventStatus; label: string; description: string }[] = [
+    { value: "draft",     label: "Draft",     description: "Not visible to attendees" },
+    { value: "published", label: "Published", description: "Registration open" },
+    { value: "active",    label: "Active",    description: "Event is live tonight" },
+    { value: "completed", label: "Completed", description: "Event has ended" },
+  ];
+
+  const handleStatusChange = async (status: EventStatus) => {
+    if (status === currentStatus) return;
+    setStatusPending(true);
+    try {
+      const result = await setEventStatus(event.id, status, adminCode);
+      if (!result.error) setCurrentStatus(status);
+    } finally {
+      setStatusPending(false);
+    }
+  };
+
   return (
     <div className="space-y-12">
       {/* ── Active Event Selector ── */}
-      <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} />
+      <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} adminCode={adminCode} />
+
+      {/* ── Event Status ── */}
+      <div className="glass rounded-[40px] p-6 border-white/20">
+        <h3 className="text-[11px] uppercase tracking-[0.4em] text-gray-400 font-medium mb-1">Event Status</h3>
+        <p className="text-[10px] text-gray-500 mb-4">Controls attendee access and registration.</p>
+        <div className="flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((opt) => {
+            const isActive = currentStatus === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => handleStatusChange(opt.value)}
+                disabled={statusPending}
+                className={`rounded-2xl px-4 py-2.5 text-left transition-all border text-[10px] uppercase tracking-[0.15em] font-medium disabled:opacity-50 ${
+                  isActive
+                    ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                    : "bg-white/5 text-white/80 border-white/20 hover:bg-white/10 hover:border-white/30"
+                }`}
+              >
+                <span className="block font-semibold">{opt.label}</span>
+                <span className="block opacity-60 mt-0.5 normal-case tracking-normal text-[9px]">{opt.description}</span>
+              </button>
+            );
+          })}
+        </div>
+        {statusPending && <p className="text-[10px] text-gray-500 mt-2">Updating…</p>}
+      </div>
 
       {/* ── Venue for This Event ── */}
       <div className="space-y-6">

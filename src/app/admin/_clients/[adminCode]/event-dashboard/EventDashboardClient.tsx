@@ -146,6 +146,7 @@ export function EventDashboardClient({
             <VenueAdminTab
               event={event}
               eventSlug={eventSlug}
+              adminCode={adminCode}
               venues={venues}
               allEvents={allEvents}
               activeSlug={activeSlug}
@@ -189,7 +190,13 @@ export function EventDashboardClient({
             />
           )}
           {activeTab === "calendar" && (
-            <CalendarAdminTab initialEvents={plannedEvents} initialCities={calendarCities} initialVenues={venues} />
+            <CalendarAdminTab
+              initialEvents={plannedEvents}
+              initialCities={calendarCities}
+              initialVenues={venues}
+              adminCode={adminCode}
+              eventId={event.id}
+            />
           )}
           {activeTab === "credits" && (
             <CreditsAdminTab

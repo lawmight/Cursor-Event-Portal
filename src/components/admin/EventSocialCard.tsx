@@ -48,6 +48,10 @@ export function EventSocialCard({
 
   // Check for new questions and subscribe to changes
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+      return;
+    }
+
     const checkNewQuestions = async () => {
       const supabase = createClient();
       const { data } = await supabase

@@ -44,7 +44,7 @@ export default async function AdminEventsPage({ params }: AdminEventsPageProps) 
       <main className="max-w-4xl mx-auto px-6 py-8 w-full z-10 flex-1 space-y-8">
 
         {/* Active venue selector */}
-        <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} />
+        <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} adminCode={adminCode} />
 
         {/* Event list */}
         <div className="space-y-3">
