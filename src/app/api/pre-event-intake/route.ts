@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
     // Throttle email-enumeration attempts against this endpoint.
     const ip = getClientIp(request);
     const ipLimit = rateLimit(`pre-intake:ip:${ip}`, { limit: 20, windowMs: 60_000 });
-    const emailLimit = rateLimit(`pre-intake:email:${String(email).toLowerCase()}`, {
+    const emailNorm = String(email).trim().toLowerCase();
+    const emailLimit = rateLimit(`pre-intake:email:${emailNorm}`, {
       limit: 5,
       windowMs: 60_000,
     });
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     const { data: user, error: userError } = await supabase
       .from("users")
       .select("id, name, email")
-      .ilike("email", email.trim())
+      .eq("email", emailNorm)
       .single();
 
     if (userError || !user) {

@@ -23,6 +23,7 @@ type EventOption = {
 interface VenueAdminTabProps {
   event: Event;
   eventSlug: string;
+  adminCode: string;
   venues: Venue[];
   allEvents: EventOption[];
   activeSlug: string;
@@ -31,6 +32,7 @@ interface VenueAdminTabProps {
 export function VenueAdminTab({
   event,
   eventSlug,
+  adminCode,
   venues,
   allEvents,
   activeSlug,
@@ -120,15 +122,18 @@ export function VenueAdminTab({
   const handleStatusChange = async (status: EventStatus) => {
     if (status === currentStatus) return;
     setStatusPending(true);
-    const result = await setEventStatus(event.id, status);
-    setStatusPending(false);
-    if (!result.error) setCurrentStatus(status);
+    try {
+      const result = await setEventStatus(event.id, status, adminCode);
+      if (!result.error) setCurrentStatus(status);
+    } finally {
+      setStatusPending(false);
+    }
   };
 
   return (
     <div className="space-y-12">
       {/* ── Active Event Selector ── */}
-      <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} />
+      <ActiveVenueSelector events={allEvents} activeSlug={activeSlug} adminCode={adminCode} />
 
       {/* ── Event Status ── */}
       <div className="glass rounded-[40px] p-6 border-white/20">

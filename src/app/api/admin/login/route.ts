@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
     // get throttled even when the attacker rotates one of the two.
     const ip = getClientIp(request);
     const ipLimit = rateLimit(`admin-login:ip:${ip}`, { limit: 10, windowMs: 60_000 });
-    const emailLimit = rateLimit(`admin-login:email:${String(email).toLowerCase()}`, {
+    const emailNorm = String(email).trim().toLowerCase();
+    const emailLimit = rateLimit(`admin-login:email:${emailNorm}`, {
       limit: 5,
       windowMs: 5 * 60_000,
     });
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     const { data: user, error: userError } = await supabase
       .from("users")
       .select("id, name, email, role")
-      .ilike("email", email.trim())
+      .eq("email", emailNorm)
       .single();
 
     if (userError || !user) {

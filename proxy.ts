@@ -29,8 +29,8 @@ async function isAdminEmail(email: string): Promise<boolean> {
     //   1. public.admin_emails (canonical allow-list)
     //   2. public.users.role = 'admin' (legacy)
     const [allowList, userRow] = await Promise.all([
-      admin.from("admin_emails").select("email").ilike("email", email).maybeSingle(),
-      admin.from("users").select("role").ilike("email", email).maybeSingle(),
+      admin.from("admin_emails").select("email").eq("email", email).maybeSingle(),
+      admin.from("users").select("role").eq("email", email).maybeSingle(),
     ]);
 
     const isAdmin = Boolean(allowList.data) || userRow.data?.role === "admin";
@@ -108,7 +108,7 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       url.searchParams.set("error", "not_admin");
-      return NextResponse.redirect(url);
+      return redirectWithCookies(response, url);
     }
   }
 

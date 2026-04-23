@@ -66,8 +66,8 @@ export async function requireAdmin(
       if (user?.email) {
         const email = user.email.toLowerCase();
         const [allow, row] = await Promise.all([
-          supabase.from("admin_emails").select("email").ilike("email", email).maybeSingle(),
-          supabase.from("users").select("id, role").ilike("email", email).maybeSingle(),
+          supabase.from("admin_emails").select("email").eq("email", email).maybeSingle(),
+          supabase.from("users").select("id, role").eq("email", email).maybeSingle(),
         ]);
         const isAdmin = Boolean(allow.data) || row.data?.role === "admin";
         if (isAdmin) {

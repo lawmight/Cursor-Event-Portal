@@ -19,6 +19,8 @@ interface CalendarAdminTabProps {
   initialEvents: PlannedEvent[];
   initialCities: EventCalendarCity[];
   initialVenues: Venue[];
+  adminCode: string;
+  eventId: string;
 }
 
 type EditState = Partial<Omit<PlannedEvent, "id" | "created_at" | "updated_at" | "linked_event_id">>;
@@ -87,7 +89,13 @@ function monthLabel(key: string) {
   return new Date(y, m - 1).toLocaleDateString("zh-CN", { month: "long", year: "numeric" });
 }
 
-export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }: CalendarAdminTabProps) {
+export function CalendarAdminTab({
+  initialEvents,
+  initialCities,
+  initialVenues,
+  adminCode,
+  eventId,
+}: CalendarAdminTabProps) {
   const [cities, setCities] = useState<EventCalendarCity[]>(initialCities);
   const [activeCity, setActiveCity] = useState<string>(
     initialCities[0]?.name ?? siteConfig.city
@@ -250,20 +258,25 @@ export function CalendarAdminTab({ initialEvents, initialCities, initialVenues }
   const handlePromote = async (id: string) => {
     setPromotingId(id);
     setPromoteError(null);
-    const result = await promoteToEvent(id);
-    setPromotingId(null);
-    if ("error" in result) {
-      setPromoteError(result.error);
-      return;
-    }
+    try {
+      const result = await promoteToEvent(id, adminCode, eventId);
+      if ("error" in result) {
+        setPromoteError(result.error);
+        return;
+      }
     // Update local state: set linked_event on the planned event
-    setEvents((prev) =>
-      prev.map((e) =>
-        e.id === id
-          ? { ...e, linked_event_id: result.data.id, linked_event: { id: result.data.id, slug: result.data.slug, admin_code: result.data.admin_code, status: "draft" } }
-          : e
-      )
-    );
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? { ...e, linked_event_id: result.data.id, linked_event: { id: result.data.id, slug: result.data.slug, admin_code: result.data.admin_code, status: "draft" } }
+            : e
+        )
+      );
+    } catch {
+      setPromoteError("Promotion failed");
+    } finally {
+      setPromotingId(null);
+    }
   };
 
   // ── Delete event ──────────────────────────────────────────────────────────

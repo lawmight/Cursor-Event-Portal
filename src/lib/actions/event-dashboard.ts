@@ -379,9 +379,20 @@ function toTimestamptz(dateStr: string, timeStr: string, tz: string): string {
 }
 
 export async function promoteToEvent(
-  plannedEventId: string
+  plannedEventId: string,
+  adminCode: string,
+  sourceEventId: string
 ): Promise<{ error: string } | { data: { id: string; slug: string; admin_code: string } }> {
   const supabase = await createServiceClient();
+
+  const { data: sourceEvent } = await supabase
+    .from("events")
+    .select("admin_code")
+    .eq("id", sourceEventId)
+    .maybeSingle();
+  if (!sourceEvent?.admin_code || sourceEvent.admin_code !== adminCode) {
+    return { error: "Unauthorized" };
+  }
 
   const { data: pe, error: peErr } = await supabase
     .from("planned_events")
@@ -398,6 +409,10 @@ export async function promoteToEvent(
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+
+  if (!slugBase) {
+    return { error: "Planned event title does not yield a valid slug; rename the event and try again." };
+  }
 
   let slug = slugBase;
   let suffix = 2;
@@ -437,10 +452,14 @@ export async function promoteToEvent(
 
   if (insertErr || !newEvent) return { error: insertErr?.message ?? "Failed to create event" };
 
-  await supabase
+  const { error: linkErr } = await supabase
     .from("planned_events")
     .update({ linked_event_id: newEvent.id })
     .eq("id", plannedEventId);
+
+  if (linkErr) {
+    return { error: linkErr.message };
+  }
 
   revalidatePath("/admin");
   return { data: { id: newEvent.id, slug: newEvent.slug, admin_code: newEvent.admin_code } };

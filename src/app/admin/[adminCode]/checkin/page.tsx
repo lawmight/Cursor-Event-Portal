@@ -1,5 +1,11 @@
 import { createServiceClient } from "@/lib/supabase/server";
-import { getEventIntakes, getSuggestedGroups, getTableQRCodes } from "@/lib/supabase/queries";
+import {
+  getAgendaItems,
+  getEventIntakes,
+  getEventRegistrations,
+  getSuggestedGroups,
+  getTableQRCodes,
+} from "@/lib/supabase/queries";
 import { AttendanceHubClient } from "@/app/admin/_clients/[adminCode]/checkin/AttendanceHubClient";
 import { getEventForAdmin } from "@/lib/utils/admin";
 
@@ -17,21 +23,57 @@ export default async function AdminCheckInPage({ params, searchParams }: AdminCh
   const activeTab = tab === "seating" ? "seating" : "checkin";
 
   const event = await getEventForAdmin(adminCode);
-  const supabase = await createServiceClient();
 
-  const [registrationsResult, checkedInResult, registrationsData, agendaItemsResult, intakes, groups, qrCodes] = await Promise.all([
-    supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", event.id),
-    supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", event.id).not("checked_in_at", "is", null),
-    supabase.from("registrations").select("*, user:users(*, intakes:attendee_intakes(*))").eq("event_id", event.id).eq("user.intakes.event_id", event.id).order("created_at", { ascending: false }),
-    supabase.from("agenda_items").select("*").eq("event_id", event.id).order("sort_order", { ascending: true }),
-    getEventIntakes(event.id),
-    getSuggestedGroups(event.id),
-    getTableQRCodes(event.id),
-  ]);
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
-  const stats = { registered: registrationsResult.count || 0, checkedIn: checkedInResult.count || 0 };
-  const registrations = registrationsData.data || [];
-  const agendaItems = agendaItemsResult.data || [];
+  let stats: { registered: number; checkedIn: number };
+  let registrations: Awaited<ReturnType<typeof getEventRegistrations>>;
+  let agendaItems: Awaited<ReturnType<typeof getAgendaItems>>;
+  let intakes: Awaited<ReturnType<typeof getEventIntakes>>;
+  let groups: Awaited<ReturnType<typeof getSuggestedGroups>>;
+  let qrCodes: Awaited<ReturnType<typeof getTableQRCodes>>;
+
+  if (useMock) {
+    const [regs, agenda, intakesData, groupsData, qrData] = await Promise.all([
+      getEventRegistrations(event.id),
+      getAgendaItems(event.id),
+      getEventIntakes(event.id),
+      getSuggestedGroups(event.id),
+      getTableQRCodes(event.id),
+    ]);
+    registrations = regs;
+    agendaItems = agenda;
+    intakes = intakesData;
+    groups = groupsData;
+    qrCodes = qrData;
+    stats = {
+      registered: regs.length,
+      checkedIn: regs.filter((r) => r.checked_in_at).length,
+    };
+  } else {
+    const supabase = await createServiceClient();
+    const [registrationsResult, checkedInResult, registrationsData, agendaItemsResult, intakesData, groupsData, qrData] =
+      await Promise.all([
+        supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", event.id),
+        supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", event.id).not("checked_in_at", "is", null),
+        supabase
+          .from("registrations")
+          .select("*, user:users(*, intakes:attendee_intakes(*))")
+          .eq("event_id", event.id)
+          .eq("user.intakes.event_id", event.id)
+          .order("created_at", { ascending: false }),
+        supabase.from("agenda_items").select("*").eq("event_id", event.id).order("sort_order", { ascending: true }),
+        getEventIntakes(event.id),
+        getSuggestedGroups(event.id),
+        getTableQRCodes(event.id),
+      ]);
+    stats = { registered: registrationsResult.count || 0, checkedIn: checkedInResult.count || 0 };
+    registrations = (registrationsData.data || []) as Awaited<ReturnType<typeof getEventRegistrations>>;
+    agendaItems = (agendaItemsResult.data || []) as Awaited<ReturnType<typeof getAgendaItems>>;
+    intakes = intakesData;
+    groups = groupsData;
+    qrCodes = qrData;
+  }
 
   return (
     <AttendanceHubClient

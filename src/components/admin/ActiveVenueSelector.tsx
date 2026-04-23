@@ -18,9 +18,10 @@ type EventOption = {
 interface ActiveVenueSelectorProps {
   events: EventOption[];
   activeSlug: string;
+  adminCode: string;
 }
 
-export function ActiveVenueSelector({ events, activeSlug }: ActiveVenueSelectorProps) {
+export function ActiveVenueSelector({ events, activeSlug, adminCode }: ActiveVenueSelectorProps) {
   const [isPending, startTransition] = useTransition();
 
   if (events.length <= 1) return null;
@@ -44,7 +45,7 @@ export function ActiveVenueSelector({ events, activeSlug }: ActiveVenueSelectorP
               disabled={isPending}
               onClick={() => {
                 startTransition(async () => {
-                  await setActiveEventSlug(ev.slug);
+                  await setActiveEventSlug(ev.slug, adminCode);
                 });
               }}
               className={`rounded-2xl px-4 py-2.5 text-left transition-all border text-[10px] uppercase tracking-[0.15em] font-medium disabled:opacity-50 ${

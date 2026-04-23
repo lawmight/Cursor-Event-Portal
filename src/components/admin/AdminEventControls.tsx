@@ -69,7 +69,7 @@ export function AdminEventControls({ events, currentAdminCode, activeSlug }: Adm
                   onClick={() => {
                     if (!isLive) {
                       startTransition(async () => {
-                        await setActiveEventSlug(ev.slug);
+                        await setActiveEventSlug(ev.slug, currentAdminCode);
                       });
                     }
                   }}
